@@ -1,7 +1,6 @@
 
-use macroquad::{prelude::*};
+use macroquad::{models, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets, widgets::Window };
-
 
 use rust_game_dev_env::editor::{inspector::EventInspector, ui};
 
@@ -21,6 +20,7 @@ fn app_conf() -> Conf{
 
 #[macroquad::main(app_conf)]
 async fn main() {
+
 
 
     loop{
@@ -50,6 +50,7 @@ fn setup_3d_space(){
             position: vec3(-20., 15., 0.),
             up: vec3(0., 1., 0.),
             target: vec3(0., 0., 0.),
+            projection: Projection::Perspective,
             ..Default::default()
         });
 
@@ -60,8 +61,11 @@ fn setup_3d_space(){
         draw_cube_wires(vec3(2., 1., 2.), vec3(2., 2., 2.), YELLOW);
         draw_sphere(vec3(-8., 0., 0.), 1., None, BLUE);
 
+        
         set_default_camera();
         draw_text("WELCOME TO 3D WORLD", 10.0, 20.0, 30.0, BLACK);
+
+
 }
 
 
