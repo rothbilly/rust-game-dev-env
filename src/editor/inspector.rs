@@ -43,8 +43,8 @@ impl EventInspector {
             .layout(Layout::Vertical)
             .ui(ui, |ui|{
 
-                let mut skin = root_ui().default_skin().clone();
-                skin.label_style
+                //let mut skin = root_ui().default_skin().clone();
+
                 ui.label(None, "Pressed mouse keys");
                 
             
