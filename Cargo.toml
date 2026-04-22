@@ -5,3 +5,10 @@ edition = "2024"
 
 [dependencies]
 macroquad = "0.4.14"
+serde = "1.0.228"
+
+
+
+
+[profile.dev.package.'*']
+opt-level = 3

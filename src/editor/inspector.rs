@@ -1,10 +1,10 @@
+use core::hash;
+
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}, Skin}};
 
 use macroquad::prelude::*;
 
-const PANEL_WIDTH : f32 = 240.;
-const PANEL_HEIGHT : f32 = 480.;
-const PANEL_MARGIN : f32 = 3.;
+use crate::{editor::constants::*};
 
 pub struct EventInspector;
 
@@ -16,7 +16,7 @@ impl EventInspector {
 
 
     pub fn draw() -> bool {
-        let window_status = Window::new(hash!(), vec2(20.,20.), vec2(PANEL_WIDTH, PANEL_HEIGHT))
+        let window_status = Window::new(hash!(), vec2(GLOB_MARGIN, GLOB_MARGIN), vec2(PANEL_WIDTH, PANEL_HEIGHT))
         .label("Event Menu")
         .movable(true)
         .close_button(true)
@@ -36,6 +36,9 @@ impl EventInspector {
 
                     if let Some(key) = get_last_key_pressed() {
                         ui.label(None, &format!("{key:?}"))
+                    }
+                    if ui.button( None,"test button"){
+                        println!("a button well made");
                     }
                 });
 
