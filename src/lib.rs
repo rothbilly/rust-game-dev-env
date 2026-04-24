@@ -17,6 +17,7 @@ pub mod tools{
 }
 
 
-pub mod app{
+pub mod core{
+    pub mod app;
     pub mod game;
 }
