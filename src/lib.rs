@@ -21,3 +21,7 @@ pub mod core{
     pub mod app;
     pub mod game;
 }
+
+ pub mod games{
+    pub mod test_game;
+ }

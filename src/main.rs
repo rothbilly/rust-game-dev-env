@@ -4,8 +4,10 @@ use std::hash::Hash;
 use macroquad::{models, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets, widgets::Window };
 
+use rust_game_dev_env::core::game::GameLoop;
 use rust_game_dev_env::editor::constants::*;
 use rust_game_dev_env::editor::{inspector::EventInspector, ui};
+use rust_game_dev_env::games::test_game::TestGame;
 
 
 
@@ -29,7 +31,9 @@ async fn main() {
     let mut camera_target: Vec3 = vec3(0., 0., 0.);
 
     let mut input_01: String = "sample".to_owned();
-    
+    let mut test_game: Box<TestGame> = Box::from(TestGame::default());
+    test_game._ready();
+
     loop{
         let delta = get_frame_time();
 
@@ -37,18 +41,18 @@ async fn main() {
         clear_background(LIGHTGRAY);
         
         //passing camera_pos as mutable reference &mut Vec3 type ()
-        update_3d_camera_pos(&mut camera_pos, &camera_target); 
-        draw_3d_space();
+        //update_3d_camera_pos(&mut camera_pos, &camera_target); 
+        //draw_3d_space();
         set_default_camera();
+        
+        test_game._update(delta);
         //draw_2d_space();
-        draw_ui_space(&mut input_01);
+        //draw_ui_space(&mut input_01);
         
         
-        if is_key_down(KeyCode::Escape) || is_key_down(KeyCode::Escape) {
+        if is_key_down(KeyCode::Escape) {
             break;
         }
-        
-        
         
         
         next_frame().await;
