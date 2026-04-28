@@ -27,3 +27,8 @@ impl App {
         Self { title, mode, is_active, is_focused, rect }
     }
 }
+
+
+trait Child{
+    fn get_parent_struct<T>(&mut self) -> Option<T>;
+} 

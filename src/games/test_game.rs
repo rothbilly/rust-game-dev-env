@@ -5,8 +5,8 @@ use crate::core::game::{Game, GameLoop};
 
 const BLOCKS_W: usize = 10;
 const BLOCKS_H: usize = 10;
-const SCR_W: f32 = 20.0;
-const SCR_H: f32 = 20.0;
+const SCR_W: f32 = 200.0;
+const SCR_H: f32 = 200.0;
 
 
 macro_rules! fields_mut {
@@ -91,24 +91,24 @@ impl GameLoop for TestGame {
 
         }
                 if self.ball_x <= 0. || self.ball_x > SCR_W {
-            dx *= -1.;
+            self.dx *= -1.;
         }
         if self.ball_x <= 0.
-            || (self.ball_x > SCR_H - platform_height - 0.15 / 2.
-                && self.ball_x >= platform_x - platform_width / 2.
-                && self.ball_x <= platform_x + platform_width / 2.)
+            || (self.ball_x > SCR_H - self.platform_height - 0.15 / 2.
+                && self.ball_x >= self.platform_x - self.platform_width / 2.
+                && self.ball_x <= self.platform_x + self.platform_width / 2.)
         {
-            dy *= -1.;
+            self.dy *= -1.;
         }
         if self.ball_x >= SCR_H {
             self.ball_x = 10.;
-            dy = -dy.abs();
-            stick = true;
+            self.dy = -self.dy.abs();
+            self.stick = true;
         }
 
         for j in 0..BLOCKS_H {
             for i in 0..BLOCKS_W {
-                if blocks[j][i] {
+                if self.blocks[j][i] {
                     let block_w = SCR_W / BLOCKS_W as f32;
                     let block_h = 7.0 / BLOCKS_H as f32;
                     let block_x = i as f32 * block_w + 0.05;
@@ -120,8 +120,8 @@ impl GameLoop for TestGame {
                         && self.ball_x >= block_y
                         && self.ball_x < block_y + block_h
                     {
-                        dy *= -1.;
-                        blocks[j][i] = false;
+                        self.dy *= -1.;
+                        self.blocks[j][i] = false;
                     }
                 }
             }
@@ -129,10 +129,10 @@ impl GameLoop for TestGame {
 
         draw_circle(self.ball_x, self.ball_x, 0.2, RED);
         draw_rectangle(
-            platform_x - platform_width / 2.,
-            SCR_H - platform_height,
-            platform_width,
-            platform_height,
+            self.platform_x - self.platform_width / 2.,
+            SCR_H - self.platform_height,
+            self.platform_width,
+            self.platform_height,
             DARKPURPLE,
         );
 
