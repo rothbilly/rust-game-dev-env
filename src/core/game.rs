@@ -5,6 +5,7 @@ use macroquad::prelude::*;
 use crate::core::app::App;
 
 
+
 #[derive(Default)]
 pub struct Game{
     base_app: App,
