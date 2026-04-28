@@ -1,7 +1,4 @@
 
-
-pub mod prelude;
-
 pub mod entities{
 
 }
@@ -14,6 +11,11 @@ pub mod editor{
 
 pub mod tools{
     pub mod mesh_tools;
+}
+
+
+pub mod data{
+    pub mod settings;
 }
 
 
