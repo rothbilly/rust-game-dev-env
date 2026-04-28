@@ -11,6 +11,7 @@ pub mod editor{
 
 pub mod tools{
     pub mod mesh_tools;
+    
 }
 
 
@@ -24,6 +25,11 @@ pub mod core{
     pub mod game;
 }
 
- pub mod games{
+pub mod games{
     pub mod test_game;
  }
+
+
+pub mod macros{
+    pub mod rules;
+}

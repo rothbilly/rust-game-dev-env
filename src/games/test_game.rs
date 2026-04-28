@@ -5,15 +5,11 @@ use crate::core::game::{Game, GameLoop};
 
 const BLOCKS_W: usize = 10;
 const BLOCKS_H: usize = 10;
-const SCR_W: f32 = 200.0;
-const SCR_H: f32 = 200.0;
+const SCR_W: f32 = 20.0;
+const SCR_H: f32 = 20.0;
 
 
-macro_rules! fields_mut {
-    ($self:ident, $($field:ident),* $(,)?) => {
-        $(let $field = &mut $self.$field;)*
-    };
-}
+
 
 
 #[derive(Default)]
