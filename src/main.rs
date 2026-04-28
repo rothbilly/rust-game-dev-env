@@ -4,10 +4,10 @@ use std::hash::Hash;
 use macroquad::{models, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets, widgets::Window };
 
-use rust_game_dev_env::core::game::GameLoop;
-use rust_game_dev_env::editor::constants::*;
-use rust_game_dev_env::editor::{inspector::EventInspector, ui};
-use rust_game_dev_env::games::test_game::TestGame;
+use crate::core::game::GameLoop;
+use crate::editor::constants::*;
+use crate::editor::{inspector::EventInspector, ui};
+use crate::games::test_game::TestGame;
 
 
 
