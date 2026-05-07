@@ -8,10 +8,13 @@ use rust_game_dev_env::core::game::GameLoop;
 use rust_game_dev_env::editor::constants::*;
 use rust_game_dev_env::editor::{inspector::EventInspector, ui};
 use rust_game_dev_env::games::test_game::TestGame;
+use rust_game_dev_env::data::settings::Settings;
 
-
+static mut settings: Settings = Settings::new();
 
 fn app_conf() -> Conf{
+
+
     Conf {
         window_title: "Dev Environment".to_owned(),
         window_width: 1280,

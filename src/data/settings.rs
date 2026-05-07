@@ -17,15 +17,21 @@ pub struct Settings {
 
 impl Default for Settings {
     fn default() -> Self {
+        Settings::new()
+    }
+}
+
+impl Settings {
+    pub const fn new() -> Self {
         Settings {
             volume: 0.5,
             window_h: 720,
             window_w: 1280,
         }
     }
-}
 
-impl Settings {
+
+
     pub fn load() -> Settings {
         if let Ok(contents) = fs::read_to_string(PATH_STR) {
             DeJson::deserialize_json(&contents).unwrap_or_default()

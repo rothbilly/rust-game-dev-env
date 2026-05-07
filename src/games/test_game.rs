@@ -54,7 +54,8 @@ impl GameLoop for TestGame {
     
     fn _update(&mut self, _delta: f32) {
 
-        println!("game update {}", get_time());
+        //println!("game update {}", get_time());
+
         if is_key_down(KeyCode::Right) && self.platform_x < SCR_W - self.platform_width / 2. {
             self.platform_x += 3.0 * _delta;
         }
