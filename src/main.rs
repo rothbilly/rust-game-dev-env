@@ -1,5 +1,7 @@
 use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
+use std::ops::Deref;
+use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, Arc};
 
 
@@ -17,7 +19,6 @@ static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(||{
 });
 
 fn app_conf() -> Conf{
-
     let mut settings = GLOB_SETTINGS.lock().unwrap().load();
 
 

@@ -7,7 +7,6 @@ use nanoserde::*;
 
 const PATH_STR: &str = ".app/settings.json";
 
-
 #[derive(Debug, SerJson, DeJson)]
 pub struct Settings {
     volume: f32,
@@ -33,6 +32,7 @@ impl Settings {
 
     pub fn load(&mut self) -> Settings {
         if let Ok(contents) = fs::read_to_string(PATH_STR) {
+
             DeJson::deserialize_json(&contents).unwrap_or_default()
         } else {
             Settings::default()

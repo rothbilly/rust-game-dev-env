@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 macroquad = "0.4.14"
-nanoserde = "0.2.1"
+nanoserde = {version ="0.2.1", features = ["toml"]}
 
 
 
