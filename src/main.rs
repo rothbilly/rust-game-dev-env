@@ -2,14 +2,15 @@ use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
 use std::sync::{LazyLock, Mutex, Arc};
 
-use macroquad::{models, prelude::*};
-use macroquad::ui::{hash, root_ui, widgets, widgets::Window };
+
+use macroquad::{prelude::*};
+use macroquad::ui::{hash, root_ui, widgets::Window };
 
 use rust_game_dev_env::core::game::GameLoop;
 use rust_game_dev_env::editor::constants::*;
-use rust_game_dev_env::editor::{inspector::EventInspector, ui};
+use rust_game_dev_env::editor::{inspector::EventInspector};
+use rust_game_dev_env::data::settings::{Settings};
 use rust_game_dev_env::games::test_game::TestGame;
-use rust_game_dev_env::data::settings::{self, Settings};
 
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(||{
     Mutex::new(Settings::new())
@@ -32,7 +33,8 @@ fn app_conf() -> Conf{
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    
+
+
     const WORLD_UP: Vec3 = vec3(0.0,1.0,0.0);
 
     let mut camera_pos: Vec3 = vec3(-20., 15., 0.);
@@ -55,7 +57,7 @@ async fn main() {
         
         //test_game._update(delta);
         //draw_2d_space();
-        draw_ui_space(&mut input_01);
+        draw_editor_space(&mut input_01);
         
         
         if is_key_down(KeyCode::Escape) {
@@ -133,7 +135,7 @@ fn draw_2d_space(){
 }
 
 
-fn draw_ui_space(_input: &mut String )
+fn draw_editor_space(_input: &mut String )
 {
     EventInspector::draw();
     
