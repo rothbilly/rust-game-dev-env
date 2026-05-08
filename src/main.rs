@@ -1,5 +1,6 @@
 use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
+use std::sync::{LazyLock, Mutex, Arc};
 
 use macroquad::{models, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets, widgets::Window };
@@ -8,17 +9,21 @@ use rust_game_dev_env::core::game::GameLoop;
 use rust_game_dev_env::editor::constants::*;
 use rust_game_dev_env::editor::{inspector::EventInspector, ui};
 use rust_game_dev_env::games::test_game::TestGame;
-use rust_game_dev_env::data::settings::Settings;
+use rust_game_dev_env::data::settings::{self, Settings};
 
-static mut settings: Settings = Settings::new();
+static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(||{
+    Mutex::new(Settings::new())
+});
 
 fn app_conf() -> Conf{
+
+    let mut settings = GLOB_SETTINGS.lock().unwrap().load();
 
 
     Conf {
         window_title: "Dev Environment".to_owned(),
-        window_width: 1280,
-        window_height: 720,
+        window_width: settings.window_w,
+        window_height: settings.window_h,
         window_resizable: true,
         ..Default::default()
     }  
@@ -44,16 +49,17 @@ async fn main() {
         clear_background(LIGHTGRAY);
         
         //passing camera_pos as mutable reference &mut Vec3 type ()
-        //update_3d_camera_pos(&mut camera_pos, &camera_target); 
-        //draw_3d_space();
-        //set_default_camera();
+        update_3d_camera_pos(&mut camera_pos, &camera_target); 
+        draw_3d_space();
+        set_default_camera();
         
-        test_game._update(delta);
+        //test_game._update(delta);
         //draw_2d_space();
-        //draw_ui_space(&mut input_01);
+        draw_ui_space(&mut input_01);
         
         
         if is_key_down(KeyCode::Escape) {
+            on_close_application();
             break;
         }
         
@@ -144,6 +150,12 @@ fn draw_ui_space(_input: &mut String )
                 vec2(PANEL_WIDTH - PANEL_MARGIN,80.),
                 _input);
         });
+
+}
+
+fn on_close_application(){
+    println!("[Application] - Closing!");
+    GLOB_SETTINGS.lock().unwrap().save();
 
 }
 

@@ -11,8 +11,8 @@ const PATH_STR: &str = ".app/settings.json";
 #[derive(Debug, SerJson, DeJson)]
 pub struct Settings {
     volume: f32,
-    window_h: u32,
-    window_w: u32,
+    pub window_h: i32,
+    pub window_w: i32,
 }
 
 impl Default for Settings {
@@ -31,8 +31,7 @@ impl Settings {
     }
 
 
-
-    pub fn load() -> Settings {
+    pub fn load(&mut self) -> Settings {
         if let Ok(contents) = fs::read_to_string(PATH_STR) {
             DeJson::deserialize_json(&contents).unwrap_or_default()
         } else {
@@ -56,7 +55,7 @@ impl Settings {
         self.volume = volume;
     }
 
-    pub fn window_size(&self) -> (u32, u32) {
+    pub fn window_size(&self) -> (i32, i32) {
         (self.window_w, self.window_h)
     }
 }
