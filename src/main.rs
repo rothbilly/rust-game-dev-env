@@ -1,11 +1,11 @@
-
-
 use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, Arc};
 
+use macroquad::color::colors;
 use macroquad::{input, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets::Window };
 
+//crate imports
 use rust_game_dev_env::core::game::GameLoop;
 use rust_game_dev_env::editor::constants::*;
 use rust_game_dev_env::editor::{inspector::EventInspector};
@@ -15,7 +15,6 @@ use rust_game_dev_env::games::test_game::TestGame;
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(||{
     Mutex::new(Settings::new())
 });
-
 
 
 fn app_conf() -> Conf{
@@ -130,11 +129,11 @@ fn draw_2d_space(){
     draw_hexagon(
         mouse_position().0,
         mouse_position().1,
-        if input::is_mouse_button_down(MouseButton::Left) { 16. } else { 12.},
+        if input::is_mouse_button_down(MouseButton::Left) { 8. } else { 6.},
         2.,
         input::is_mouse_button_down(MouseButton::Left),
-        BLUE,
-        DARKBLUE);
+        if input::is_mouse_button_down(MouseButton::Left) { colors::DARKBLUE } else { DARKBLUE},
+        if input::is_mouse_button_down(MouseButton::Left) { BLUE } else { DARKBLUE});
     //draw_text("Hello, Macroquad!", 20.0, 20.0, 30.0, DARKGRAY);
 }
 

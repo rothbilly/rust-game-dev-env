@@ -26,6 +26,10 @@ pub mod core{
     pub mod game;
 }
 
+pub mod rendering{
+    pub mod letterbox;
+}
+
 pub mod games{
     pub mod test_game;
  }
