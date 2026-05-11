@@ -1,9 +1,7 @@
 use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
-use std::ops::Deref;
 use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, Arc};
-
 
 use macroquad::{prelude::*};
 use macroquad::ui::{hash, root_ui, widgets::Window };
@@ -17,6 +15,8 @@ use rust_game_dev_env::games::test_game::TestGame;
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(||{
     Mutex::new(Settings::new())
 });
+
+
 
 fn app_conf() -> Conf{
     let mut settings = GLOB_SETTINGS.lock().unwrap().load();
@@ -53,11 +53,11 @@ async fn main() {
         
         //passing camera_pos as mutable reference &mut Vec3 type ()
         update_3d_camera_pos(&mut camera_pos, &camera_target); 
-        draw_3d_space();
+        //draw_3d_space();
         set_default_camera();
         
         //test_game._update(delta);
-        //draw_2d_space();
+        draw_2d_space();
         draw_editor_space(&mut input_01);
         
         
@@ -95,9 +95,6 @@ fn update_3d_camera_pos(_camera_pos: &mut Vec3, _camera_target: &Vec3){
         } else if is_key_down(KeyCode::S) {
             camera_dir.x -= 1.0
         }
-
-
-
      
         *_camera_pos =  * _camera_pos + camera_dir * CAM_VELOCITY;
 
@@ -140,19 +137,27 @@ fn draw_editor_space(_input: &mut String )
 {
     EventInspector::draw();
     
-
-    Window::new(hash!(), vec2(1280. - PANEL_WIDTH - GLOB_MARGIN,20.), vec2(PANEL_WIDTH, 100.))
+    let window_status  = Window::new(hash!(),
+                vec2(1280. - PANEL_WIDTH - GLOB_MARGIN,20.),
+                vec2(PANEL_WIDTH, 100.))
         .label("Inspector")
         .movable(true)
         .close_button(true)
         .titlebar(true)
         .ui(&mut *root_ui(), |ui|{
 
+            
+
             ui.editbox(
                 hash!(),
                 vec2(PANEL_WIDTH - PANEL_MARGIN,80.),
                 _input);
+            
+            ui.get_bool(hash!("Inspector"));
+            
+
         });
+
 
 }
 

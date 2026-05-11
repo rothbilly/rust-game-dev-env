@@ -9,7 +9,5 @@ nanoserde = {version ="0.2.1", features = ["toml"]}
 
 
 
-
-
 [profile.dev.package.'*']
 opt-level = 3
