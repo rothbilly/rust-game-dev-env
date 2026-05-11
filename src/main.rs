@@ -1,9 +1,9 @@
-use std::collections::{HashSet, HashMap};
-use std::hash::Hash;
+
+
 use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, Arc};
 
-use macroquad::{prelude::*};
+use macroquad::{input, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets::Window };
 
 use rust_game_dev_env::core::game::GameLoop;
@@ -126,9 +126,15 @@ fn draw_3d_space(){
 
 
 fn draw_2d_space(){
-    draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-    draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
-
+    ///draw_grid(120, 160., DARKGRAY, DARKPURPLE);
+    draw_hexagon(
+        mouse_position().0,
+        mouse_position().1,
+        if input::is_mouse_button_down(MouseButton::Left) { 16. } else { 12.},
+        2.,
+        input::is_mouse_button_down(MouseButton::Left),
+        BLUE,
+        DARKBLUE);
     //draw_text("Hello, Macroquad!", 20.0, 20.0, 30.0, DARKGRAY);
 }
 
@@ -167,27 +173,3 @@ fn on_close_application(){
 
 }
 
-
-#[derive(PartialEq, Eq, Clone)]
-struct InspectableData<T>
-where T: Hash + PartialEq + Eq + Clone,
-{
-    data: HashMap<String, T>
-}
-
-impl<T> InspectableData<T>
-where T: Hash + PartialEq + Eq + Clone,
-{
-    
-    fn new() -> Self{
-        Self{ data: HashMap::new()}
-    }
-
-    fn new_with(data: HashMap<String, T>) -> Self {
-        Self { data }
-    }
-    
-    pub fn add_value(&mut self, _key: String, _value: T){
-
-    }
-}
