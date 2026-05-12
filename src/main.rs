@@ -128,7 +128,7 @@ fn draw_3d_space(){
 
 
 fn draw_2d_space(){
-    ///draw_grid(120, 160., DARKGRAY, DARKPURPLE);
+    //draw_grid(120, 160., DARKGRAY, DARKPURPLE);
     draw_hexagon(
         mouse_position().0,
         mouse_position().1,
