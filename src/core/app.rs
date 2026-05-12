@@ -1,4 +1,3 @@
-use std::fmt::Debug;
 
 use macroquad::prelude::*;
 

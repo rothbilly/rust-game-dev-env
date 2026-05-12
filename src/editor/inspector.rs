@@ -1,6 +1,5 @@
-use core::hash;
 
-use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}, Skin}};
+use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 
 use macroquad::prelude::*;
 
@@ -8,10 +7,16 @@ use crate::{editor::constants::*};
 
 pub struct EventInspector;
 
+impl Default for EventInspector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EventInspector {
     pub fn new() -> Self {
 
-        return EventInspector
+        EventInspector
     }
 
 
@@ -21,7 +26,7 @@ impl EventInspector {
         .movable(true)
         .close_button(true)
         .titlebar(true)
-        .ui(&mut *root_ui(), |ui|{
+        .ui(&mut root_ui(), |ui|{
             let (mouse_x, mouse_y) = mouse_position();
             ui.label(None, &format!("Mouse Position: {mouse_x} {mouse_y}"));
             
@@ -63,6 +68,6 @@ impl EventInspector {
             });
 
     });
-    return window_status;
+    window_status
     }
 }

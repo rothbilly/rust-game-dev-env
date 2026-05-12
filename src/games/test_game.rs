@@ -49,7 +49,7 @@ impl GameLoop for TestGame {
 
 
         println!("game ready");
-        return self
+        self
     }
     
     fn _update(&mut self, _delta: f32) {
@@ -63,7 +63,7 @@ impl GameLoop for TestGame {
             self.platform_x -= 3.0 * _delta;
         }
 
-        if self.stick == false {
+        if !self.stick {
             self.ball_x += self.dx * _delta;
             self.ball_y += self.dy * _delta;
         } else {

@@ -1,11 +1,10 @@
-use std::rc::Rc;
-use std::sync::{LazyLock, Mutex, Arc};
+use std::sync::{LazyLock, Mutex};
 
 use macroquad::color::colors;
 use macroquad::{input, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets::Window };
 
-use egui_macroquad::{ui, *};
+use egui_macroquad::*;
 
 
 //crate imports
@@ -21,7 +20,7 @@ static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(||{
 
 
 fn app_conf() -> Conf{
-    let mut settings = GLOB_SETTINGS.lock().unwrap().load();
+    let settings = GLOB_SETTINGS.lock().unwrap().load();
 
 
     Conf {
@@ -41,14 +40,14 @@ async fn main() {
     const WORLD_UP: Vec3 = vec3(0.0,1.0,0.0);
 
     let mut camera_pos: Vec3 = vec3(-20., 15., 0.);
-    let mut camera_target: Vec3 = vec3(0., 0., 0.);
+    let camera_target: Vec3 = vec3(0., 0., 0.);
 
     let mut input_01: String = "sample".to_owned();
     let mut test_game: Box<TestGame> = Box::from(TestGame::default());
     test_game._ready();
 
     loop{
-        let delta = get_frame_time();
+        let _delta = get_frame_time();
 
         clear_background(LIGHTGRAY);
         
@@ -81,7 +80,7 @@ const CAM_VELOCITY: f32 = 0.2;
 
 fn update_3d_camera_pos(_camera_pos: &mut Vec3, _camera_target: &Vec3){
 
-        let facing_dir:Vec3 = *_camera_target - *_camera_pos;
+        let _facing_dir:Vec3 = *_camera_target - *_camera_pos;
 
 
         let mut camera_dir = Vec3::ZERO; 
@@ -99,7 +98,7 @@ fn update_3d_camera_pos(_camera_pos: &mut Vec3, _camera_target: &Vec3){
             camera_dir.x -= 1.0
         }
      
-        *_camera_pos =  * _camera_pos + camera_dir * CAM_VELOCITY;
+        *_camera_pos += camera_dir * CAM_VELOCITY;
 
 
         set_camera(&Camera3D {
@@ -146,14 +145,14 @@ fn draw_editor_space(_input: &mut String )
 {
     EventInspector::draw();
     
-    let window_status  = Window::new(hash!(),
+    let _window_status  = Window::new(hash!(),
                 vec2(1280. - PANEL_WIDTH - GLOB_MARGIN,20.),
                 vec2(PANEL_WIDTH, 100.))
         .label("Inspector")
         .movable(true)
         .close_button(true)
         .titlebar(true)
-        .ui(&mut *root_ui(), |ui|{
+        .ui(&mut root_ui(), |ui|{
 
             
 
