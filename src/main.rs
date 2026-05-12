@@ -5,6 +5,9 @@ use macroquad::color::colors;
 use macroquad::{input, prelude::*};
 use macroquad::ui::{hash, root_ui, widgets::Window };
 
+use egui_macroquad::{ui, *};
+
+
 //crate imports
 use rust_game_dev_env::core::game::GameLoop;
 use rust_game_dev_env::editor::constants::*;
@@ -59,12 +62,17 @@ async fn main() {
         draw_2d_space();
         draw_editor_space(&mut input_01);
         
+
         
         if is_key_down(KeyCode::Escape) {
             on_close_application();
             break;
         }
+
+
+        draw_egui();
         
+
         
         next_frame().await;
     }
@@ -172,3 +180,14 @@ fn on_close_application(){
 
 }
 
+
+fn draw_egui(){
+        //egui sample
+    egui_macroquad::ui(|egui_ctx| {
+        egui::Window::new("egui  macroquad")
+            .show(egui_ctx, |ui| {
+                ui.label("Test");
+            });
+    });
+    egui_macroquad::draw();
+}

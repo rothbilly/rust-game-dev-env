@@ -6,8 +6,9 @@ edition = "2024"
 [dependencies]
 macroquad = "0.4.14"
 nanoserde = {version ="0.2.1", features = ["toml"]}
-
-
+quad-rand = {version = "0.2.3"}
+quad-url = "0.1.2"
+egui-macroquad = {version = "0.17.3"}
 
 [profile.dev.package.'*']
 opt-level = 3
