@@ -50,7 +50,6 @@ async fn main() {
     loop{
         let delta = get_frame_time();
 
-
         clear_background(LIGHTGRAY);
         
         //passing camera_pos as mutable reference &mut Vec3 type ()
@@ -63,15 +62,12 @@ async fn main() {
         draw_editor_space(&mut input_01);
         
 
-        
         if is_key_down(KeyCode::Escape) {
             on_close_application();
             break;
         }
 
-
-        draw_egui();
-        
+        draw_egui();        
 
         
         next_frame().await;
