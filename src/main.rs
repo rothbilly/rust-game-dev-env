@@ -8,7 +8,7 @@ use egui_macroquad::*;
 
 //crate imports
 use rust_game_dev_env::core::game::GameLoop;
-use rust_game_dev_env::data::settings::Settings;
+use rust_game_dev_env::data::settings::{SerializeMode, Settings};
 use rust_game_dev_env::editor::constants::*;
 use rust_game_dev_env::editor::inspector::EventInspector;
 use rust_game_dev_env::games::test_game::TestGame;
@@ -16,7 +16,7 @@ use rust_game_dev_env::games::test_game::TestGame;
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(|| Mutex::new(Settings::new()));
 
 fn app_conf() -> Conf {
-    let settings = GLOB_SETTINGS.lock().unwrap().load();
+    let settings = GLOB_SETTINGS.lock().unwrap().load_with_mode(SerializeMode::TOML);
 
     Conf {
         window_title: "Dev Environment".to_owned(),
@@ -151,7 +151,7 @@ fn draw_editor_space(_input: &mut String) {
 
 fn on_close_application() {
     println!("[Application] - Closing!");
-    GLOB_SETTINGS.lock().unwrap().save();
+    GLOB_SETTINGS.lock().unwrap().save_with_mode(SerializeMode::TOML);
 }
 
 fn draw_egui() {

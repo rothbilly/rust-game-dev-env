@@ -2,12 +2,20 @@ use std::fs;
 use std::path::Path;
 
 use macroquad::prelude::*;
-use nanoserde::*;
 
+use serde::{Deserialize, Serialize};
 
-const PATH_STR: &str = ".app/settings.json";
+const JSON_PATH_STR: &str = ".app/settings.json";
+const TOML_PATH_STR: &str = ".app/settings.toml";
 
-#[derive(Debug, SerJson, DeJson)]
+pub enum SerializeMode {
+    JSON,
+    TOML,
+    BIN,
+    RON,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
     volume: f32,
     pub window_h: i32,
@@ -29,22 +37,61 @@ impl Settings {
         }
     }
 
+    /// Save settings to the JSON file (pretty-printed). Any IO/serialization errors are ignored.
+    pub fn save_as_json(&self) {
+        if let Some(parent) = Path::new(JSON_PATH_STR).parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        if let Ok(json) = serde_json::to_string_pretty(self) {
+            let _ = fs::write(JSON_PATH_STR, json);
+        }
+    }
 
-    pub fn load(&mut self) -> Settings {
-        if let Ok(contents) = fs::read_to_string(PATH_STR) {
+    /// Save settings to the TOML file (pretty-printed). Any IO/serialization errors are ignored.
+    pub fn save_as_toml(&self) {
+        if let Some(parent) = Path::new(TOML_PATH_STR).parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        if let Ok(toml_str) = toml::to_string_pretty(self) {
+            let _ = fs::write(TOML_PATH_STR, toml_str);
+        }
+    }
 
-            DeJson::deserialize_json(&contents).unwrap_or_default()
+
+        /// Load settings from the JSON file (".app/settings.json").
+    /// Falls back to `Settings::default()` on read/parse errors.
+    pub fn load_from_json(&self) -> Settings {
+        if let Ok(contents) = fs::read_to_string(JSON_PATH_STR) {
+            serde_json::from_str(&contents).unwrap_or_else(|_| Settings::default())
         } else {
             Settings::default()
         }
     }
 
-    pub fn save(&self) {
-        if let Some(parent) = Path::new(PATH_STR).parent() {
-            let _ = fs::create_dir_all(parent);
+    /// Static helper: read and deserialize the TOML file.
+    pub fn load_from_toml(&self) -> Settings {
+        if let Ok(contents) = fs::read_to_string(TOML_PATH_STR) {
+            toml::from_str(&contents).unwrap_or_else(|_| Settings::default())
+        } else {
+            Settings::default()
         }
-        let json = self.serialize_json();
-        let _ = fs::write(PATH_STR, json);
+    }
+
+    /// Convenience: save using the given mode
+    pub fn save_with_mode(&self, mode: SerializeMode) {
+        match mode {
+            SerializeMode::JSON => self.save_as_json(),
+            SerializeMode::TOML => self.save_as_toml(),
+            _ => self.save_as_json(),
+        }
+    }
+
+    pub fn load_with_mode(&self, mode: SerializeMode) -> Settings{
+        match mode {
+            SerializeMode::JSON => self.load_from_json(),
+            SerializeMode::TOML => self.load_from_toml(),
+            _ => self.load_from_json(),
+        }
     }
 
     pub fn volume(&self) -> f32 {
