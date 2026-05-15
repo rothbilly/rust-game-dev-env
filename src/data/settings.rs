@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 const PATH_STR: &str = ".app/settings.json";
 const TOML_PATH_STR: &str = ".app/settings.toml";
+const BIN_PATH_STR: &str = ".app/settings.bin";
 
 pub enum SerializeMode {
     JSON,
@@ -97,11 +98,45 @@ impl Settings {
         }
     }
 
+    /// Load settings from the binary file (".app/settings.bin").
+    /// Falls back to `Settings::default()` on read/deserialize errors.
+    pub fn load_bin(&mut self) -> Settings {
+        Self::load_from_bin_path(BIN_PATH_STR)
+    }
+
+    /// Load settings from a custom binary file path (accepts `String`, `&str`, or `&Path`).
+    pub fn load_from_bin_path<P: AsRef<Path>>(path: P) -> Settings {
+        if let Ok(bytes) = fs::read(path.as_ref()) {
+            match bincode::deserialize::<Settings>(&bytes) {
+                Ok(s) => s,
+                Err(_) => Settings::default(),
+            }
+        } else {
+            Settings::default()
+        }
+    }
+
+    /// Save settings to the binary file (".app/settings.bin").
+    pub fn save_bin(&self) {
+        self.save_bin_to_path(BIN_PATH_STR)
+    }
+
+    /// Save settings to a custom binary file path (accepts `String`, `&str`, or `&Path`).
+    pub fn save_bin_to_path<P: AsRef<Path>>(&self, path: P) {
+        if let Some(parent) = path.as_ref().parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        if let Ok(bytes) = bincode::serialize(self) {
+            let _ = fs::write(path.as_ref(), bytes);
+        }
+    }
+
     /// Convenience: save using the given mode to default locations.
     pub fn save_with_mode(&self, mode: SerializeMode) {
         match mode {
             SerializeMode::JSON => self.save(),
             SerializeMode::TOML => self.save_toml(),
+            SerializeMode::BIN => self.save_bin(),
             _ => self.save(),
         }
     }
@@ -111,6 +146,7 @@ impl Settings {
         match mode {
             SerializeMode::JSON => self.save_to_json_path(path),
             SerializeMode::TOML => self.save_toml_to_path(path),
+            SerializeMode::BIN => self.save_bin_to_path(path),
             _ => self.save(),
         }
     }
