@@ -5,7 +5,7 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-const JSON_PATH_STR: &str = ".app/settings.json";
+const PATH_STR: &str = ".app/settings.json";
 const TOML_PATH_STR: &str = ".app/settings.toml";
 
 pub enum SerializeMode {
@@ -37,60 +37,81 @@ impl Settings {
         }
     }
 
-    /// Save settings to the JSON file (pretty-printed). Any IO/serialization errors are ignored.
-    pub fn save_as_json(&self) {
-        if let Some(parent) = Path::new(JSON_PATH_STR).parent() {
-            let _ = fs::create_dir_all(parent);
-        }
-        if let Ok(json) = serde_json::to_string_pretty(self) {
-            let _ = fs::write(JSON_PATH_STR, json);
-        }
-    }
-
-    /// Save settings to the TOML file (pretty-printed). Any IO/serialization errors are ignored.
-    pub fn save_as_toml(&self) {
-        if let Some(parent) = Path::new(TOML_PATH_STR).parent() {
-            let _ = fs::create_dir_all(parent);
-        }
-        if let Ok(toml_str) = toml::to_string_pretty(self) {
-            let _ = fs::write(TOML_PATH_STR, toml_str);
-        }
-    }
-
-
-        /// Load settings from the JSON file (".app/settings.json").
+    /// Load settings from the JSON file (".app/settings.json").
     /// Falls back to `Settings::default()` on read/parse errors.
-    pub fn load_from_json(&self) -> Settings {
-        if let Ok(contents) = fs::read_to_string(JSON_PATH_STR) {
+    pub fn load(&mut self) -> Settings {
+        Self::load_from_json_path(PATH_STR)
+    }
+
+    /// Load settings from a custom JSON file path (accepts `String`, `&str`, or `&Path`).
+    pub fn load_from_json_path<P: AsRef<Path>>(path: P) -> Settings {
+        if let Ok(contents) = fs::read_to_string(path.as_ref()) {
             serde_json::from_str(&contents).unwrap_or_else(|_| Settings::default())
         } else {
             Settings::default()
         }
     }
 
-    /// Static helper: read and deserialize the TOML file.
-    pub fn load_from_toml(&self) -> Settings {
-        if let Ok(contents) = fs::read_to_string(TOML_PATH_STR) {
+    /// Save settings to the JSON file (".app/settings.json").
+    pub fn save(&self) {
+        self.save_to_json_path(PATH_STR)
+    }
+
+    /// Save settings to a custom JSON file path (accepts `String`, `&str`, or `&Path`).
+    pub fn save_to_json_path<P: AsRef<Path>>(&self, path: P) {
+        if let Some(parent) = path.as_ref().parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        if let Ok(json) = serde_json::to_string_pretty(self) {
+            let _ = fs::write(path.as_ref(), json);
+        }
+    }
+
+    /// Load settings from the TOML file (".app/settings.toml").
+    /// Falls back to `Settings::default()` on read/parse errors.
+    pub fn load_toml(&mut self) -> Settings {
+        Self::load_from_toml_path(TOML_PATH_STR)
+    }
+
+    /// Load settings from a custom TOML file path (accepts `String`, `&str`, or `&Path`).
+    pub fn load_from_toml_path<P: AsRef<Path>>(path: P) -> Settings {
+        if let Ok(contents) = fs::read_to_string(path.as_ref()) {
             toml::from_str(&contents).unwrap_or_else(|_| Settings::default())
         } else {
             Settings::default()
         }
     }
 
-    /// Convenience: save using the given mode
-    pub fn save_with_mode(&self, mode: SerializeMode) {
-        match mode {
-            SerializeMode::JSON => self.save_as_json(),
-            SerializeMode::TOML => self.save_as_toml(),
-            _ => self.save_as_json(),
+    /// Save settings to the TOML file (".app/settings.toml").
+    pub fn save_toml(&self) {
+        self.save_toml_to_path(TOML_PATH_STR)
+    }
+
+    /// Save settings to a custom TOML file path (accepts `String`, `&str`, or `&Path`).
+    pub fn save_toml_to_path<P: AsRef<Path>>(&self, path: P) {
+        if let Some(parent) = path.as_ref().parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        if let Ok(toml_str) = toml::to_string_pretty(self) {
+            let _ = fs::write(path.as_ref(), toml_str);
         }
     }
 
-    pub fn load_with_mode(&self, mode: SerializeMode) -> Settings{
+    /// Convenience: save using the given mode to default locations.
+    pub fn save_with_mode(&self, mode: SerializeMode) {
         match mode {
-            SerializeMode::JSON => self.load_from_json(),
-            SerializeMode::TOML => self.load_from_toml(),
-            _ => self.load_from_json(),
+            SerializeMode::JSON => self.save(),
+            SerializeMode::TOML => self.save_toml(),
+            _ => self.save(),
+        }
+    }
+
+    /// Convenience: save using the given mode to a custom path.
+    pub fn save_with_mode_to<P: AsRef<Path>>(&self, mode: SerializeMode, path: P) {
+        match mode {
+            SerializeMode::JSON => self.save_to_json_path(path),
+            SerializeMode::TOML => self.save_toml_to_path(path),
+            _ => self.save(),
         }
     }
 
