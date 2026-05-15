@@ -1,8 +1,6 @@
 use macroquad::models;
 
-
-
-pub struct VerteWrapper{
+pub struct VertexWrapper {
     path: String,
-    mesh: models::Mesh
+    mesh: models::Mesh,
 }
