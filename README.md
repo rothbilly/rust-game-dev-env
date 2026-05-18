@@ -1,4 +1,5 @@
-![[Pasted image 20260518110930.png]]
+
+![](main_01.png)
 # Proyecto Rust Macroquad
 
 En `Visual Studio Code` compilar con `Ctrl + B`, en terminal usar `cargo build` para compilar y `cargo run` para ejecutar.

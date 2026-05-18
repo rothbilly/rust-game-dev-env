@@ -15,7 +15,17 @@
               "state": {
                 "file": "README.md",
                 "mode": "source",
-                "source": false
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
               },
               "icon": "lucide-file",
               "title": "README"
@@ -198,8 +208,13 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "f0040021d1a67532",
+  "active": "1ded06ddf5ace32d",
   "lastOpenFiles": [
+    "screenshots/main_01.png",
+    "README.md",
+    "src/tools/utils/serialization.rs",
+    "src/tools/utils",
+    "screenshots",
     "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/work-products.bin",
     "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/query-cache.bin",
     "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/dep-graph.bin",
@@ -207,13 +222,7 @@
     "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/work-products.bin",
     "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/query-cache.bin",
     "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv",
-    "screenshots",
-    "screenshots/Pasted image 20260518110930.png",
     "Pasted image 20260518110914.png",
-    "Pasted image 20260518110916.png",
-    "README.md",
-    "Sin título.base",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/work-products.bin"
+    "Pasted image 20260518110916.png"
   ]
 }
