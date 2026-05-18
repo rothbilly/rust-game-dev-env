@@ -6,10 +6,12 @@
       {
         "id": "4f5b8e1a0caff897",
         "type": "tabs",
+        "dimension": 34.69387755102041,
         "children": [
           {
             "id": "1ded06ddf5ace32d",
             "type": "leaf",
+            "pinned": true,
             "state": {
               "type": "markdown",
               "state": {
@@ -27,8 +29,33 @@
                   "unlinkedCollapsed": true
                 }
               },
+              "pinned": true,
               "icon": "lucide-file",
               "title": "README"
+            }
+          }
+        ]
+      },
+      {
+        "id": "020ab23f87a846a2",
+        "type": "tabs",
+        "dimension": 65.3061224489796,
+        "children": [
+          {
+            "id": "4e16e8a88b5cf9d7",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "obsidian_docs/main_canvas.canvas",
+                "viewState": {
+                  "x": 647.6360533545183,
+                  "y": 441.3133601342056,
+                  "zoom": -1
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "main_canvas"
             }
           }
         ]
@@ -104,7 +131,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "obsidian_docs/main_canvas.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -114,7 +141,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de README"
+              "title": "Enlaces entrantes de main_canvas"
             }
           },
           {
@@ -208,20 +235,21 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "1ded06ddf5ace32d",
+  "active": "4e16e8a88b5cf9d7",
   "lastOpenFiles": [
-    "screenshots/main_01.png",
     "README.md",
-    "src/tools/utils/serialization.rs",
-    "src/tools/utils",
-    "screenshots",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/dep-graph.bin",
+    "obsidian_docs/main_canvas.canvas",
+    "target/debug/deps/rust_game_dev_env-fba528a0b95ef519.d",
+    "target/debug/deps/rust_game_dev_env-764bb31cdc977388.d",
+    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur.lock",
+    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0",
+    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj",
+    "target/debug/incremental/rust_game_dev_env-3r7qudglervb1/s-hing8blkuo-0xsxcjj-working/dep-graph.part.bin",
+    "target/debug/incremental/rust_game_dev_env-3r7qudglervb1/s-hing8blkuo-0xsxcjj.lock",
+    "obsidian_docs/screenshots/main_01.png",
     "Pasted image 20260518110914.png",
     "Pasted image 20260518110916.png"
   ]
