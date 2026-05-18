@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Proyecto Rust Macroquad.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de Proyecto Rust Macroquad"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -166,23 +166,54 @@
             }
           }
         ]
+      },
+      {
+        "id": "8cc536b769ebf448",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b6d4612f42eed78",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Vista gráfica"
+            }
+          }
+        ]
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 353.5
   },
   "left-ribbon": {
     "hiddenItems": {
       "switcher:Abrir selector rápido": false,
-      "graph:Abrir vista gráfica": false,
       "canvas:Crear nuevo lienzo": false,
       "daily-notes:Abrir la nota de hoy": false,
       "templates:Insertar plantilla": false,
       "command-palette:Abrir paleta de comandos": false,
-      "bases:Crear nueva base": false
+      "bases:Crear nueva base": false,
+      "graph:Abrir vista gráfica": false
     }
   },
   "active": "1ded06ddf5ace32d",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "screenshots",
+    "screenshots/Pasted image 20260518110930.png",
+    "Pasted image 20260518110914.png",
+    "Pasted image 20260518110916.png",
+    "README.md",
+    "Sin título.base",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working",
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg.lock"
+  ]
 }

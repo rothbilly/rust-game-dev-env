@@ -45,7 +45,7 @@ async fn main() {
 
         //passing camera_pos as mutable reference &mut Vec3 type ()
         update_3d_camera_pos(&mut camera_pos, &camera_target);
-        //draw_3d_space();
+        draw_3d_space();
         set_default_camera();
 
         //test_game._update(delta);
