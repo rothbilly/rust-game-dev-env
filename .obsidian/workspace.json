@@ -49,9 +49,9 @@
               "state": {
                 "file": "obsidian_docs/main_canvas.canvas",
                 "viewState": {
-                  "x": 647.6360533545183,
-                  "y": 441.3133601342056,
-                  "zoom": -1
+                  "x": 289.64690707019565,
+                  "y": 661.5212460351461,
+                  "zoom": 3.3306690738754696e-16
                 }
               },
               "icon": "lucide-layout-dashboard",
@@ -131,7 +131,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "obsidian_docs/main_canvas.canvas",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -141,7 +141,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de main_canvas"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -235,10 +235,10 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "4e16e8a88b5cf9d7",
+  "active": "1ded06ddf5ace32d",
   "lastOpenFiles": [
-    "README.md",
     "obsidian_docs/main_canvas.canvas",
+    "README.md",
     "target/debug/deps/rust_game_dev_env-fba528a0b95ef519.d",
     "target/debug/deps/rust_game_dev_env-764bb31cdc977388.d",
     "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0/work-products.bin",
