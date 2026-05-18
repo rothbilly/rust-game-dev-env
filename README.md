@@ -40,6 +40,8 @@ Listar las dependencias en `Cargo.toml` y su uso.
 ---
 # Mas sobre Rust
 
-|     |     |
-| --- | --- |
-|     |     |
+|     | Link                                                              |
+| --- | ----------------------------------------------------------------- |
+|     | https://loglog.games/blog/leaving-rust-gamedev/#positives-of-rust |
+|     | https://www.slowrush.dev/news/pixel-perfect-rendering/            |
+|     |                                                                   |

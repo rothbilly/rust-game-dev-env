@@ -198,22 +198,22 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "1ded06ddf5ace32d",
+  "active": "f0040021d1a67532",
   "lastOpenFiles": [
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin718nl88-0ldscjz-89cqhlqt5420sln0p4u8iselv",
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0xgzdaq2znpoc/s-hin711nfpo-1tdssyw-89cqhlqt5420sln0p4u8iselv",
     "screenshots",
     "screenshots/Pasted image 20260518110930.png",
     "Pasted image 20260518110914.png",
     "Pasted image 20260518110916.png",
     "README.md",
     "Sin título.base",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-working",
-    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg.lock"
+    "target/debug/incremental/rust_game_dev_env-0kyeqh3ofovko/s-hin718npkg-09tr7sg-5vnyr123tmc723ovrcsz28i7e/work-products.bin"
   ]
 }
