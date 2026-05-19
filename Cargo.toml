@@ -19,3 +19,12 @@ puffin = "0.20.0"
 
 [profile.dev.package.'*']
 opt-level = 3
+
+[profile.dev]
+opt-level = 1
+
+
+[profile.release]
+opt-level = 3    
+lto = true         
+codegen-units = 1  
