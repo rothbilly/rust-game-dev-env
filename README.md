@@ -24,12 +24,11 @@ Lo mas importante es **aprender** y compartir el **conocimento**
 
 Proyecto `macroware32.exe` es fundamente un juego incremental que simula un entorno de escritorio tipo **windows 95** donde hay muchos **minijuegos arcades muy simples**  y algunos programas. 
 
-El concepto central esta en que los juegos pueden conectarse con otros juegos por nodos (similar a un editor de shader visual), estos nodos pueden transfieren comandos de entrada (VirtualInputs) o currency (Score, Token y Gems). y parte del loop incentiva al jugador a automatizar los procesos para generar mayor input
+El concepto central esta en que los juegos pueden conectarse con otros juegos por nodos (similar a un editor de shader visual), estos nodos pueden transfieren comandos de entrada (VirtualInputs) o Currency (Score, Token y Gems). y parte del loop incentiva al jugador a automatizar los procesos para generar mayor input
 
 El objetivo del juego es conseguir el score mas grande y desbloquear  y completar proyectos.
 
 los proyectos son minijuegos que consumen cantidades imposibles de recursos (gemas, tokens, inputs) y el premio es completarlos
-
 
 ### Idea base
 
@@ -43,10 +42,12 @@ los proyectos son minijuegos que consumen cantidades imposibles de recursos (gem
 
 ### Referencias
 
-| Juego   |     |
-| ------- | --- |
-| Balatro |     |
-|         |     |
+| Juego          |     |
+| -------------- | --- |
+| Balatro        |     |
+| Gamboranza     |     |
+| Loop Hero      |     |
+| Cookie clicker |     |
 
 
 ---
