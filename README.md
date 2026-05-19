@@ -2,10 +2,7 @@
 
 # Proyecto Rust Macroquad
 
-En `Visual Studio Code` compilar con `Ctrl + B`, en terminal usar `cargo build` para compilar y `cargo run` para ejecutar.
-
-
-
+En `Visual Studio Code` compilar con `Ctrl + Shift + B`, en terminal usar `cargo build` para compilar y `cargo run` para ejecutar.
 
 ## Objetivos 
 
@@ -17,10 +14,11 @@ Parte del desafío es armar múltiples minijuegos que funcionen independientemen
 
 Lo mas importante es **aprender** y compartir el **conocimento**
 
-### Oportunidades
-
-
 # El juego - Proyecto macroware32.exe
+
+![](concept_01.png)
+
+[Figma del proyecto](https://www.figma.com/design/LohWmjqQy6kBqVcYNpzOdb/RustMacroquadGame?node-id=4-2&t=YfUyBfRTBfSaeeAH-1)
 
 Proyecto `macroware32.exe` es fundamente un juego incremental que simula un entorno de escritorio tipo **windows 95** donde hay muchos **minijuegos arcades muy simples**  y algunos programas. 
 
@@ -28,16 +26,17 @@ El concepto central esta en que los juegos pueden conectarse con otros juegos po
 
 El objetivo del juego es conseguir el score mas grande y desbloquear  y completar proyectos.
 
-los proyectos son minijuegos que consumen cantidades imposibles de recursos (gemas, tokens, inputs) y el premio es completarlos
+los proyectos son minijuegos que consumen cantidades imposibles de recursos (gemas, tokens, inputs) y el premio es completarlos.
+### Loop de juego
 
-### Idea base
+![](scheme_01.png)
 
+### Estetica
 
-
-
-### Requerimientos base
-
+Se busca un look retro pixelart con estilo similar a juegos de nitrome.
 ### Minijuegos
+
+todo!()
 
 
 ### Referencias
@@ -65,17 +64,20 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | serde                                                       | para serializacion       |         |
 | macroquad                                                   | el motor de entrada      | 0.4.1   |
 | [num_bigint](https://docs.rs/num-bigint/latest/num_bigint/) | big number core          | 0.4.6   |
+|                                                             |                          |         |
 
 
 ---
 # Mas sobre Rust
 
-| Title              | Link                                                              |
-| ------------------ | ----------------------------------------------------------------- |
-|                    | https://loglog.games/blog/leaving-rust-gamedev/#positives-of-rust |
-|                    | https://www.slowrush.dev/news/pixel-perfect-rendering/            |
-| Macroquad book     | https://mq.agical.se/ch1-first-program.html                       |
-| Macroquad examples | https://github.com/not-fl3/macroquad/tree/master/examples         |
-| Api docs           | https://docs.rs/crate/macroquad/0.4.14                            |
+| Title                    | Link                                                              |
+| ------------------------ | ----------------------------------------------------------------- |
+| Game dev Article         | https://loglog.games/blog/leaving-rust-gamedev/#positives-of-rust |
+| Articles about macroquad | https://www.slowrush.dev/news/pixel-perfect-rendering/            |
+| Macroquad book           | https://mq.agical.se/ch1-first-program.html                       |
+| Macroquad examples       | https://github.com/not-fl3/macroquad/tree/master/examples         |
+| Api docs                 | https://docs.rs/crate/macroquad/0.4.14                            |
+| Rut by example           | https://doc.rust-lang.org/rust-by-example/custom_types.html       |
+| Rust book                | https://doc.rust-lang.org/book/title-page.html                    |
 
 

@@ -6,7 +6,6 @@
       {
         "id": "4f5b8e1a0caff897",
         "type": "tabs",
-        "dimension": 34.69387755102041,
         "children": [
           {
             "id": "1ded06ddf5ace32d",
@@ -32,30 +31,6 @@
               "pinned": true,
               "icon": "lucide-file",
               "title": "README"
-            }
-          }
-        ]
-      },
-      {
-        "id": "020ab23f87a846a2",
-        "type": "tabs",
-        "dimension": 65.3061224489796,
-        "children": [
-          {
-            "id": "4e16e8a88b5cf9d7",
-            "type": "leaf",
-            "state": {
-              "type": "canvas",
-              "state": {
-                "file": "obsidian_docs/main_canvas.canvas",
-                "viewState": {
-                  "x": 289.64690707019565,
-                  "y": 661.5212460351461,
-                  "zoom": 3.3306690738754696e-16
-                }
-              },
-              "icon": "lucide-layout-dashboard",
-              "title": "main_canvas"
             }
           }
         ]
@@ -238,17 +213,19 @@
   "active": "1ded06ddf5ace32d",
   "lastOpenFiles": [
     "obsidian_docs/main_canvas.canvas",
+    "obsidian_docs/screenshots/scheme_01.png",
     "README.md",
-    "target/debug/deps/rust_game_dev_env-fba528a0b95ef519.d",
-    "target/debug/deps/rust_game_dev_env-764bb31cdc977388.d",
-    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur.lock",
-    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj/s-hing8blm99-0axicur-b87x3203514v2my3ph6ryxug0",
-    "target/debug/incremental/rust_game_dev_env-3kpilshyudimj",
-    "target/debug/incremental/rust_game_dev_env-3r7qudglervb1/s-hing8blkuo-0xsxcjj-working/dep-graph.part.bin",
-    "target/debug/incremental/rust_game_dev_env-3r7qudglervb1/s-hing8blkuo-0xsxcjj.lock",
+    "target/debug/deps/rust_game_dev_env.diw9f8cwyueh4fovlp518mrcf.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.ay211ubj8c0qrcx42t44j1rpe.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.d43e4gjkdiub1kj6p3ayr3avi.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.cr8ildf94i1355luddhj8xukc.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.afrlrw77oav1tk7ikpkudsh43.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.9u6vgcc8l4csnqrcqehj63fs8.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.ajnrtpn8rrbgqyttfyw16dwex.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.9el8l6ha4x9gj44t7irb2mfvc.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.30f62c1wg36tsoi7pdx4hqprx.0ysjc1v.rcgu.o",
+    "target/debug/deps/rust_game_dev_env.2sdvlda9splijg69337d2j9p9.0ysjc1v.rcgu.o",
+    "obsidian_docs/screenshots/concept_01.png",
     "obsidian_docs/screenshots/main_01.png",
     "Pasted image 20260518110914.png",
     "Pasted image 20260518110916.png"
