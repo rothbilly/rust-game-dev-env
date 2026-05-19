@@ -1,4 +1,4 @@
-![](main_01.png)
+![](obsidian_docs/screenshots/main_01.png)
 
 # Proyecto Rust Macroquad
 
@@ -16,7 +16,7 @@ Lo mas importante es **aprender** y compartir el **conocimento**
 
 # El juego - Proyecto macroware32.exe
 
-![](concept_01.png)
+![](obsidian_docs/screenshots/concept_01.png)
 
 [Figma del proyecto](https://www.figma.com/design/LohWmjqQy6kBqVcYNpzOdb/RustMacroquadGame?node-id=4-2&t=YfUyBfRTBfSaeeAH-1)
 
@@ -29,7 +29,7 @@ El objetivo del juego es conseguir el score mas grande y desbloquear  y completa
 los proyectos son minijuegos que consumen cantidades imposibles de recursos (gemas, tokens, inputs) y el premio es completarlos.
 ### Loop de juego
 
-![](scheme_01.png)
+![](obsidian_docs/screenshots/scheme_01.png)
 
 ### Estetica
 
