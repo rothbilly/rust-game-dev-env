@@ -32,8 +32,33 @@
               "icon": "lucide-file",
               "title": "README"
             }
+          },
+          {
+            "id": "78c9f15b182fb601",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "obsidian_docs/Architecture.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Architecture"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -106,7 +131,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "obsidian_docs/Architecture.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -116,7 +141,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de README"
+              "title": "Enlaces entrantes de Architecture"
             }
           },
           {
@@ -210,22 +235,22 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "1ded06ddf5ace32d",
+  "active": "78c9f15b182fb601",
   "lastOpenFiles": [
-    "target/release/deps/rust_game_dev_env.pdb",
-    "target/release/deps/rust_game_dev_env.exe",
-    "target/release/deps/rustcl6zQgY/libwinnow-35c0f76034d733cf.rlib",
-    "target/release/deps/rustcl6zQgY/libhashbrown-ae9b2981cd0fc04e.rlib",
-    "target/release/deps/rustcl6zQgY/libindexmap-85d5ee64ebf63897.rlib",
-    "target/release/deps/rustcl6zQgY/libserde_spanned-d5aac052c1de4dea.rlib",
-    "target/release/deps/rustcl6zQgY/libtoml_edit-8a520d40db6b18f6.rlib",
-    "target/release/deps/rustcl6zQgY/libtoml-a73b248908b58fd0.rlib",
-    "target/release/deps/rustcl6zQgY/libbincode-3f2e2ea926ed81ea.rlib",
-    "target/release/deps/rustcl6zQgY/libunicode_ident-cfc0f5df9980d9ef.rlib",
-    "target/release/deps/rustcl6zQgY/libtypeid-ac6164962efdf3ea.rlib",
+    "README.md",
+    "obsidian_docs/Architecture.md",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hioch83n80-05x0jel-aj4uvp5hmn3tclcaw78chi7w2/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hioch83n80-05x0jel-aj4uvp5hmn3tclcaw78chi7w2/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hioch83n80-05x0jel-aj4uvp5hmn3tclcaw78chi7w2/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hioch83n80-05x0jel-aj4uvp5hmn3tclcaw78chi7w2",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hioch83gt3-1jwpkf7-working/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hioch83gt3-1jwpkf7-working/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hioch83gt3-1jwpkf7-working/dep-graph.part.bin",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hioch83gt3-1jwpkf7-working/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hioch83gt3-1jwpkf7-working",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hioch83gt3-1jwpkf7.lock",
     "obsidian_docs/main_canvas.canvas",
     "obsidian_docs/screenshots/scheme_01.png",
-    "README.md",
     "obsidian_docs/screenshots/concept_01.png",
     "obsidian_docs/screenshots/main_01.png",
     "Pasted image 20260518110914.png",

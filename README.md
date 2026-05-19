@@ -54,6 +54,10 @@ todo!()
 ### Arquitectura de aplicación
 ![](main_canvas.canvas)
 
+
+[[]]
+
+
 ### Dependencias
 
 Listar las dependencias en `Cargo.toml` y su uso.
