@@ -1,36 +1,31 @@
-pub mod entities {}
+pub mod core {
+    pub mod app;
+    pub mod game;
+    pub mod rendering {
+        pub mod letterbox;
+    }
+}
+
+
+pub mod data {
+    pub mod inspectable;
+    pub mod settings;
+}
+
+pub mod mini_games {
+    pub mod test_game;
+}
 
 pub mod editor {
     pub mod constants;
     pub mod inspector;
-    pub mod ui;
+    pub mod ui_kit;
 }
 
-pub mod tools {
+pub mod tooling {
     pub mod mesh_tools;
-    pub mod utils {
-        pub mod serialization;
-    }
+    pub mod serialization;
+    pub mod macros;
+    
 }
 
-pub mod data {
-    pub mod serializables;
-    pub mod settings;
-}
-
-pub mod core {
-    pub mod app;
-    pub mod game;
-}
-
-pub mod rendering {
-    pub mod letterbox;
-}
-
-pub mod games {
-    pub mod test_game;
-}
-
-pub mod macros {
-    pub mod rules;
-}

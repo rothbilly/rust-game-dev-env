@@ -6,12 +6,14 @@ use macroquad::{input, prelude::*};
 
 use egui_macroquad::*;
 
+
+use rust_game_dev_env as app_lib;
 //crate imports
-use rust_game_dev_env::core::game::GameLoop;
-use rust_game_dev_env::data::settings::{SerializeMode, Settings};
-use rust_game_dev_env::editor::constants::*;
-use rust_game_dev_env::editor::inspector::EventInspector;
-use rust_game_dev_env::games::test_game::TestGame;
+use app_lib::core::game::GameLoop;
+use app_lib::data::settings::{SerializeMode, Settings};
+use app_lib::editor::constants::*;
+use app_lib::editor::inspector::EventInspector;
+use app_lib::mini_games::test_game::TestGame;
 
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(|| Mutex::new(Settings::new()));
 
