@@ -54,10 +54,6 @@ todo!()
 ### Arquitectura de aplicación
 ![](main_canvas.canvas)
 
-
-[[]]
-
-
 ### Dependencias
 
 Listar las dependencias en `Cargo.toml` y su uso.
@@ -83,5 +79,23 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | Api docs                 | https://docs.rs/crate/macroquad/0.4.14                            |
 | Rut by example           | https://doc.rust-lang.org/rust-by-example/custom_types.html       |
 | Rust book                | https://doc.rust-lang.org/book/title-page.html                    |
+### Comands
+
+Compilar y ejecutar
+
+```
+cargo run
+```
+
+Compilar release optimizado
+
+```
+cargo build --release
+```
 
 
+Compilar API Docs
+
+```
+cargo doc --no-deps --open
+```

@@ -1,11 +1,12 @@
 pub mod core {
     pub mod app;
     pub mod game;
+    pub mod ui;
+
     pub mod rendering {
         pub mod letterbox;
     }
 }
-
 
 pub mod data {
     pub mod inspectable;

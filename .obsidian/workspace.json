@@ -39,7 +39,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "obsidian_docs/Architecture.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -54,7 +54,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Architecture"
+              "title": "README"
             }
           },
           {
@@ -75,7 +75,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -148,7 +148,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "obsidian_docs/main_canvas.canvas",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -158,7 +158,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de main_canvas"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -226,7 +226,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "2b6d4612f42eed78",
+            "id": "d6579da56929a02f",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -239,7 +239,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 353.5
+    "width": 541.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -252,22 +252,22 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "850e80ce5e8a407c",
+  "active": "78c9f15b182fb601",
   "lastOpenFiles": [
-    "target/debug/deps/rustcnmXt1T/symbols.o",
-    "target/debug/deps/rustcnmXt1T/linker-arguments",
-    "target/debug/deps/rustcnmXt1T",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/thin-lto-past-keys.bin",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/etzwdg21859vcq670l04ixrn0.pre-lto.bc",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/etzwdg21859vcq670l04ixrn0.o",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/eljvwq1qbekgk4c6x6u9mmnzi.pre-lto.bc",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/eljvwq1qbekgk4c6x6u9mmnzi.o",
-    "target/debug/incremental/rust_game_dev_env-2s80u2661jjhg/s-hipd1fo0ob-11uyqmo-8var7kpwc1av7lolou71kkdhr/dyegitgntnzdwcfh47qg9gjiy.pre-lto.bc",
-    "README.md",
     "obsidian_docs/Architecture.md",
+    "README.md",
+    "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
     "obsidian_docs/main_canvas.canvas",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6",
+    "target/debug/deps/librust_game_dev_env-7aef4ede08e64aaf.rmeta",
+    "target/debug/deps/librust_game_dev_env-97a405be2c4fe13c.rmeta",
     "obsidian_docs/screenshots/scheme_01.png",
     "obsidian_docs/screenshots/concept_01.png",
     "obsidian_docs/screenshots/main_01.png",
