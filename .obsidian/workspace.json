@@ -239,7 +239,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 541.5
+    "width": 326.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -254,20 +254,21 @@
   },
   "active": "78c9f15b182fb601",
   "lastOpenFiles": [
+    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/dep-graph.part.bin",
+    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working",
+    "target/debug/incremental/rust_game_dev_env-2ijeub7zdc62l/s-hiphhddkts-1v1zp7h.lock",
+    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm",
+    "target/debug/incremental/rust_game_dev_env-2ke2nf58ggxze/s-hiphhdaz05-0ifpmuz-18866plik4fuvuq1232djtowc/work-products.bin",
     "obsidian_docs/Architecture.md",
     "README.md",
     "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
     "obsidian_docs/main_canvas.canvas",
-    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-0vpeqne2i2d8m/s-hipemix8sa-1c8gys5-1em2253x5as92gnt53igab802",
-    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-2oyzmpqwwl5kb/s-hipemix5nf-0tbb9zh-dal1a825uceugla7j7mas87j6",
-    "target/debug/deps/librust_game_dev_env-7aef4ede08e64aaf.rmeta",
-    "target/debug/deps/librust_game_dev_env-97a405be2c4fe13c.rmeta",
     "obsidian_docs/screenshots/scheme_01.png",
     "obsidian_docs/screenshots/concept_01.png",
     "obsidian_docs/screenshots/main_01.png",

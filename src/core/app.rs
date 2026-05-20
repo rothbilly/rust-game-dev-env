@@ -28,6 +28,4 @@ impl App {
 }
 
 
-trait Child{
-    fn get_parent_struct<T>(&mut self) -> Option<T>;
-} 
+
