@@ -29,6 +29,10 @@ pub mod rendering {
 
 pub mod games {
     pub mod test_game;
+    pub mod macrowareexe;
+
+    pub use test_game::TestGame;
+    pub use macrowareexe::MacrowareExe;
 }
 
 pub mod macros {

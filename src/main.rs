@@ -1,4 +1,4 @@
-use std::sync::{LazyLock, Mutex};
+use std::sync::{LazyLock, Mutex}; // For async.
 
 use macroquad::color::colors;
 use macroquad::ui::{hash, root_ui, widgets::Window};
@@ -11,10 +11,18 @@ use rust_game_dev_env::core::game::GameLoop;
 use rust_game_dev_env::data::settings::{SerializeMode, Settings};
 use rust_game_dev_env::editor::constants::*;
 use rust_game_dev_env::editor::inspector::EventInspector;
-use rust_game_dev_env::games::test_game::TestGame;
+// use rust_game_dev_env::games::test_game::TestGame;
+// use rust_game_dev_env::games::macroware::Macroware;
+use rust_game_dev_env::games::*;
 
+/*
+* static = eternal lifetime
+* LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
+* Mutex = Can only be edited under a lock. Avoids race conditions.
+*/
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(|| Mutex::new(Settings::new()));
 
+// This struct is from Macroquad and it's used to set parameters of the window.
 fn app_conf() -> Conf {
     let settings = GLOB_SETTINGS.lock().unwrap().load_toml();
 
@@ -27,126 +35,34 @@ fn app_conf() -> Conf {
     }
 }
 
+fn initialize_and_ready<T>() -> Box<T>
+where
+    T : GameLoop + Default + 'static
+{
+    let mut game = Box::new(T::default());
+    game._ready();
+    game
+}
+
 #[macroquad::main(app_conf)]
 async fn main() {
-    const WORLD_UP: Vec3 = vec3(0.0, 1.0, 0.0);
+    let mut game = initialize_and_ready::<MacrowareExe>();
 
-    let mut camera_pos: Vec3 = vec3(-20., 15., 0.);
-    let camera_target: Vec3 = vec3(0., 0., 0.);
+    loop { // App loop
+        let delta = get_frame_time();
 
-    let mut input_01: String = "sample".to_owned();
-    let mut test_game: Box<TestGame> = Box::from(TestGame::default());
-    test_game._ready();
+        game._process_input();
+        game._update(delta);
+        game._render();
 
-    loop {
-        let _delta = get_frame_time();
-
-        clear_background(LIGHTGRAY);
-
-        //passing camera_pos as mutable reference &mut Vec3 type ()
-        update_3d_camera_pos(&mut camera_pos, &camera_target);
-        draw_3d_space();
-        set_default_camera();
-
-        //test_game._update(delta);
-        draw_2d_space();
-        draw_editor_space(&mut input_01);
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();
             break;
         }
 
-        draw_egui();
-
         next_frame().await;
     }
-}
-
-const CAM_VELOCITY: f32 = 0.2;
-
-fn update_3d_camera_pos(_camera_pos: &mut Vec3, _camera_target: &Vec3) {
-    let _facing_dir: Vec3 = *_camera_target - *_camera_pos;
-
-    let mut camera_dir = Vec3::ZERO;
-
-    if is_key_down(KeyCode::A) {
-        camera_dir.z += 1.0;
-    } else if is_key_down(KeyCode::D) {
-        camera_dir.z -= 1.0
-    }
-
-    if is_key_down(KeyCode::W) {
-        camera_dir.x += 1.0;
-    } else if is_key_down(KeyCode::S) {
-        camera_dir.x -= 1.0
-    }
-
-    *_camera_pos += camera_dir * CAM_VELOCITY;
-
-    set_camera(&Camera3D {
-        position: *_camera_pos as Vec3,
-        up: vec3(0., 1., 0.),
-        target: vec3(0., 0., 0.),
-        projection: Projection::Perspective,
-        ..Default::default()
-    });
-}
-
-fn draw_3d_space() {
-    // Going 3d!
-
-    draw_grid(20, 1., BLACK, GRAY);
-
-    draw_cube_wires(vec3(0., 1., -6.), vec3(2., 2., 2.), DARKGREEN);
-    draw_cube_wires(vec3(0., 1., 6.), vec3(2., 2., 2.), DARKBLUE);
-    draw_cube_wires(vec3(2., 1., 2.), vec3(2., 2., 2.), YELLOW);
-    draw_sphere(vec3(-8., 0., 0.), 1., None, BLUE);
-}
-
-fn draw_2d_space() {
-    //draw_grid(120, 160., DARKGRAY, DARKPURPLE);
-    draw_hexagon(
-        mouse_position().0,
-        mouse_position().1,
-        if input::is_mouse_button_down(MouseButton::Left) {
-            8.
-        } else {
-            6.
-        },
-        2.,
-        input::is_mouse_button_down(MouseButton::Left),
-        if input::is_mouse_button_down(MouseButton::Left) {
-            colors::DARKBLUE
-        } else {
-            DARKBLUE
-        },
-        if input::is_mouse_button_down(MouseButton::Left) {
-            BLUE
-        } else {
-            DARKBLUE
-        },
-    );
-    //draw_text("Hello, Macroquad!", 20.0, 20.0, 30.0, DARKGRAY);
-}
-
-fn draw_editor_space(_input: &mut String) {
-    EventInspector::draw();
-
-    let _window_status = Window::new(
-        hash!(),
-        vec2(1280. - PANEL_WIDTH - GLOB_MARGIN, 20.),
-        vec2(PANEL_WIDTH, 100.),
-    )
-    .label("Inspector")
-    .movable(true)
-    .close_button(true)
-    .titlebar(true)
-    .ui(&mut root_ui(), |ui| {
-        ui.editbox(hash!(), vec2(PANEL_WIDTH - PANEL_MARGIN, 80.), _input);
-
-        ui.get_bool(hash!("Inspector"));
-    });
 }
 
 fn on_close_application() {
@@ -157,12 +73,3 @@ fn on_close_application() {
         .save_with_mode(SerializeMode::TOML);
 }
 
-fn draw_egui() {
-    //egui sample
-    egui_macroquad::ui(|egui_ctx| {
-        egui::Window::new("egui  macroquad").show(egui_ctx, |ui| {
-            ui.label("Test");
-        });
-    });
-    egui_macroquad::draw();
-}
