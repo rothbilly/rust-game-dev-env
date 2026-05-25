@@ -11,14 +11,13 @@ pub struct Game{
 }
 
 impl Game {
+
+    /// Create a new game instance
     pub fn new(base_app: App, score: u32) -> Self {
         Self { base_app, score }
     }
     
-    /// .Create a new game instance
-    fn create() -> Self {
-        Game::new(App::default(),  0)
-    }
+
 }
 
 
