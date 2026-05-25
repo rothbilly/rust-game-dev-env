@@ -15,6 +15,7 @@ pub mod data {
     pub mod serialization;
     pub mod inspectable;
     pub mod settings;
+    pub mod assets;
 }
 
 /// App Inspectors & Debuggers
