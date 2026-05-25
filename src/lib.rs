@@ -12,6 +12,7 @@ pub mod core {
 
 /// Data model, resources, loading unloading assets, serialization and managing files.
 pub mod data {
+    pub mod serialization;
     pub mod inspectable;
     pub mod settings;
 }
@@ -34,7 +35,7 @@ pub mod mini_games {
 /// Helpers, Macros and external toolings
 pub mod tooling {
     pub mod mesh_tools;
-    pub mod serialization;
+    
     pub mod macros;
     
 }

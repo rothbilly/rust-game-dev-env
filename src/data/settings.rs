@@ -4,7 +4,7 @@ use std::path::Path;
 use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
-use crate::tooling::serialization::*;
+use crate::data::serialization::*;
 
 const TOML_PATH_STR: &str = ".app/settings.toml";
 
