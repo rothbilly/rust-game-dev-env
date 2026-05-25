@@ -65,8 +65,8 @@
               "state": {
                 "file": "obsidian_docs/main_canvas.canvas",
                 "viewState": {
-                  "x": 219.0040187825533,
-                  "y": -780.082865962811,
+                  "x": -628.1814092035529,
+                  "y": -121.16086641806179,
                   "zoom": -0.3086814493548386
                 }
               },
@@ -75,7 +75,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -148,7 +148,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "obsidian_docs/main_canvas.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -158,7 +158,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de README"
+              "title": "Enlaces entrantes de main_canvas"
             }
           },
           {
@@ -252,21 +252,21 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "78c9f15b182fb601",
+  "active": "850e80ce5e8a407c",
   "lastOpenFiles": [
-    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/dep-graph.part.bin",
-    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-00f00s5wj5o9p/s-hiphhddku2-1xi2nvt-working",
-    "target/debug/incremental/rust_game_dev_env-2ijeub7zdc62l/s-hiphhddkts-1v1zp7h.lock",
-    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-09g1rp8vke4gy/s-hiphhdazsj-1cdb22z-5heiqz5orvepl199n652nxhmm",
-    "target/debug/incremental/rust_game_dev_env-2ke2nf58ggxze/s-hiphhdaz05-0ifpmuz-18866plik4fuvuq1232djtowc/work-products.bin",
-    "obsidian_docs/Architecture.md",
+    "target/debug/incremental/rust_game_dev_env-08nzdcgvmt6a7/s-hiuw7xvtqe-1hiqq3k-ank4r7j2pm6mihwpy6c2rousj/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-08nzdcgvmt6a7/s-hiuw7xvtqe-1hiqq3k-ank4r7j2pm6mihwpy6c2rousj/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-08nzdcgvmt6a7/s-hiuw7xvtqe-1hiqq3k-ank4r7j2pm6mihwpy6c2rousj/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-08nzdcgvmt6a7/s-hiuw7xvtqe-1hiqq3k-ank4r7j2pm6mihwpy6c2rousj",
+    "target/debug/incremental/rust_game_dev_env-3l6z9vaedkno1/s-hiuw7xvq72-1flywt0-2s6105j2p3aivoyuko38jsrpm/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-3l6z9vaedkno1/s-hiuw7xvq72-1flywt0-2s6105j2p3aivoyuko38jsrpm/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-3l6z9vaedkno1/s-hiuw7xvq72-1flywt0-2s6105j2p3aivoyuko38jsrpm/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-3l6z9vaedkno1/s-hiuw7xvq72-1flywt0-2s6105j2p3aivoyuko38jsrpm",
+    "target/debug/incremental/rust_game_dev_env-3l6z9vaedkno1/s-hiuw7xvq72-1flywt0-working/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-3l6z9vaedkno1/s-hiuw7xvq72-1flywt0-working/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-3l6z9vaedkno1/s-hiuw7xvq72-1flywt0-working/dep-graph.part.bin",
     "README.md",
+    "obsidian_docs/Architecture.md",
     "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
     "obsidian_docs/main_canvas.canvas",
     "obsidian_docs/screenshots/scheme_01.png",

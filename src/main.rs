@@ -35,7 +35,7 @@ fn app_conf() -> Conf {
 
 fn initialize_and_ready<T>() -> Box<T>
 where
-    T: GameLoop + Default + 'static,
+    T: GameLoop + Default + 'static, // 'static is use to define that this object has an static lifecycle
 {
     let mut game = Box::new(T::default());
     game._ready();

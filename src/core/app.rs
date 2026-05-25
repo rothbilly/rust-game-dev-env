@@ -1,16 +1,7 @@
 
 use macroquad::prelude::*;
 
-
-
-#[derive(Default)]
-pub enum AppMode {
-    #[default]
-    Mode2D,
-    Mode3D,
-    ModeUI
-}
-
+/// # The App Base Module
 
 #[derive(Default)]
 pub struct App{
@@ -27,5 +18,16 @@ impl App {
     }
 }
 
+
+
+/// # App Mode 
+/// Define if the app is used for 2D or 3D Rendering or as editor UI
+#[derive(Default)]
+pub enum AppMode {
+    #[default]
+    Mode2D,
+    Mode3D,
+    ModeUI
+}
 
 
