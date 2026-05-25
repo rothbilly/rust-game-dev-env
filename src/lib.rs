@@ -29,14 +29,12 @@ pub mod editor {
 pub mod mini_games {
     pub mod test_game;
     pub mod macrowareexe;
-    pub use test_game::TestGame;
-    pub use macrowareexe::MacrowareExe;
 }
 
 /// Helpers, Macros and external toolings
-pub mod tooling {
+pub mod toolbox {
     pub mod mesh_tools;
-    
     pub mod macros;
+    pub mod file_reader;
     
 }
