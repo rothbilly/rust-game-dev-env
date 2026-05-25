@@ -18,6 +18,12 @@ pub mod data {
     pub mod assets;
 }
 
+/// Virtual Games 
+pub mod mini_games {
+    pub mod main_game;
+    pub mod macrowareexe;
+}
+
 /// App Inspectors & Debuggers
 pub mod editor {
     pub mod constants;
@@ -25,11 +31,7 @@ pub mod editor {
     pub mod ui_kit;
 }
 
-/// Virtual Games 
-pub mod mini_games {
-    pub mod test_game;
-    pub mod macrowareexe;
-}
+
 
 /// Helpers, Macros and external toolings
 pub mod toolbox {

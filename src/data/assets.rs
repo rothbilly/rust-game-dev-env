@@ -18,7 +18,6 @@ pub struct AssetWrapper {
 }
 
 
-
 pub struct Resource {
     pub path: PathBuf,
     pub uuid: u128,

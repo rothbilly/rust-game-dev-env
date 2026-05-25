@@ -40,7 +40,7 @@ pub trait ISerializableData: Serialize + Default {
         };
         
         let bytes = bincode::serialize(self)?;
-        fs::write(_path.as_ref(), bytes);
+        fs::write(_path.as_ref(), bytes)?;
         Ok(())
     }
 
