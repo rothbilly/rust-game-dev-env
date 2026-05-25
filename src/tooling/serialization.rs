@@ -1,4 +1,3 @@
-use egui_macroquad::egui::util::undoer::Settings;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -16,7 +15,7 @@ trait SerializableData: serde::Serialize {
         mode: SerializeMode,
         path: &Path,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let data = match mode {
+        let _data = match mode {
             SerializeMode::JSON => self.save_to_json(path)?,
             _ => todo!()
         };

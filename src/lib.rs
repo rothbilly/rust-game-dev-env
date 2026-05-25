@@ -15,6 +15,10 @@ pub mod data {
 
 pub mod mini_games {
     pub mod test_game;
+    pub mod macrowareexe;
+
+    pub use test_game::TestGame;
+    pub use macrowareexe::MacrowareExe;
 }
 
 pub mod editor {
@@ -29,4 +33,3 @@ pub mod tooling {
     pub mod macros;
     
 }
-

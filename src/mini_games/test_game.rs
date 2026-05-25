@@ -10,8 +10,6 @@ const SCR_H: f32 = 20.0;
 
 
 
-
-
 #[derive(Default)]
 pub struct TestGame {
     base_game: Game,
@@ -50,6 +48,10 @@ impl GameLoop for TestGame {
 
         println!("game ready");
         self
+    }
+
+    fn _process_input(&mut self) {
+        
     }
     
     fn _update(&mut self, _delta: f32) {
@@ -132,8 +134,10 @@ impl GameLoop for TestGame {
             self.platform_height,
             DARKPURPLE,
         );
+    }
 
-        
+    fn _render(&mut self) {
+
     }
 }
 

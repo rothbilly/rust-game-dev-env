@@ -17,6 +17,7 @@ pub enum SerializeMode {
     RON,
 }
 
+// Derive is "automatic" code. Using default implementations.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
     volume: f32,
@@ -24,6 +25,7 @@ pub struct Settings {
     pub window_w: i32,
 }
 
+// This is akin to an empty constructor.
 impl Default for Settings {
     fn default() -> Self {
         Settings::new()
@@ -182,6 +184,7 @@ impl Settings {
         }
     }
 
+    // Getters. Notice that it does not return a reference.
     pub fn volume(&self) -> f32 {
         self.volume
     }
