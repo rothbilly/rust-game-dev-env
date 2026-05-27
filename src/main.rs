@@ -44,15 +44,20 @@ where
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    let mut game = initialize_and_ready::<MacrowareExe>();
+    let mut games  = vec![
+        initialize_and_ready::<MacrowareExe>()
+    ];
+
 
     loop {
         // App loop
         let delta = get_frame_time();
 
-        game._process_input();
-        game._update(delta);
-        game._render();
+        for  game in games.iter_mut(){
+            game._process_input();
+            game._update(delta);
+            game._render();
+        }
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();
