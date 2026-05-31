@@ -5,7 +5,7 @@ use egui_macroquad::*;
 //crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::game::GameLoop;
-use game_lib::data::settings::{Settings};
+use game_lib::data::{settings::Settings, serialization::*};
 use game_lib::mini_games::*;
 /*
 * static = eternal lifetime
@@ -61,6 +61,6 @@ fn on_close_application() {
     GLOB_SETTINGS
         .lock()
         .unwrap()
-        .save_with_mode(SerializeMode::TOML);
+        .save();
 }
 
