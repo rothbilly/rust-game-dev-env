@@ -15,6 +15,7 @@ use rust_game_dev_env::editor::inspector::EventInspector;
 // use rust_game_dev_env::games::macroware::Macroware;
 use rust_game_dev_env::games::*;
 
+use std::time::Instant;
 /*
 * static = eternal lifetime
 * LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
@@ -48,7 +49,8 @@ where
 async fn main() {
     let mut game = initialize_and_ready::<MacrowareExe>();
     loop { // App loop
-        let delta = get_frame_time();
+        let mut delta = get_frame_time();
+        delta = delta.max(0.0).min(0.1);
 
         game._process_input();
         game._update(delta);
