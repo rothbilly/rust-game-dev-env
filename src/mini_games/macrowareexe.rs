@@ -8,16 +8,21 @@ use crate::core::game::{GameLoop};
 use crate::{editor::constants::*};
 use crate::editor::inspector::EventInspector;
 
+use crate::gameobjects::gameobject::*;
+
+use std::collections::HashMap;
+
 #[derive(Default)]
 pub struct MacrowareExe {
     background_color : Color,
     change_background : bool,
-    camera : Camera3D,
+    camera : Camera3D, // Camera could be in its own "substruct"
     camera_dir : Vec3,
-    up: bool,
+    up: bool, // Same as input handling.
     down : bool,
     left: bool,
     right: bool,
+    game_objects : HashMap<String, Box<dyn GameObject>>,
 }
 
 impl GameLoop for MacrowareExe {
@@ -28,7 +33,20 @@ impl GameLoop for MacrowareExe {
         self.camera.up = vec3(0., 1., 0.);
         self.camera_dir = Vec3::ZERO;
         self.camera.projection = Projection::Perspective;
-        
+        self.game_objects = HashMap::new();
+
+        let sphere = Box::new(Sphere::new(vec3(-8., 0., 0.), BLUE, 1.0));
+        let sphere2 = Box::new(Sphere::new(vec3(-4., 0., 0.), RED, 2.0));
+        let cube = Box::new(WireCube::new(vec3(0., 1., -6.), DARKGREEN, vec3(2., 2., 2.)));
+        let cube2 = Box::new(WireCube::new(vec3(0., 1., 6.), DARKBLUE, vec3(2., 2., 2.)));
+        let cube3 = Box::new(WireCube::new(vec3(2., 1., 2.), YELLOW, vec3(2., 2., 2.)));
+
+
+        self.game_objects.insert("sphere".to_string(), sphere);
+        self.game_objects.insert("sphere2".to_string(), sphere2);
+        self.game_objects.insert("cube1".to_string(), cube);
+        self.game_objects.insert("cube2".to_string(), cube2);
+        self.game_objects.insert("cube3".to_string(), cube3);
         self
     }
 
@@ -49,17 +67,37 @@ impl GameLoop for MacrowareExe {
             };
         }
 
-        self.update_camera(delta);
+        for (id, game_object) in &mut self.game_objects {
+            game_object._update(delta);
+        }
+
+
+        let mut sphere = self.game_objects.get_mut("sphere").unwrap();
+        let mut position = sphere.position();
+        if self.up {
+            position.x += 10. * delta;
+        }
+        if self.down {
+            position.x -= 10. * delta;
+        }
+        if self.left{
+            position.z -= 10. * delta;
+        }
+        if self.right{
+            position.z += 10. * delta;
+        }
+        sphere.set_position(position);
     }
 
     fn _render(& mut self) {
         clear_background(self.background_color);
         set_camera(&self.camera);
         draw_grid(20, 1., BLACK, GRAY);
-        draw_cube_wires(vec3(0., 1., -6.), vec3(2., 2., 2.), DARKGREEN);
-        draw_cube_wires(vec3(0., 1., 6.), vec3(2., 2., 2.), DARKBLUE);
-        draw_cube_wires(vec3(2., 1., 2.), vec3(2., 2., 2.), YELLOW);
-        draw_sphere(vec3(-8., 0., 0.), 1., None, BLUE);
+
+
+        for (id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
+            game_object._draw();
+        } 
 
         set_default_camera(); // for 2d
         draw_hexagon(
@@ -83,63 +121,5 @@ impl GameLoop for MacrowareExe {
                 DARKBLUE
             },
         );
-        let mut input_01 = String::from("sample");
-        self.draw_editor_space(&mut input_01);
-        self.draw_egui();
     }
-}
-
-impl MacrowareExe
-{
-    fn update_camera(&mut self, delta : f32) {
-        self.camera_dir = Vec3::ZERO;
-
-        if self.up {
-            self.camera_dir.x += 100.0 * delta
-        }
-
-        if self.down {
-            self.camera_dir.x -= 100.0 * delta
-        }
-
-        if self.left {
-            self.camera_dir.z += 100.0 * delta
-        }
-
-        if self.right {
-            self.camera_dir.z -= 100.0 * delta
-        }
-
-        self.camera.position += self.camera_dir * CAM_VELOCITY;
-    }
-
-    fn draw_editor_space(&mut self, _input: &mut String) {
-        EventInspector::draw();
-
-        let _window_status = Window::new(
-            hash!(),
-            vec2(1280. - PANEL_WIDTH - GLOB_MARGIN, 20.),
-            vec2(PANEL_WIDTH, 100.),
-        )
-        .label("Inspector")
-        .movable(true)
-        .close_button(true)
-        .titlebar(true)
-        .ui(&mut root_ui(), |ui| {
-            ui.editbox(hash!(), vec2(PANEL_WIDTH - PANEL_MARGIN, 80.), _input);
-
-            ui.get_bool(hash!("Inspector"));
-        });
-    }
-
-    fn draw_egui(&mut self) {
-        //egui sample
-        egui_macroquad::ui(|egui_ctx| {
-            egui::Window::new("egui  macroquad").show(egui_ctx, |ui| {
-                ui.label("Test");
-        });
-        });
-        egui_macroquad::draw();
-    }
-
 }

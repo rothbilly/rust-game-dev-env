@@ -6,13 +6,16 @@ use macroquad::{input, prelude::*};
 
 use egui_macroquad::*;
 
-use rust_game_dev_env as app_lib;
 //crate imports
-use app_lib::core::game::GameLoop;
-use app_lib::data::settings::{Settings};
-use app_lib::editor::inspector::EventInspector;
-use app_lib::mini_games::macrowareexe::MacrowareExe;
+use rust_game_dev_env::core::game::GameLoop;
+use rust_game_dev_env::data::settings::{SerializeMode, Settings};
+use rust_game_dev_env::editor::constants::*;
+use rust_game_dev_env::editor::inspector::EventInspector;
+// use rust_game_dev_env::games::test_game::TestGame;
+// use rust_game_dev_env::games::macroware::Macroware;
+use rust_game_dev_env::games::*;
 
+use std::time::Instant;
 /*
 * static = eternal lifetime
 * LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
@@ -35,7 +38,7 @@ fn app_conf() -> Conf {
 
 fn initialize_and_ready<T>() -> Box<T>
 where
-    T: GameLoop + Default + 'static, // 'static is use to define that this object has an static lifecycle
+    T : GameLoop + Default + 'static
 {
     let mut game = Box::new(T::default());
     game._ready();
@@ -44,26 +47,20 @@ where
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    let mut games  = vec![
-        initialize_and_ready::<MacrowareExe>()
-    ];
+    let mut game = initialize_and_ready::<MacrowareExe>();
+    loop { // App loop
+        let mut delta = get_frame_time();
+        delta = delta.max(0.0).min(0.1);
 
+        game._process_input();
+        game._update(delta);
+        game._render();
 
-    loop {
-        // App loop
-        let delta = get_frame_time();
-
-        for  game in games.iter_mut(){
-            game._process_input();
-            game._update(delta);
-            game._render();
-        }
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();
             break;
         }
-
         next_frame().await;
     }
 }
@@ -73,5 +70,6 @@ fn on_close_application() {
     GLOB_SETTINGS
         .lock()
         .unwrap()
-        .save();
+        .save_with_mode(SerializeMode::TOML);
 }
+
