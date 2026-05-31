@@ -10,7 +10,6 @@ pub mod toolbox {
     pub mod utils {
     }
     pub mod macros {
-        pub mod rules;
     }
 }
 
@@ -32,9 +31,10 @@ pub mod gameobjects {
     pub mod gameobject;
 }
 
-pub mod mini_games {
+pub mod games {
     pub mod test_game;
     pub mod macrowareexe;
+
 
     pub use test_game::TestGame;
     pub use macrowareexe::MacrowareExe;
