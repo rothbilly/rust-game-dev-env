@@ -47,7 +47,6 @@ where
 #[macroquad::main(app_conf)]
 async fn main() {
     let mut game = initialize_and_ready::<MacrowareExe>();
-
     loop { // App loop
         let delta = get_frame_time();
 
@@ -60,7 +59,6 @@ async fn main() {
             on_close_application();
             break;
         }
-
         next_frame().await;
     }
 }

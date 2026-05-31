@@ -27,6 +27,10 @@ pub mod rendering {
     pub mod letterbox;
 }
 
+pub mod gameobjects {
+    pub mod gameobject;
+}
+
 pub mod games {
     pub mod test_game;
     pub mod macrowareexe;

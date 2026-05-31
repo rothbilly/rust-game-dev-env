@@ -8,16 +8,19 @@ use crate::core::game::{GameLoop};
 use crate::{editor::constants::*};
 use crate::editor::inspector::EventInspector;
 
+use crate::gameobjects::gameobject::*;
+
 #[derive(Default)]
 pub struct MacrowareExe {
     background_color : Color,
     change_background : bool,
-    camera : Camera3D,
+    camera : Camera3D, // Camera could be in its own "substruct"
     camera_dir : Vec3,
-    up: bool,
+    up: bool, // Same as input handling.
     down : bool,
     left: bool,
     right: bool,
+    test : GameObject
 }
 
 impl GameLoop for MacrowareExe {
@@ -29,6 +32,8 @@ impl GameLoop for MacrowareExe {
         self.camera_dir = Vec3::ZERO;
         self.camera.projection = Projection::Perspective;
         
+        self.test = GameObject::new(-8., 0., 0., BLUE);
+
         self
     }
 
@@ -49,7 +54,19 @@ impl GameLoop for MacrowareExe {
             };
         }
 
-        self.update_camera(delta);
+        if self.up {
+            self.test.x += 10. * delta;
+        }
+        if self.down {
+            self.test.x -= 10. * delta;
+        }
+        if self.left{
+            self.test.z -= 10. * delta;
+        }
+        if self.right{
+            self.test.z += 10. * delta;
+        }
+        // self.update_camera(delta);
     }
 
     fn _render(& mut self) {
@@ -59,7 +76,8 @@ impl GameLoop for MacrowareExe {
         draw_cube_wires(vec3(0., 1., -6.), vec3(2., 2., 2.), DARKGREEN);
         draw_cube_wires(vec3(0., 1., 6.), vec3(2., 2., 2.), DARKBLUE);
         draw_cube_wires(vec3(2., 1., 2.), vec3(2., 2., 2.), YELLOW);
-        draw_sphere(vec3(-8., 0., 0.), 1., None, BLUE);
+        self.test._draw();
+        // draw_sphere(vec3(-8., 0., 0.), 1., None, BLUE);
 
         set_default_camera(); // for 2d
         draw_hexagon(
