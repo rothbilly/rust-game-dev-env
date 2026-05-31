@@ -1,21 +1,12 @@
 use std::sync::{LazyLock, Mutex}; // For async.
-
-use macroquad::color::colors;
-use macroquad::ui::{hash, root_ui, widgets::Window};
-use macroquad::{input, prelude::*};
-
+use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 //crate imports
-use rust_game_dev_env::core::game::GameLoop;
-use rust_game_dev_env::data::settings::{SerializeMode, Settings};
-use rust_game_dev_env::editor::constants::*;
-use rust_game_dev_env::editor::inspector::EventInspector;
-// use rust_game_dev_env::games::test_game::TestGame;
-// use rust_game_dev_env::games::macroware::Macroware;
-use rust_game_dev_env::games::*;
-
-use std::time::Instant;
+use rust_game_dev_env as game_lib; 
+use game_lib::core::game::GameLoop;
+use game_lib::data::settings::{Settings};
+use game_lib::mini_games::*;
 /*
 * static = eternal lifetime
 * LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
