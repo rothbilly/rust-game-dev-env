@@ -28,15 +28,6 @@ fn app_conf() -> Conf {
     }
 }
 
-fn initialize_and_ready<T>() -> Box<T>
-where
-    T : GameLoop + Default + 'static
-{
-    let mut game = Box::new(T::default());
-    game._ready();
-    game
-}
-
 #[macroquad::main(app_conf)]
 async fn main() {
     let mut app = app::App::initialize_and_ready::<MacrowareExe>();

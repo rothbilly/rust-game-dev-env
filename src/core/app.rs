@@ -36,8 +36,13 @@ impl App
         app
     }
 
-    pub fn append_new_sub_app<T>(&mut self) -> App{
-        App::default()
+    pub fn append_new_sub_app<T>(&mut self) -> &mut Self
+    where T:GameLoop + Default + 'static{
+        self.sub_apps.push(Box::new(T::default()));
+        if let Some(new_app) = self.sub_apps.last_mut(){
+            new_app._ready();
+        }
+        self
     }
 
     pub fn _ready(&mut self) -> &mut Self{
