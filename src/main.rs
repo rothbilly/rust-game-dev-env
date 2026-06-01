@@ -3,7 +3,6 @@ use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
-use rust_game_dev_env::core::app::VirtualApp;
 //crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::{game::GameLoop, app};
@@ -40,7 +39,7 @@ where
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    let mut app = app::App::<MacrowareExe>::initialize_and_ready();
+    let mut app = app::App::initialize_and_ready::<MacrowareExe>();
 
     loop { // App loop
         let mut delta = get_frame_time();

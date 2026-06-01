@@ -27,7 +27,7 @@ pub struct TestGame {
 
 
 impl GameLoop for TestGame {
-    fn _ready(&mut self) -> &mut Self {
+    fn _ready(&mut self){
         self.blocks = [[true; BLOCKS_W]; BLOCKS_H];
         self.ball_x = 12.;
         self.ball_y = 7.;
@@ -47,7 +47,6 @@ impl GameLoop for TestGame {
 
 
         println!("game ready");
-        self
     }
 
     fn _process_input(&mut self) {

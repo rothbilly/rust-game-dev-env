@@ -7,18 +7,17 @@ use crate::{core::game::{Game, GameLoop}, games::MacrowareExe};
 /// # The App Base Module
 
 #[derive(Default)]
-pub struct App<T>
-where T :  GameLoop + Default + 'static
+pub struct App
 {
     title: String,
     mode: AppMode,
     is_active: bool,
     rect: Rect,
-    sub_apps: Vec<Box<T>>
+    sub_apps: Vec<Box<dyn GameLoop>>
+
 }
 
-impl<T> App<T>
-where T: GameLoop + Default + 'static
+impl App
 {
     pub fn new() -> Self {
         Self::default()
@@ -28,12 +27,17 @@ where T: GameLoop + Default + 'static
 
     }
 
-    pub fn initialize_and_ready() -> App<T>
+    pub fn initialize_and_ready<T>() -> App
+    where T:GameLoop + Default + 'static
     {
         let mut app = App::default();
         app.sub_apps.push(Box::new(T::default()));
         app._ready();
         app
+    }
+
+    pub fn append_new_sub_app<T>(&mut self) -> App{
+        App::default()
     }
 
     pub fn _ready(&mut self) -> &mut Self{
@@ -43,6 +47,7 @@ where T: GameLoop + Default + 'static
         self
     }
 
+    /// the application proccess ordering
     pub fn _runtime(&mut self , delta_time: f32){
         if self.sub_apps.len() == 0 {return}
 
@@ -60,27 +65,6 @@ where T: GameLoop + Default + 'static
 }
 
 
-
-#[derive(Default)]
-pub struct VirtualApp;
-
-impl GameLoop for VirtualApp {
-    fn _ready(&mut self) -> &mut Self {
-        self
-    }
-
-    fn _process_input(&mut self) {
-        todo!()
-    }
-
-    fn _update(&mut self, _delta: f32) {
-        todo!()
-    }
-
-    fn _render(&mut self) {
-        todo!()
-    }
-}
 
 
 /// # App Mode 

@@ -26,7 +26,7 @@ pub struct MacrowareExe {
 }
 
 impl GameLoop for MacrowareExe {
-    fn _ready(&mut self) -> &mut Self {
+    fn _ready(&mut self){
         self.background_color = LIGHTGRAY;
         self.camera.position = vec3(-20., 15., 0.);
         self.camera.target = vec3(0., 0., 0.);
@@ -47,7 +47,6 @@ impl GameLoop for MacrowareExe {
         self.game_objects.insert("cube1".to_string(), cube);
         self.game_objects.insert("cube2".to_string(), cube2);
         self.game_objects.insert("cube3".to_string(), cube3);
-        self
     }
 
     fn _process_input(&mut self) { 
