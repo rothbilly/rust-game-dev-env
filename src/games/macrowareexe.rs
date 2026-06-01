@@ -8,7 +8,7 @@ use crate::core::game::{GameLoop};
 use crate::{editor::constants::*};
 use crate::editor::inspector::EventInspector;
 
-use crate::entities::gameobject::*;
+use crate::components::gameobject::*;
 
 use std::collections::HashMap;
 
