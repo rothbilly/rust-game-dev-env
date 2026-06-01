@@ -34,8 +34,8 @@ pub fn metadata() -> ShaderMeta {
     }
 }
 
- // #[repr(C)] mimic C data layout
+ // #[repr(C)] mimics and enforce C data layout
 #[repr(C)]
 pub struct Uniforms{
-
+    pub offset: (f32, f32),
 }

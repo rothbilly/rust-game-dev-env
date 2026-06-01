@@ -2,9 +2,11 @@ use std::sync::{LazyLock, Mutex}; // For async.
 use macroquad:: prelude::*;
 use egui_macroquad::*;
 
+
+use rust_game_dev_env::core::app::VirtualApp;
 //crate imports
 use rust_game_dev_env as game_lib; 
-use game_lib::core::game::GameLoop;
+use game_lib::core::{game::GameLoop, app};
 use game_lib::data::{settings::Settings, serialization::*};
 use game_lib::games::*;
 /*
@@ -38,14 +40,14 @@ where
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    let mut game = initialize_and_ready::<MacrowareExe>();
+    let mut app = app::App::<MacrowareExe>::initialize_and_ready();
+
     loop { // App loop
         let mut delta = get_frame_time();
         delta = delta.max(0.0).min(0.1);
 
-        game._process_input();
-        game._update(delta);
-        game._render();
+
+        app._runtime(delta);
 
 
         if is_key_down(KeyCode::Escape) {

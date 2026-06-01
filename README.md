@@ -38,7 +38,6 @@ Se busca un look retro pixelart con estilo similar a juegos de nitrome.
 
 todo!()
 
-
 ### Referencias
 
 | Juego          |     |
