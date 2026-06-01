@@ -23,6 +23,7 @@ pub mod core {
     pub mod game;
     pub mod rendering {
         pub mod letterbox;
+        pub mod shader;
     }
 }
 
