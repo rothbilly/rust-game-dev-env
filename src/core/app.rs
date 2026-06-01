@@ -1,6 +1,8 @@
 
 use macroquad::prelude::*;
 
+use crate::core::game::{Game, GameLoop};
+
 /// # The App Base Module
 
 #[derive(Default)]
@@ -8,14 +10,26 @@ pub struct App{
     title: String,
     mode: AppMode,
     is_active: bool,
-    is_focused: bool,
-    rect: Rect
+    rect: Rect,
+    sub_apps: Vec<Box<GameLoop + Default + 'static>>
 }
 
 impl App {
-    pub fn new(title: String, mode: AppMode,  is_active: bool, is_focused: bool, rect: Rect) -> Self {
-        Self { title, mode, is_active, is_focused, rect }
+    pub fn new() -> Self {
+        Self::default()
     }
+
+    pub fn _initialize(&mut self){
+
+    }
+    pub fn _runtime(&mut self , delta_time: f32){
+
+    }
+
+    pub fn is_main_app(&self) -> bool{
+        self.sub_apps.len() == 0
+    }
+
 }
 
 
@@ -27,7 +41,8 @@ pub enum AppMode {
     #[default]
     Mode2D,
     Mode3D,
-    ModeUI
+    ModeUI,
+    Headless
 }
 
 
