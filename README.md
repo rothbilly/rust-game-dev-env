@@ -29,12 +29,20 @@ los proyectos son minijuegos que consumen cantidades imposibles de recursos (gem
 
 ![](obsidian_docs/screenshots/scheme_01.png)
 
-### Links  del proyecto
+### Gestion del proyecto
 
 - [Figma del proyecto](https://www.figma.com/design/LohWmjqQy6kBqVcYNpzOdb/RustMacroquadGame?node-id=4-2&t=YfUyBfRTBfSaeeAH-1)
 - HackAndPlan
 - Github
 - Demo Page
+
+
+| Web         |     |
+| ----------- | --- |
+| Demo Page   |     |
+| HackAndPlan |     |
+| Github      |     |
+
 
 ### Estética
 

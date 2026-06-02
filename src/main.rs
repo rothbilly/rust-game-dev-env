@@ -5,8 +5,8 @@ use egui_macroquad::*;
 
 //crate imports
 use rust_game_dev_env as game_lib; 
-use game_lib::core::{game::GameLoop, app};
-use game_lib::data::{settings::Settings, serialization::*};
+use game_lib::core::{app};
+use game_lib::data::{settings::Settings};
 use game_lib::games::*;
 /*
 * static = eternal lifetime
@@ -50,9 +50,10 @@ async fn main() {
 
 fn on_close_application() {
     println!("[Application] - Closing!");
-    GLOB_SETTINGS
+    let _ = GLOB_SETTINGS
         .lock()
         .unwrap()
         .save();
+
 }
 

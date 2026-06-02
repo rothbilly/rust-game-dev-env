@@ -71,7 +71,7 @@ impl GameLoop for MacrowareExe {
         }
 
 
-        let mut sphere = self.game_objects.get_mut("sphere").unwrap();
+        let sphere = self.game_objects.get_mut("sphere").unwrap();
         let mut position = sphere.position();
         if self.up {
             position.x += 10. * delta;
