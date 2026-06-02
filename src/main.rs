@@ -30,7 +30,7 @@ fn app_conf() -> Conf {
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    let mut app = app::App::initialize_and_ready::<MacrowareExe>();
+    let mut app = app::App::initialize_and_ready::<TestGame>();
 
     loop { // App loop
         let mut delta = get_frame_time();

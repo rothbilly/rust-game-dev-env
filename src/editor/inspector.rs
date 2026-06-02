@@ -5,6 +5,17 @@ use macroquad::prelude::*;
 
 use crate::{editor::constants::*};
 
+
+
+
+struct Inspector;
+
+
+
+
+
+
+
 pub struct EventInspector;
 
 impl Default for EventInspector {
