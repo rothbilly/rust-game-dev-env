@@ -9,8 +9,6 @@ pub mod toolbox {
     pub mod mesh_tools;
     pub mod utils {
     }
-    pub mod macros {
-    }
 }
 
 pub mod data {
@@ -39,4 +37,12 @@ pub mod games {
 
     pub use test_game::TestGame;
     pub use macrowareexe::MacrowareExe;
+}
+
+
+
+#[test]
+fn test_macro_expansion() {
+    // This will expand a file and ensure it matches the `.expanded.rs` snapshot
+    macrotest::expand("tests/pass/*.rs");
 }

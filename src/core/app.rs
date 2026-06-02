@@ -1,4 +1,5 @@
 
+use egui_macroquad::egui::ahash::HashMap;
 use macroquad::prelude::*;
 
 use crate::core::game::GameLoop;
