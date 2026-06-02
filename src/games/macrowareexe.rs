@@ -1,12 +1,9 @@
 use macroquad::{input, prelude::*};
 use macroquad::color::colors;
-use macroquad::ui::{hash, root_ui, widgets::Window};
 
 use egui_macroquad::*;
 
 use crate::core::game::{GameLoop};
-use crate::{editor::constants::*};
-use crate::editor::inspector::EventInspector;
 
 use crate::components::gameobject::*;
 
@@ -66,7 +63,7 @@ impl GameLoop for MacrowareExe {
             };
         }
 
-        for (id, game_object) in &mut self.game_objects {
+        for (_id, game_object) in &mut self.game_objects {
             game_object._update(delta);
         }
 
@@ -94,7 +91,7 @@ impl GameLoop for MacrowareExe {
         draw_grid(20, 1., BLACK, GRAY);
 
 
-        for (id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
+        for (_id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
             game_object._draw();
         } 
 

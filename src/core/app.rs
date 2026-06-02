@@ -1,8 +1,7 @@
 
-use egui_macroquad::egui::TextStyle::Body;
 use macroquad::prelude::*;
 
-use crate::{core::game::{Game, GameLoop}, games::MacrowareExe};
+use crate::core::game::GameLoop;
 
 /// # The App Base Module
 

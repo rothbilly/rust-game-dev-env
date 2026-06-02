@@ -1,5 +1,4 @@
 
-use macroquad::color::colors;
 use macroquad::prelude::*;
 
 // I don't know what's the best practice but I made Draweable and Updateable as independent traits.
@@ -71,7 +70,7 @@ impl Draweable for Sphere {
 }
 
 impl Updateable for Sphere {
-    fn _update(&mut self, delta : f32){
+    fn _update(&mut self, _delta : f32){
 
     }
 }
@@ -98,7 +97,7 @@ impl Draweable for WireCube {
 }
 
 impl Updateable for WireCube {
-    fn _update(&mut self, delta : f32){
+    fn _update(&mut self, _delta : f32){
         
     }
 }
