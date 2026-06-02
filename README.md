@@ -37,12 +37,12 @@ los proyectos son minijuegos que consumen cantidades imposibles de recursos (gem
 - Demo Page
 
 
-| Web                                                                                                                          |     |
-| ---------------------------------------------------------------------------------------------------------------------------- | --- |
-| Demo Page                                                                                                                    |     |
-| HackAndPlan                                                                                                                  |     |
-| Github                                                                                                                       |     |
-| [Figma del proyecto](https://www.figma.com/design/LohWmjqQy6kBqVcYNpzOdb/RustMacroquadGame?node-id=4-2&t=YfUyBfRTBfSaeeAH-1) |     |
+| Sitio                                                                                                                        | Objetivo                            |
+| ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Demo Page                                                                                                                    | Demo Web del proyecto - Not Working |
+| [HackAndPlan](https://app.hacknplan.com/p/238444/kanban?categoryId=0&boardId=675284)                                         | Project Management                  |
+| [Github](https://github.com/rothbilly/rust-game-dev-env)                                                                     | Github de este proyecto             |
+| [Figma del proyecto](https://www.figma.com/design/LohWmjqQy6kBqVcYNpzOdb/RustMacroquadGame?node-id=4-2&t=YfUyBfRTBfSaeeAH-1) | Disenos y maquetas                  |
 
 
 ### Estética
