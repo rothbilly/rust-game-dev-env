@@ -16,7 +16,6 @@ quad-url = "0.1.2"
 egui-macroquad = {version = "0.17.3"}
 puffin = "0.20.0"
 num-bigint = "0.4.6"
-engine_macros ={ path = "engine_macros"}
 
 [dev-dependencies]
 trybuild = "1.0.116"

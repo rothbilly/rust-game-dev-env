@@ -18,3 +18,6 @@ pub struct VirtualWindow{
     is_focused: bool,
     rect: Rect
 }
+
+
+

@@ -3,6 +3,7 @@
         "egui",
         "macroquad",
         "Macroware",
-        "nanoserde"
+        "nanoserde",
+        "Parentable"
     ]
 }

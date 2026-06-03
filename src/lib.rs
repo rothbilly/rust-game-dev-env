@@ -33,6 +33,7 @@ pub mod components {
 pub mod games {
     pub mod test_game;
     pub mod macrowareexe;
+    pub mod empty_game;
 
 
     pub use test_game::TestGame;

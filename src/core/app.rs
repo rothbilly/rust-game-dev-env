@@ -4,6 +4,10 @@ use macroquad::prelude::*;
 
 use crate::core::game::GameLoop;
 
+
+pub mod virtual_app;
+
+
 /// # The App Base Module
 
 #[derive(Default)]
@@ -13,7 +17,7 @@ pub struct App
     mode: AppMode,
     is_active: bool,
     rect: Rect,
-    sub_apps: Vec<Box<dyn GameLoop>>
+    sub_apps: Vec<Box<dyn GameLoop>>,
 
 }
 
@@ -71,7 +75,6 @@ impl App
 
 
 
-
 /// # App Mode 
 /// Define if the app is used for 2D or 3D Rendering or as editor UI
 #[derive(Default)]
@@ -82,5 +85,4 @@ pub enum AppMode {
     ModeUI,
     Headless
 }
-
 
