@@ -11,7 +11,7 @@ const SCR_H: f32 = 20.0;
 
 #[derive(Default)]
 pub struct TestGame {
-    base_game: Game,
+    _base_game: Game,
     blocks: [[bool; BLOCKS_W]; BLOCKS_H],
     ball_x: f32,
     ball_y: f32,

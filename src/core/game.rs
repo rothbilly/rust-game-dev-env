@@ -5,7 +5,7 @@ use macroquad::prelude::*;
 #[derive(Default)]
 pub struct Game
 {
-    score: u32
+    _score: u32
 }
 
 pub trait  GameLoop{

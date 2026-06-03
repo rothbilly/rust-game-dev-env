@@ -5,9 +5,9 @@ use crate::core::game::{GameLoop};
 
 #[derive(Default)]
 pub struct SampleVirtualApp{
-    title: String,
-    mode: VirtualAppMode,
-    rect: Rect,
+    _title: String,
+    _mode: VirtualAppMode,
+    _rect: Rect,
     is_active: bool,
     base_app: Option<Box<dyn IParentable>>
 }
@@ -33,7 +33,7 @@ impl GameLoop for SampleVirtualApp {
         
         let center = get_text_center("Macro Engine", None, 32, 1.0, 0.);
         
-        let td = draw_text("Macro Engine",
+        draw_text("Macro Engine",
         screen_width()/2. - center.x,
         screen_height()/2. - center.y,
         32.,
