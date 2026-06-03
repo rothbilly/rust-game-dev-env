@@ -7,6 +7,7 @@ use egui_macroquad::*;
 use rust_game_dev_env as game_lib; 
 use game_lib::core::{app};
 use game_lib::data::{settings::Settings};
+use game_lib::core::app::virtual_app::SampleVirtualApp;
 use game_lib::games::*;
 /*
 * static = eternal lifetime
@@ -30,12 +31,11 @@ fn app_conf() -> Conf {
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    let mut app = app::App::initialize_and_ready::<TestGame>();
+    let mut app = app::App::initialize_and_ready::<SampleVirtualApp>();
 
     loop { // App loop
         let mut delta = get_frame_time();
         delta = delta.max(0.0).min(0.1);
-
 
         app._runtime(delta);
 

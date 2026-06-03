@@ -4,7 +4,6 @@ use macroquad::prelude::*;
 
 #[derive(Default)]
 pub struct Game
-
 {
     score: u32
 }

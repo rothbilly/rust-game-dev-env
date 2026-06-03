@@ -18,7 +18,6 @@ pub struct App
     is_active: bool,
     rect: Rect,
     sub_apps: Vec<Box<dyn GameLoop>>,
-
 }
 
 impl App
@@ -27,9 +26,7 @@ impl App
         Self::default()
     }
 
-    pub fn _initialize(&mut self){
-
-    }
+    pub fn _initialize(&mut self){}
 
     pub fn initialize_and_ready<T>() -> App
     where T:GameLoop + Default + 'static
