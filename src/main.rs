@@ -9,7 +9,7 @@ use rust_game_dev_env as game_lib;
 use game_lib::core::{app};
 use game_lib::data::{settings::Settings};
 use game_lib::core::app::virtual_app::SampleVirtualApp;
-use game_lib::games::*;
+
 /*
 * static = eternal lifetime
 * LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.

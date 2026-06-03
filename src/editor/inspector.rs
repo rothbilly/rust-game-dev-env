@@ -1,6 +1,4 @@
 
-use std::default;
-
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 
 use macroquad::prelude::*;
@@ -14,13 +12,6 @@ pub struct EventInspector{
 
     is_visible: bool
 }
-
-impl EventInspector {
-    fn new() -> EventInspector{
-        EventInspector::default()
-    }
-}
-
 
 impl Inspector for EventInspector {
     fn _draw_gui(&self) -> bool{

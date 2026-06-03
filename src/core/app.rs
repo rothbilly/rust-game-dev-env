@@ -1,10 +1,8 @@
 
-use std::any::TypeId;
 
-use egui_macroquad::egui::{TextStyle::Body, ahash::HashMap};
 use macroquad::prelude::*;
 
-use crate::{core::game::GameLoop, editor::inspector::{self, IVisibility, Inspector, InspectorWindow}};
+use crate::{core::game::GameLoop, editor::inspector::{InspectorWindow}};
 
 
 pub mod virtual_app;
@@ -68,6 +66,8 @@ impl App
             app._render();
         }
 
+
+        //Toggle Editor & Inspector Debug
         for inspector in self.inspectors.iter_mut(){
 
             if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){

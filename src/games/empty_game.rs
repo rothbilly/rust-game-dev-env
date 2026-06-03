@@ -1,5 +1,5 @@
 use macroquad::prelude::*;
-use crate::core::game::{Game, GameLoop};
+use crate::core::game::{GameLoop};
 
 
 
