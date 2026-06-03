@@ -40,9 +40,9 @@ impl IPausable for SampleVirtualApp{
     }
 }
 
-// In this moment only works as a tag for some structs, for example get all struct that implement this.
+// Example: In this moment only works as a tag for some structs, for example get all struct that implement this.
 impl IGame for SampleVirtualApp{}
-
+impl IVirtualApp for SampleVirtualApp{}
 
 /// This can be converted in a derive macro as #[derive(IVirtualApp)] that implement the sub traits
 pub trait IGame : GameLoop + IParentable + IPausable{}
