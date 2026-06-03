@@ -5,8 +5,23 @@ use crate::core::game::{GameLoop};
 
 #[derive(Default)]
 pub struct SampleVirtualApp{
+    title: String,
+    mode: VirtualAppMode,
+    rect: Rect,
     is_active: bool,
     base_app: Option<Box<dyn IParentable>>
+}
+
+
+/// # App Mode 
+/// Define if the app is used for 2D or 3D Rendering or as editor UI
+#[derive(Default)]
+pub enum VirtualAppMode {
+    #[default]
+    Mode2D,
+    Mode3D,
+    ModeUI,
+    Headless
 }
 
 

@@ -1,4 +1,6 @@
 
+use std::default;
+
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 
 use macroquad::prelude::*;
@@ -7,31 +9,21 @@ use crate::{editor::constants::*};
 
 
 
+#[derive(Default, Hash)]
+pub struct EventInspector{
 
-struct Inspector;
-
-
-
-
-
-
-
-pub struct EventInspector;
-
-impl Default for EventInspector {
-    fn default() -> Self {
-        Self::new()
-    }
+    is_visible: bool
 }
 
 impl EventInspector {
-    pub fn new() -> Self {
-
-        EventInspector
+    fn new() -> EventInspector{
+        EventInspector::default()
     }
+}
 
 
-    pub fn draw() -> bool {
+impl Inspector for EventInspector {
+    fn _draw_gui(&self) -> bool{
         let window_status = Window::new(hash!(), vec2(GLOB_MARGIN, GLOB_MARGIN), vec2(PANEL_WIDTH, PANEL_HEIGHT))
         .label("Event Menu")
         .movable(true)
@@ -80,5 +72,38 @@ impl EventInspector {
 
     });
     window_status
+    }
+}
+
+
+impl IVisibility for EventInspector{
+    fn is_visible(&self) -> bool {
+        self.is_visible
+    }
+
+    fn set_visible(&mut self, _value: bool) {
+        self.is_visible = _value
+    }
+}
+
+impl InspectorWindow for EventInspector{}
+
+
+
+pub trait InspectorWindow: IVisibility + Inspector{}
+
+pub trait IVisibility{
+    fn is_visible(&self) -> bool;
+    fn set_visible(&mut self, _value: bool);
+}
+
+
+pub trait Inspector {
+    fn _draw_gui(&self) ->bool{
+        false
+    }
+
+    fn _draw_egui(&self){
+
     }
 }

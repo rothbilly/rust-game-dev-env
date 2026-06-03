@@ -3,6 +3,7 @@ use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
+use rust_game_dev_env::editor::inspector::EventInspector;
 //crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::{app};
@@ -32,6 +33,7 @@ fn app_conf() -> Conf {
 #[macroquad::main(app_conf)]
 async fn main() {
     let mut app = app::App::initialize_and_ready::<SampleVirtualApp>();
+    app.add_new_inspector::<EventInspector>();
 
     loop { // App loop
         let mut delta = get_frame_time();

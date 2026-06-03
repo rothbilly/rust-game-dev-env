@@ -1,8 +1,10 @@
 
-use egui_macroquad::egui::ahash::HashMap;
+use std::any::TypeId;
+
+use egui_macroquad::egui::{TextStyle::Body, ahash::HashMap};
 use macroquad::prelude::*;
 
-use crate::core::game::GameLoop;
+use crate::{core::game::GameLoop, editor::inspector::{self, IVisibility, Inspector, InspectorWindow}};
 
 
 pub mod virtual_app;
@@ -13,11 +15,8 @@ pub mod virtual_app;
 #[derive(Default)]
 pub struct App
 {
-    title: String,
-    mode: AppMode,
-    is_active: bool,
-    rect: Rect,
     sub_apps: Vec<Box<dyn GameLoop>>,
+    inspectors: Vec<Box<dyn InspectorWindow>>
 }
 
 impl App
@@ -26,7 +25,6 @@ impl App
         Self::default()
     }
 
-    pub fn _initialize(&mut self){}
 
     pub fn initialize_and_ready<T>() -> App
     where T:GameLoop + Default + 'static
@@ -46,6 +44,13 @@ impl App
         self
     }
 
+
+    pub fn add_new_inspector<T>(&mut self)
+    where T: InspectorWindow + Default + 'static
+    {
+        self.inspectors.push(Box::new(T::default()));
+    }
+
     pub fn _ready(&mut self) -> &mut Self{
         for app in self.sub_apps.iter_mut(){
             app._ready();
@@ -63,6 +68,17 @@ impl App
             app._render();
         }
 
+        for inspector in self.inspectors.iter_mut(){
+
+            if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){
+                inspector.set_visible(!inspector.is_visible());
+            }
+            if inspector.is_visible(){
+                inspector._draw_gui();
+                inspector._draw_egui();
+            } 
+        }
+
     }
 
     pub fn is_main_app(&self) -> bool{
@@ -71,15 +87,4 @@ impl App
 }
 
 
-
-/// # App Mode 
-/// Define if the app is used for 2D or 3D Rendering or as editor UI
-#[derive(Default)]
-pub enum AppMode {
-    #[default]
-    Mode2D,
-    Mode3D,
-    ModeUI,
-    Headless
-}
 
