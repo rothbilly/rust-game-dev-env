@@ -26,7 +26,7 @@ pub enum VirtualAppMode {
 
 
 impl GameLoop for SampleVirtualApp {
-    fn _render(&mut self) {
+    fn _render(&self) {
         clear_background(color::LIGHTGRAY);
 
         draw_text(&format!("FPS: {}", get_fps()), 16., 24., 24., color::RED);

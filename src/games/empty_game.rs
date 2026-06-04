@@ -3,7 +3,6 @@ use crate::core::game::{GameLoop};
 
 
 
-
 #[derive(Default)]
 
 pub struct EmptyGame;
@@ -22,7 +21,7 @@ impl GameLoop for EmptyGame {
 
     }
 
-    fn _render(&mut self) {
+    fn _render(&self) {
 
     }
 }

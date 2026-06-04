@@ -45,9 +45,9 @@ impl App
         self
     }
 
-    pub fn add_sub_app(&mut self, new_app: &trait GameLoop +'static) -> &mut Self
+    pub fn add_sub_app(&mut self, new_app: Box<dyn GameLoop>) -> &mut Self
     {
-        self.sub_apps.push(Box::new(new_app));
+        self.sub_apps.push(new_app);
         self
     }
 

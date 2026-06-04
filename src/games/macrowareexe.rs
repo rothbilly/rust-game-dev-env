@@ -85,7 +85,7 @@ impl GameLoop for MacrowareExe {
         sphere.set_position(position);
     }
 
-    fn _render(& mut self) {
+    fn _render(&self) {
         clear_background(self.background_color);
         set_camera(&self.camera);
         draw_grid(20, 1., BLACK, GRAY);

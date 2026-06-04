@@ -124,7 +124,7 @@ impl GameLoop for TestGame {
         }
     }
 
-    fn _render(&mut self) {
+    fn _render(&self) {
         draw_circle(self.ball_x, self.ball_x, 0.2, RED);
         draw_rectangle(
             self.platform_x - self.platform_width / 2.,

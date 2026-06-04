@@ -19,15 +19,19 @@ pub struct AppLoaderMenu{
 
 impl AppLoaderMenu {
 
-    pub fn load_a(&mut self, _selected: AppList){
-        match _selected {
-            Empty => {
-                self.main_app.add_sub_app(_selected.into());
-             }
-            _ => {}    
+    pub fn load_a(&mut self, selected: AppList){
+        match selected {
+            AppList::Empty(game) => {
+                self.main_app.add_sub_app(Box::new(game));
+            }
+            AppList::Breakout(game) => {
+                self.main_app.add_sub_app(Box::new(game));
+            }
+            AppList::MacrowareExe(game) => {
+                self.main_app.add_sub_app(Box::new(game));
+            }
         }
     }
-    
 }
 
 
