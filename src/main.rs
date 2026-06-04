@@ -3,18 +3,18 @@ use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
-use rust_game_dev_env::editor::inspector::EventInspector;
 //crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::{app};
 use game_lib::data::{settings::Settings};
+use game_lib::editor::inspector::event_inspector::*;
 use game_lib::core::app::virtual_app::SampleVirtualApp;
 
-/*
-* static = eternal lifetime
-* LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
-* Mutex = Can only be edited under a lock. Avoids race conditions.
-*/
+
+
+/// static = eternal lifetime
+/// LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
+/// Mutex = Can only be edited under a lock. Avoids race conditions.
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(|| Mutex::new(Settings::new()));
 
 // This struct is from Macroquad and it's used to set parameters of the window.
@@ -40,7 +40,6 @@ async fn main() {
         delta = delta.max(0.0).min(0.1);
 
         app._runtime(delta);
-
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();

@@ -5,6 +5,8 @@ use macroquad::prelude::*;
 use crate::{core::game::GameLoop, editor::inspector::{InspectorWindow}};
 
 
+
+
 pub mod virtual_app;
 
 
@@ -13,6 +15,7 @@ pub mod virtual_app;
 #[derive(Default)]
 pub struct App
 {
+    editor_visible: bool,
     sub_apps: Vec<Box<dyn GameLoop>>,
     inspectors: Vec<Box<dyn InspectorWindow>>
 }
@@ -34,12 +37,27 @@ impl App
     }
 
     pub fn append_new_sub_app<T>(&mut self) -> &mut Self
-    where T:GameLoop + Default + 'static{
+    where T:GameLoop + Default + 'static {
         self.sub_apps.push(Box::new(T::default()));
         if let Some(new_app) = self.sub_apps.last_mut(){
             new_app._ready();
         }
         self
+    }
+
+    pub fn add_sub_app(&mut self, new_app: &trait GameLoop +'static) -> &mut Self
+    {
+        self.sub_apps.push(Box::new(new_app));
+        self
+    }
+
+    pub fn remove_last_app(&mut self){
+        if self.sub_apps.is_empty(){
+            return
+        } else{
+            let _ = self.sub_apps.pop();
+            println!("Sub app removed from the app list")
+        }
     }
 
 
@@ -56,7 +74,7 @@ impl App
         self
     }
 
-    /// the application proccess ordering
+    /// the application process ordering
     pub fn _runtime(&mut self , delta_time: f32){
         if self.sub_apps.len() == 0 {return}
 
@@ -66,13 +84,16 @@ impl App
             app._render();
         }
 
+        if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::RightAlt){
+            self.editor_visible = !self.editor_visible
+        }
 
+        if !self.editor_visible{return}
         //Toggle Editor & Inspector Debug
         for inspector in self.inspectors.iter_mut(){
 
-            if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){
-                inspector.set_visible(!inspector.is_visible());
-            }
+            //inspector.set_visible(!inspector.is_visible());
+
             if inspector.is_visible(){
                 inspector._draw_gui();
                 inspector._draw_egui();

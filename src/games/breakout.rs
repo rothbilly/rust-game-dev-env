@@ -8,7 +8,6 @@ const SCR_W: f32 = 20.0;
 const SCR_H: f32 = 20.0;
 
 
-
 #[derive(Default)]
 pub struct TestGame {
     _base_game: Game,

@@ -2,9 +2,12 @@
     "cSpell.words": [
         "DARKPURPLE",
         "egui",
+        "gameobject",
         "macroquad",
         "Macroware",
+        "macrowareexe",
         "nanoserde",
-        "Parentable"
+        "Parentable",
+        "titlebar"
     ]
 }
