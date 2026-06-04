@@ -1,8 +1,10 @@
 
 
+use std::fmt::Debug;
+
 use macroquad::prelude::*;
 
-use crate::{core::game::GameLoop, editor::inspector::{InspectorWindow}};
+use crate::{core::game::GameLoop, editor::inspector::{InspectorWindow, app_loader::AppLoaderMenu}};
 
 
 
@@ -64,7 +66,8 @@ impl App
     pub fn add_new_inspector<T>(&mut self)
     where T: InspectorWindow + Default + 'static
     {
-        self.inspectors.push(Box::new(T::default()));
+        self.inspectors.push(Box::new(T::default()))
+
     }
 
     pub fn _ready(&mut self) -> &mut Self{
@@ -107,5 +110,11 @@ impl App
     }
 }
 
+
+impl Debug for App {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("App").field("editor_visible", &self.editor_visible).field("sub_apps", &self.sub_apps.len()).field("inspectors", &self.inspectors.len()).finish()
+    }
+}
 
 

@@ -3,6 +3,7 @@ use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
+use rust_game_dev_env::editor::inspector::app_loader::AppLoaderMenu;
 //crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::{app};
@@ -35,6 +36,12 @@ async fn main() {
     let mut app = app::App::initialize_and_ready::<SampleVirtualApp>();
     app.add_new_inspector::<EventInspector>();
 
+    let _lm = AppLoaderMenu::new(true,
+        Vec2::ZERO,
+        Some(&mut app));
+    
+    app.add_new_inspector::<AppLoaderMenu>();
+
     loop { // App loop
         let mut delta = get_frame_time();
         delta = delta.max(0.0).min(0.1);
@@ -51,8 +58,7 @@ async fn main() {
 
 fn on_close_application() {
     println!("[Application] - Closing!");
-    let _ = GLOB_SETTINGS
-        .lock()
+    let _ = GLOB_SETTINGS        .lock()
         .unwrap()
         .save();
 
