@@ -36,10 +36,6 @@ async fn main() {
     let mut app = app::App::initialize_and_ready::<SampleVirtualApp>();
     app.add_new_inspector::<EventInspector>();
 
-    let _lm = AppLoaderMenu::new(true,
-        Vec2::ZERO,
-        Some(&mut app));
-    
     app.add_new_inspector::<AppLoaderMenu>();
 
     loop { // App loop
@@ -51,6 +47,8 @@ async fn main() {
         if is_key_down(KeyCode::Escape) {
             on_close_application();
             break;
+
+
         }
         next_frame().await;
     }

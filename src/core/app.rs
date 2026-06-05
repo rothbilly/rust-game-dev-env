@@ -1,12 +1,9 @@
 
 
 use std::fmt::Debug;
-
 use macroquad::prelude::*;
 
 use crate::{core::game::GameLoop, editor::inspector::{InspectorWindow, app_loader::AppLoaderMenu}};
-
-
 
 
 pub mod virtual_app;
@@ -67,7 +64,6 @@ impl App
     where T: InspectorWindow + Default + 'static
     {
         self.inspectors.push(Box::new(T::default()))
-
     }
 
     pub fn _ready(&mut self) -> &mut Self{
