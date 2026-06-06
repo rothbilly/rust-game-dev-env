@@ -3,6 +3,7 @@ use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
+use rust_game_dev_env::editor::inspector::Inspector;
 use rust_game_dev_env::editor::inspector::app_loader::AppLoaderMenu;
 //crate imports
 use rust_game_dev_env as game_lib; 
@@ -34,20 +35,28 @@ fn app_conf() -> Conf {
 #[macroquad::main(app_conf)]
 async fn main() {
     let mut app = app::App::initialize_and_ready::<SampleVirtualApp>();
-    app.add_new_inspector::<EventInspector>();
 
-    app.add_new_inspector::<AppLoaderMenu>();
+    let mut ev = EventInspector::default();
+    let mut editor_visible: bool = false;
 
     loop { // App loop
         let mut delta = get_frame_time();
         delta = delta.max(0.0).min(0.1);
+
+
+        if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){
+            editor_visible = !editor_visible;
+        }
+        
+        if editor_visible{
+            ev._draw_gui();
+        }
 
         app._runtime(delta);
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();
             break;
-
 
         }
         next_frame().await;
