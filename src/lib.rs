@@ -8,6 +8,7 @@ pub mod editor {
 pub mod toolbox {
     pub mod mesh_tools;
     pub mod utils {
+        pub mod macro_rules;
     }
 }
 
