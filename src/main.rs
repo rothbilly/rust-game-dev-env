@@ -1,4 +1,7 @@
-use std::sync::{LazyLock, Mutex}; // For async.
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::{LazyLock, Mutex}; 
+// For async.
 use macroquad:: prelude::*;
 use egui_macroquad::*;
 
@@ -7,7 +10,7 @@ use rust_game_dev_env::editor::inspector::Inspector;
 use rust_game_dev_env::editor::inspector::app_loader::AppLoaderMenu;
 //crate imports
 use rust_game_dev_env as game_lib; 
-use game_lib::core::{app};
+use game_lib::core::{app::*};
 use game_lib::data::{settings::Settings};
 use game_lib::editor::inspector::event_inspector::*;
 use game_lib::core::app::virtual_app::SampleVirtualApp;
@@ -34,12 +37,22 @@ fn app_conf() -> Conf {
 
 #[macroquad::main(app_conf)]
 async fn main() {
-    let mut app = app::App::initialize_and_ready::<SampleVirtualApp>();
+
+    // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell
+    let app = Rc::new(RefCell::new(App::initialize_and_ready::<SampleVirtualApp>()));
+    let mut app_mut = app.borrow_mut();
 
     let mut ev = EventInspector::default();
+
+    // let mut app_loader = AppLoaderMenu::new(
+    //     true,
+    //     vec2(0f32, 0f32),
+    //     Some(&mut app_mut));
+
+
     let mut editor_visible: bool = false;
 
-    loop { // App loop
+    loop { // Main loop
         let mut delta = get_frame_time();
         delta = delta.max(0.0).min(0.1);
 
@@ -47,12 +60,11 @@ async fn main() {
         if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){
             editor_visible = !editor_visible;
         }
-        
         if editor_visible{
             ev._draw_gui();
         }
 
-        app._runtime(delta);
+        app_mut._runtime(delta);
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();

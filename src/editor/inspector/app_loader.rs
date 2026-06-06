@@ -15,15 +15,16 @@ enum AppList
 
 
 
-
-pub struct AppLoaderMenu{
+// <'a> defines that main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
+pub struct AppLoaderMenu <'a>{
     is_visible: bool,
     position: Vec2,
-    main_app: Option<&'static mut App>
+    main_app: Option<&'a mut App>
 }
 
-impl AppLoaderMenu {
-    pub fn new(is_visible: bool, position: Vec2, main_app: Option<&'static mut App>) -> Self {
+// impl "lifetime "<'a> struct <'a> 
+impl<'a> AppLoaderMenu<'a> {
+    pub fn new(is_visible: bool, position: Vec2, main_app: Option<&'a mut App>) -> Self {
         Self { is_visible, position, main_app }
     }
 
@@ -52,15 +53,7 @@ impl AppLoaderMenu {
     }
 }
 
-impl AppLoaderMenu{
-    //App should be static for the program lifetime and outlive this inspector 
-    fn setup_app(&mut self, _app: &'static mut App ) -> &mut Self{
-        self.main_app = Some(_app);
-        self
-    }
-}
-
-impl Default for AppLoaderMenu {
+impl<'a> Default for AppLoaderMenu<'a> {
     fn default() -> Self {
         Self { 
             is_visible: true, 
@@ -71,7 +64,7 @@ impl Default for AppLoaderMenu {
 }
 
 
-impl Inspector for AppLoaderMenu {
+impl<'a> Inspector for AppLoaderMenu<'a> {
 
 
     fn _draw_gui(&mut self) -> bool{
@@ -104,7 +97,7 @@ impl Inspector for AppLoaderMenu {
 }
 
 
-impl IVisibility for AppLoaderMenu{
+impl<'a> IVisibility for AppLoaderMenu<'a>{
     fn is_visible(&self) -> bool {
         self.is_visible
     }
@@ -114,4 +107,4 @@ impl IVisibility for AppLoaderMenu{
     }
 }
 
-impl InspectorWindow for AppLoaderMenu{}
+impl<'a> InspectorWindow for AppLoaderMenu<'a>{}
