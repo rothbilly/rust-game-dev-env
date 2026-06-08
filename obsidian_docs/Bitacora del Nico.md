@@ -113,5 +113,15 @@ impl EventDispatcher {
 
 Diseño del sistema de escenas y nodos del motor
 
+
+**Opcion 1**: Comparten la misma raiz, pero el juego esta detro de una base `editor`
+
 ![](arch_03.png)
 
+**Opcion 2**:  Editor y Game en arboles separados
+
+![](arch_04.png)
+
+**Opcion 3** : Editor y game comparten el arbol
+
+![](arch_05.png)
