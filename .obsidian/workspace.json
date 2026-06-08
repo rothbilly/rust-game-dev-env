@@ -49,8 +49,45 @@
               "icon": "lucide-layout-dashboard",
               "title": "main_canvas"
             }
+          },
+          {
+            "id": "df0975fb30616bd4",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "obsidian_docs/screenshots/main_02.png"
+              },
+              "icon": "lucide-image",
+              "title": "main_02"
+            }
+          },
+          {
+            "id": "43ecbdeccc1c9dba",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "obsidian_docs/Bitacora del Nico.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Bitacora del Nico"
+            }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -123,7 +160,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "obsidian_docs/Bitacora del Nico.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +170,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de README"
+              "title": "Enlaces entrantes de Bitacora del Nico"
             }
           },
           {
@@ -227,26 +264,29 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "1ded06ddf5ace32d",
+  "active": "43ecbdeccc1c9dba",
   "lastOpenFiles": [
-    "target/debug/incremental/rust_game_dev_env-1e5xevg1ht4s0/s-hj40ypq8go-1ab3c9t-agst242qpt90tm7caq8h2cs85/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-1e5xevg1ht4s0/s-hj40ypq8go-1ab3c9t-agst242qpt90tm7caq8h2cs85/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-1e5xevg1ht4s0/s-hj40ypq8go-1ab3c9t-agst242qpt90tm7caq8h2cs85/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-1e5xevg1ht4s0/s-hj40ypq8go-1ab3c9t-agst242qpt90tm7caq8h2cs85",
-    "target/debug/deps/librust_game_dev_env-84e7b0089ea21b96.rmeta",
-    "target/debug/incremental/rust_game_dev_env-1eg5zxmu6ek75/s-hj40ypq5hy-1yk2ss2-c2t7osvwq8vzr87zixzipr0tl/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-1eg5zxmu6ek75/s-hj40ypq5hy-1yk2ss2-c2t7osvwq8vzr87zixzipr0tl/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-1eg5zxmu6ek75/s-hj40ypq5hy-1yk2ss2-c2t7osvwq8vzr87zixzipr0tl/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-1eg5zxmu6ek75/s-hj40ypq5hy-1yk2ss2-c2t7osvwq8vzr87zixzipr0tl",
-    "target/debug/deps/librust_game_dev_env-c2b21f6d4a776f2e.rmeta",
-    "target/debug/deps/rust_game_dev_env-84e7b0089ea21b96.d",
+    "obsidian_docs/screenshots/arch_02.png",
+    "obsidian_docs/screenshots/main_02.png",
+    "obsidian_docs/screenshots/arch_01.png",
+    "obsidian_docs/screenshots/concept_01.png",
+    "obsidian_docs/screenshots/scheme_01.png",
+    "obsidian_docs/Bitacora del Nico.md",
     "obsidian_docs/main_canvas.canvas",
     "README.md",
+    "obsidian_docs/screenshots/main_01.png",
+    "target/debug/deps/rustcBKOYPC/symbols.o",
+    "target/debug/deps/rustcBKOYPC/linker-arguments",
+    "target/debug/deps/rustcBKOYPC",
+    "target/debug/incremental/rust_game_dev_env-337n072j0aag7/s-hjactkx1kd-1m48fsh-1jmcwb214tlw4voqwbcx8a5bk/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-337n072j0aag7/s-hjactkx1kd-1m48fsh-1jmcwb214tlw4voqwbcx8a5bk/thin-lto-past-keys.bin",
+    "target/debug/incremental/rust_game_dev_env-337n072j0aag7/s-hjactkx1kd-1m48fsh-1jmcwb214tlw4voqwbcx8a5bk/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-337n072j0aag7/s-hjactkx1kd-1m48fsh-1jmcwb214tlw4voqwbcx8a5bk/f5ccdc9rkeqf024c4emx00xfb.pre-lto.bc",
+    "target/debug/incremental/rust_game_dev_env-337n072j0aag7/s-hjactkx1kd-1m48fsh-1jmcwb214tlw4voqwbcx8a5bk/f5ccdc9rkeqf024c4emx00xfb.o",
+    "target/debug/incremental/rust_game_dev_env-337n072j0aag7/s-hjactkx1kd-1m48fsh-1jmcwb214tlw4voqwbcx8a5bk/el0wo4rz0e3vmnv1zm4mzhv7v.pre-lto.bc",
+    "target/debug/incremental/rust_game_dev_env-337n072j0aag7/s-hjactkx1kd-1m48fsh-1jmcwb214tlw4voqwbcx8a5bk/el0wo4rz0e3vmnv1zm4mzhv7v.o",
     "obsidian_docs/Architecture.md",
     "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
-    "obsidian_docs/screenshots/scheme_01.png",
-    "obsidian_docs/screenshots/concept_01.png",
-    "obsidian_docs/screenshots/main_01.png",
     "Pasted image 20260518110914.png",
     "Pasted image 20260518110916.png"
   ]

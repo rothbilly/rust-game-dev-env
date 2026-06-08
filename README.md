@@ -28,14 +28,7 @@ los proyectos son minijuegos que consumen cantidades imposibles de recursos (gem
 ### Loop de juego
 
 ![](obsidian_docs/screenshots/scheme_01.png)
-
 ### Gestion del proyecto
-
-
-- HackAndPlan
-- Github
-- Demo Page
-
 
 | Sitio                                                                                                                        | Objetivo                            |
 | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
@@ -43,7 +36,6 @@ los proyectos son minijuegos que consumen cantidades imposibles de recursos (gem
 | [HackAndPlan](https://app.hacknplan.com/p/238444/kanban?categoryId=0&boardId=675284)                                         | Project Management                  |
 | [Github](https://github.com/rothbilly/rust-game-dev-env)                                                                     | Github de este proyecto             |
 | [Figma del proyecto](https://www.figma.com/design/LohWmjqQy6kBqVcYNpzOdb/RustMacroquadGame?node-id=4-2&t=YfUyBfRTBfSaeeAH-1) | Disenos y maquetas                  |
-
 
 ### Estética
 
@@ -110,3 +102,8 @@ Compilar API Docs
 ```
 cargo doc --no-deps --open
 ```
+
+
+## Notas extras
+
+[Bitacora del Nico](Bitacora%20del%20Nico.md)
