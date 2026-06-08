@@ -107,3 +107,11 @@ impl EventDispatcher {
 - Hacer un juego de prueba con tamaño de ventana 256 x 256 pixeles
 - Sistema de eventos con delegates.
 - Crear algún macro, idealmente partir con inlines macros.
+
+
+# Semana 2
+
+Diseño del sistema de escenas y nodos del motor
+
+![](arch_03.png)
+
