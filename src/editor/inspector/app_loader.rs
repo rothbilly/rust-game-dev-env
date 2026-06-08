@@ -35,13 +35,13 @@ impl<'a> AppLoaderMenu<'a> {
             let app: &mut App = &mut **app_ref;
             match selected {
                 AppList::Empty(game) => {
-                    app.add_sub_app(Box::new(game));
+                    app.add_sub_app(game);
                 }
                 AppList::Breakout(game) => {
-                    app.add_sub_app(Box::new(game));
+                    app.add_sub_app(game);
                 }
                 AppList::Macroware(game) => {
-                    app.add_sub_app(Box::new(game));
+                    app.add_sub_app(game);
                 }
                 
             }

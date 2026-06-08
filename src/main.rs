@@ -44,10 +44,10 @@ async fn main() {
 
     let mut ev = EventInspector::default();
 
-    // let mut app_loader = AppLoaderMenu::new(
-    //     true,
-    //     vec2(0f32, 0f32),
-    //     Some(&mut app_mut));
+    let mut app_loader = AppLoaderMenu::new(
+        true,
+        vec2(0f32, 0f32),
+        Some(&mut app_mut));
 
 
     let mut editor_visible: bool = false;

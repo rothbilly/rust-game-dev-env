@@ -59,8 +59,6 @@ Si necesitas varios **owners** para tu `RefCell` sin tamaño asignada en el **he
 
 > ⚠️ **Note:** `RefCell` is strictly single-threaded. If you use `Arc` for multi-threading, you must pair it with a `Mutex` or `RwLock` instead of a `RefCell`.
 
-For a single-threaded application, the ultimate combo for an unsized, shared, heap-allocated type is:
-
 ```rust
 use std::rc::Rc;
 use std::cell::RefCell;
