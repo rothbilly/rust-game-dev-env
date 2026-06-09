@@ -51,10 +51,10 @@ async fn main() {
     let mut app_loader = AppLoaderMenu::default();
     
     
-    let app_clone = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure
+    let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     app_loader.on_click_signal.connect( move |_option| {
         
-        let _app = app_clone.clone(); // Rc count 4
+
         println!("References count in closure: {}", Rc::strong_count(&_app));
         match _option {
             Signal::IntCallback(_value) =>{

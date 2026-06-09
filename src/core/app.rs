@@ -71,7 +71,7 @@ impl App
     }
 
     pub fn get_total_apps(&self ){
-        println!("total sub app: {}", self.sub_apps.len())
+        println!("total of sub app: {}", self.sub_apps.len())
     }
 
 
