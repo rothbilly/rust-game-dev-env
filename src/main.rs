@@ -1,13 +1,17 @@
-use std::cell::RefCell;
+
 use std::rc::Rc;
-use std::sync::{LazyLock, Mutex}; 
+use std::sync::{LazyLock, Mutex, RwLock}; 
+
+
 // For async.
 use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
+use rust_game_dev_env::core::signal::Signal;
 use rust_game_dev_env::editor::inspector::Inspector;
 use rust_game_dev_env::editor::inspector::app_loader::AppLoaderMenu;
+use rust_game_dev_env::games::{MacrowareExe, TestGame};
 //crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::{app::*};
@@ -39,17 +43,37 @@ fn app_conf() -> Conf {
 async fn main() {
 
     // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell
-    let app = Rc::new(RefCell::new(App::initialize_and_ready::<SampleVirtualApp>()));
-    let mut app_mut = app.borrow_mut();
+    let main_app = Rc::new(RwLock::new(App::initialize_and_ready::<SampleVirtualApp>())); // Rc count 1
+    
 
+    // Editor: move it to other part in the future.
     let mut ev = EventInspector::default();
+    let mut app_loader = AppLoaderMenu::default();
+    
+    
+    let app_clone = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure
+    app_loader.on_click_signal.connect( move |_option| {
+        
+        let _app = app_clone.clone(); // Rc count 4
+        println!("References count in closure: {}", Rc::strong_count(&_app));
+        match _option {
+            Signal::IntCallback(_value) =>{
+                
+                match _value {
+                    0 => { _app.write().unwrap().load_and_replace_app_at_last::<SampleVirtualApp>();},
+                    1 => { _app.write().unwrap().load_and_replace_app_at_last::<MacrowareExe>(); },
+                    2 => { _app.write().unwrap().load_and_replace_app_at_last::<TestGame>();},
+                    _ => ()
+                }
+                _app.read().unwrap().get_total_apps();
+            }
+            _ => ()
+        }
+    });
+    
 
-    let mut app_loader = AppLoaderMenu::new(
-        true,
-        vec2(0f32, 0f32),
-        Some(&mut app_mut));
-
-
+    let app_ref = main_app.clone(); // Rc count 3
+    println!("References count in main scope: {}", Rc::strong_count(&app_ref));
     let mut editor_visible: bool = false;
 
     loop { // Main loop
@@ -62,9 +86,10 @@ async fn main() {
         }
         if editor_visible{
             ev._draw_gui();
+            app_loader._draw_gui();
         }
 
-        app_mut._runtime(delta);
+        app_ref.read().unwrap()._runtime(delta);
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();
@@ -81,7 +106,7 @@ fn on_close_application() {
         .unwrap()
         .save();
 
-    BTreeMap
+    
 
 }
 

@@ -3,6 +3,8 @@
 use std::{cell::RefCell, fmt::Debug, rc::Rc};
 use macroquad::prelude::*;
 
+
+
 use crate::core::game::GameLoop;
 
 
@@ -40,6 +42,14 @@ impl App
             .borrow_mut()
             ._ready();
         }
+        println!("added a new sub app successfully");
+        self
+    }
+
+    pub fn load_and_replace_app_at_last<T>(&mut self) -> &mut Self
+    where T:GameLoop + Default + 'static {
+        self.remove_last_app();
+        self.append_new_sub_app::<T>();
         self
     }
 
@@ -58,6 +68,10 @@ impl App
             let _ = self.sub_apps.pop();
             println!("Sub app removed from the app list")
         }
+    }
+
+    pub fn get_total_apps(&self ){
+        println!("total sub app: {}", self.sub_apps.len())
     }
 
 

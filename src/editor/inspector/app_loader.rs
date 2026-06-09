@@ -1,74 +1,57 @@
 
 
+use std::ops::Deref;
+
 use macroquad::{math::{self, vec2}, miniquad::log::Level::Warn, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
-use crate::{core::{app::App, game::GameLoop}, editor::{constants::*, inspector::*}, games::{MacrowareExe, TestGame, empty_game::EmptyGame}};
+use crate::{core::{app::App, game::GameLoop, signal::*}, editor::{constants::*, inspector::*}, games::{MacrowareExe, TestGame, empty_game::EmptyGame}};
 
 
-
-enum AppList
-{
-    Empty(EmptyGame),
-    Breakout(TestGame),
-    Macroware(MacrowareExe)
-}
-
+const UI_BLOCK_SIZE: f32 = 40.;
 
 
 // <'a> defines that main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
-pub struct AppLoaderMenu <'a>{
+
+pub struct AppLoaderMenu{
     is_visible: bool,
     position: Vec2,
-    main_app: Option<&'a mut App>
+    pub on_click_signal: SignalDispatcher
 }
 
-// impl "lifetime "<'a> struct <'a> 
-impl<'a> AppLoaderMenu<'a> {
-    pub fn new(is_visible: bool, position: Vec2, main_app: Option<&'a mut App>) -> Self {
-        Self { is_visible, position, main_app }
+impl AppLoaderMenu {
+    pub fn new(is_visible: bool, position: Vec2, ) -> Self {
+        Self { is_visible, position, on_click_signal: SignalDispatcher::new()}
     }
 
 
-    pub fn load_game(&mut self, selected: AppList){
-        if let Some(app_ref) = &mut self.main_app {
-            // app_ref: &mut &'static mut App -> deref to get &mut App
-            let app: &mut App = &mut **app_ref;
-            match selected {
-                AppList::Empty(game) => {
-                    app.add_sub_app(game);
-                }
-                AppList::Breakout(game) => {
-                    app.add_sub_app(game);
-                }
-                AppList::Macroware(game) => {
-                    app.add_sub_app(game);
-                }
-                
-            }
-            println!("the app status is {app:?}");
-
-        } else {
-            warn!("not main app assigned to this")
-        }
+    pub fn try_load_game(&mut self, _option: i32){
+        self.on_click_signal.emit(&Signal::IntCallback(_option));
     }
 }
 
-impl<'a> Default for AppLoaderMenu<'a> {
+
+impl Default for AppLoaderMenu {
     fn default() -> Self {
         Self { 
             is_visible: true, 
             position: Vec2::ZERO,
-            main_app: None
+            on_click_signal: SignalDispatcher::new()
         }
     }
 }
 
 
-impl<'a> Inspector for AppLoaderMenu<'a> {
+impl Inspector for AppLoaderMenu {
 
+
+    fn _setup(&mut self){
+
+    }
 
     fn _draw_gui(&mut self) -> bool{
-        let window_status = Window::new(hash!(), vec2(GLOB_MARGIN, GLOB_MARGIN), vec2(PANEL_WIDTH, PANEL_HEIGHT))
+        let window_status = Window::new(hash!(),
+            vec2(screen_width() - PANEL_WIDTH - GLOB_MARGIN, GLOB_MARGIN),
+            vec2(PANEL_WIDTH, UI_BLOCK_SIZE * 3.))
         .label("App Loader")
         .movable(true)
         .close_button(true)
@@ -77,19 +60,19 @@ impl<'a> Inspector for AppLoaderMenu<'a> {
             Group::new(hash!(), Vec2::new(PANEL_WIDTH - 2.*PANEL_MARGIN,90.))
                 .layout(Layout::Vertical)
                 .ui(ui,|ui|{
-                    ui.label(None, "App List");
+                    ui.label(None, "App List"); // Not optimal,use a enum in the future
 
-                    if ui.button( None,"Test Game"){
-                        self.load_game(AppList::Empty(EmptyGame));
+                    if ui.button( None,"Start Screen"){
+                        self.try_load_game(0);
                     }
 
-                    if ui.button( None,"Breakout Game"){
-                        self.load_game(AppList::Macroware(MacrowareExe::default()));
+                    if ui.button( None,"MacroExe"){
+                        self.try_load_game(1);
                     }
 
-
-
-                    
+                    if ui.button( None,"Breakout"){
+                        self.try_load_game(2); 
+                    }
                 });
     });
     window_status
@@ -97,7 +80,7 @@ impl<'a> Inspector for AppLoaderMenu<'a> {
 }
 
 
-impl<'a> IVisibility for AppLoaderMenu<'a>{
+impl IVisibility for AppLoaderMenu{
     fn is_visible(&self) -> bool {
         self.is_visible
     }
@@ -107,4 +90,4 @@ impl<'a> IVisibility for AppLoaderMenu<'a>{
     }
 }
 
-impl<'a> InspectorWindow for AppLoaderMenu<'a>{}
+impl InspectorWindow for AppLoaderMenu {}

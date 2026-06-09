@@ -24,6 +24,7 @@ pub mod core {
         pub mod letterbox;
         pub mod shader;
     }
+    pub mod signal;
 }
 
 
