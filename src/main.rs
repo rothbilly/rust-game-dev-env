@@ -1,19 +1,25 @@
 
+use std::any::Any;
 use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, RwLock}; 
 
 
 // For async.
 use macroquad:: prelude::*;
+
+
+// egui
 use egui_macroquad::*;
+use puffin;
 
 
-use rust_game_dev_env::core::signal::Signal;
-use rust_game_dev_env::editor::inspector::Inspector;
-use rust_game_dev_env::editor::inspector::app_loader::AppLoaderMenu;
-use rust_game_dev_env::games::{MacrowareExe, TestGame};
-//crate imports
+
+// own crate importes
 use rust_game_dev_env as game_lib; 
+use game_lib::core::signal::Signal;
+use game_lib::editor::inspector::Inspector;
+use game_lib::editor::inspector::app_loader::AppLoaderMenu;
+use game_lib::games::{MacrowareExe, TestGame};
 use game_lib::core::{app::*};
 use game_lib::data::{settings::Settings};
 use game_lib::editor::inspector::event_inspector::*;
@@ -51,11 +57,18 @@ async fn main() {
     let mut app_loader = AppLoaderMenu::default();
     
     
+    //Profiler
+    let server_addr = format!("127.0.0.1:{}", puffin_http::DEFAULT_PORT);
+    let _puffin_server = puffin_http::Server::new(&server_addr).unwrap();
+    eprintln!("Run this to view profiling data:  puffin_viewer https://{server_addr}");
+    puffin::set_scopes_on(true);
+
+
+
     let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     app_loader.on_click_signal.connect( move |_option| {
         
 
-        println!("References count in closure: {}", Rc::strong_count(&_app));
         match _option {
             Signal::IntCallback(_value) =>{
                 
@@ -71,9 +84,8 @@ async fn main() {
         }
     });
     
-
+    let mut frame_count: i32 = 0;
     let app_ref = main_app.clone(); // Rc count 3
-    println!("References count in main scope: {}", Rc::strong_count(&app_ref));
     let mut editor_visible: bool = false;
 
     loop { // Main loop
@@ -96,6 +108,9 @@ async fn main() {
             break;
 
         }
+
+        puffin::GlobalProfiler::lock().new_frame();
+
         next_frame().await;
     }
 }

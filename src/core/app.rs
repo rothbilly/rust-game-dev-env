@@ -37,12 +37,13 @@ impl App
     pub fn append_new_sub_app<T>(&mut self) -> &mut Self
     where T:GameLoop + Default + 'static {
         self.sub_apps.push(Rc::new(RefCell::new(T::default())));
+        puffin::profile_function!();
         if let Some(new_app) = self.sub_apps.last_mut(){
             new_app.clone()
             .borrow_mut()
             ._ready();
         }
-        println!("added a new sub app successfully");
+        println!("[Main App] - Added a new sub app successfully");
         self
     }
 
@@ -66,12 +67,12 @@ impl App
             return
         } else{
             let _ = self.sub_apps.pop();
-            println!("Sub app removed from the app list")
+            println!("[Main App] - App removed from the Sub app list")
         }
     }
 
     pub fn get_total_apps(&self ){
-        println!("total of sub app: {}", self.sub_apps.len())
+        println!("[Main App] - total of sub app: {}", self.sub_apps.len());
     }
 
 

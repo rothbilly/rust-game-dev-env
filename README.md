@@ -82,6 +82,16 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | Rut by example           | https://doc.rust-lang.org/rust-by-example/custom_types.html       |
 | Rust book                | https://doc.rust-lang.org/book/title-page.html                    |
 | Rust Nomicon             | https://doc.rust-lang.org/nomicon/other-reprs.html                |
+## Juego o proyectos de ejemplo
+
+| Nombre           | Link                                       |
+| ---------------- | ------------------------------------------ |
+| Laser Mazer Rust | https://github.com/tom-kaufman/laser-mazer |
+|                  |                                            |
+
+
+
+
 ### Comandos
 
 Compilar y ejecutar

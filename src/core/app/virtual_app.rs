@@ -30,6 +30,13 @@ impl GameLoop for SampleVirtualApp {
     fn _render(&self) {
         clear_background(color::LIGHTGRAY);
 
+        
+        set_camera(&Camera2D {
+            zoom: vec2(1. / screen_width() * 2., 1. / screen_height() * 2.),
+            target: vec2(screen_width() / 2., screen_height() / 2.),
+            ..Default::default()
+        });
+
         draw_text(&format!("FPS: {}", get_fps()), 16., 24., 24., color::RED);
         
         let center = get_text_center("Macro Engine", None, 32, 1.0, 0.);
