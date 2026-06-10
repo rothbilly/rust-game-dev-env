@@ -39,7 +39,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "obsidian_docs/Bitacora del Nico.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -54,7 +54,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Bitacora del Nico"
+              "title": "README"
             }
           }
         ],
@@ -131,7 +131,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "obsidian_docs/Bitacora del Nico.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -141,7 +141,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de Bitacora del Nico"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -237,6 +237,7 @@
   },
   "active": "913b99e2ea99a358",
   "lastOpenFiles": [
+    "obsidian_docs/Bitacora del Nico.md",
     "README.md",
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/work-products.bin",
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/thin-lto-past-keys.bin",
@@ -248,7 +249,6 @@
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/ezm3i49r2njsnahtsd69332lw.pre-lto.bc",
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/ezm3i49r2njsnahtsd69332lw.o",
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/eieppg32n9cxbqkgisa2t078m.pre-lto.bc",
-    "obsidian_docs/Bitacora del Nico.md",
     "obsidian_docs/screenshots/arch_04.png",
     "obsidian_docs/screenshots/arch_05.png",
     "obsidian_docs/main_canvas.canvas",
