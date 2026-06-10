@@ -67,6 +67,12 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | [num_bigint](https://docs.rs/num-bigint/latest/num_bigint/) | big number core          | 0.4.6   |
 |                                                             |                          |         |
 
+# Engine
+
+macroquack, un motor sobre macroquad con un enfoque opinionado en juegos incrementales y facilidad de uso.
+![](macro_quack_engine.png)
+> Eventualmente separar el engine del proyecto juego en su propio crate y repo.
+
 ## Features a implementar
 
 
@@ -78,8 +84,6 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | Asset Loader  |                                                                  | Idea      |           |
 | Event System  |                                                                  | Prototipo | Nico      |
 | Render window |                                                                  |           |           |
-
-
 # Mas sobre Rust
 
 | Title                    | Link                                                              |
@@ -100,7 +104,7 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | Laser Mazer Rust | https://github.com/tom-kaufman/laser-mazer |
 |                  |                                            |
 
-### Comandos importanes
+### Comandos importantes
 
 Compilar y ejecutar
 
