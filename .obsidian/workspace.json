@@ -131,6 +131,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -140,7 +141,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -234,11 +235,12 @@
       "graph:Abrir vista gráfica": false
     }
   },
-  "active": "d6579da56929a02f",
+  "active": "913b99e2ea99a358",
   "lastOpenFiles": [
+    "obsidian_docs/main_canvas.canvas",
+    "README.md",
     "assets/textures/rb_placeholder_128.png",
     "assets/textures",
-    "README.md",
     "obsidian_docs/Bitacora del Nico.md",
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/work-products.bin",
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/thin-lto-past-keys.bin",
@@ -251,7 +253,6 @@
     "target/debug/incremental/rust_game_dev_env-3coqcm81ssb0w/s-hjbox5tlhh-1h4yy92-working/ezm3i49r2njsnahtsd69332lw.o",
     "obsidian_docs/screenshots/arch_04.png",
     "obsidian_docs/screenshots/arch_05.png",
-    "obsidian_docs/main_canvas.canvas",
     "obsidian_docs/screenshots/main_02.png",
     "obsidian_docs/screenshots/arch_03.png",
     "obsidian_docs/screenshots/arch_02.png",
@@ -260,7 +261,6 @@
     "obsidian_docs/screenshots/scheme_01.png",
     "obsidian_docs/screenshots/main_01.png",
     "obsidian_docs/Architecture.md",
-    "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
-    "Pasted image 20260518110914.png"
+    "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md"
   ]
 }

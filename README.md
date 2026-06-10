@@ -40,9 +40,6 @@ los proyectos son minijuegos que consumen cantidades imposibles de recursos (gem
 ### Estética
 
 Se busca un look retro pixelart con estilo similar a juegos de nitrome.
-### Minijuegos
-
-todo!()
 
 ### Referencias
 
@@ -56,7 +53,7 @@ todo!()
 
 ---
 # Features & Sistemas
-### Arquitectura de aplicación
+### Arquitectura de aplicación 
 ![](main_canvas.canvas)
 ### Dependencias
 
@@ -68,8 +65,21 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | serde                                                       | para serializacion       |         |
 | macroquad                                                   | el motor de entrada      | 0.4.1   |
 | [num_bigint](https://docs.rs/num-bigint/latest/num_bigint/) | big number core          | 0.4.6   |
+|                                                             |                          |         |
 
----
+## Features a implementar
+
+
+| Sistema       | Objetivo                                                         | Status    | Encargado |
+| ------------- | ---------------------------------------------------------------- | --------- | --------- |
+| Main App      | Poder cambiar de escenas, serializar y cargar mapas serializados | Listo     | Nico      |
+| GameObjects   |                                                                  | Listo     | Jose      |
+| Arbol         |                                                                  | Diseno    | Jose      |
+| Asset Loader  |                                                                  | Idea      |           |
+| Event System  |                                                                  | Prototipo | Nico      |
+| Render window |                                                                  |           |           |
+
+
 # Mas sobre Rust
 
 | Title                    | Link                                                              |
@@ -90,10 +100,7 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | Laser Mazer Rust | https://github.com/tom-kaufman/laser-mazer |
 |                  |                                            |
 
-
-
-
-### Comandos
+### Comandos importartes
 
 Compilar y ejecutar
 
@@ -112,8 +119,8 @@ Compilar API Docs
 
 ```
 cargo doc --no-deps --open
-```
 
+```
 
 ## Notas extras
 
