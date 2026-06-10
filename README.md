@@ -100,7 +100,7 @@ Listar las dependencias en `Cargo.toml` y su uso.
 | Laser Mazer Rust | https://github.com/tom-kaufman/laser-mazer |
 |                  |                                            |
 
-### Comandos importartes
+### Comandos importanes
 
 Compilar y ejecutar
 
