@@ -1,5 +1,5 @@
 
-use std::any::Any;
+
 use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, RwLock}; 
 
@@ -14,7 +14,7 @@ use puffin;
 
 
 
-// own crate importes
+// own crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::signal::Signal;
 use game_lib::editor::inspector::Inspector;
@@ -32,12 +32,13 @@ use game_lib::core::app::virtual_app::SampleVirtualApp;
 /// Mutex = Can only be edited under a lock. Avoids race conditions.
 static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(|| Mutex::new(Settings::new()));
 
+
 // This struct is from Macroquad and it's used to set parameters of the window.
 fn app_conf() -> Conf {
     let settings = GLOB_SETTINGS.lock().unwrap().load_toml();
 
     Conf {
-        window_title: "Dev Environment".to_owned(),
+        window_title: "MacroQuack".to_owned(),
         window_width: settings.window_w,
         window_height: settings.window_h,
         window_resizable: true,
@@ -48,7 +49,7 @@ fn app_conf() -> Conf {
 #[macroquad::main(app_conf)]
 async fn main() {
 
-    // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell
+    // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell or a ReadWrite Lock RwLock
     let main_app = Rc::new(RwLock::new(App::initialize_and_ready::<SampleVirtualApp>())); // Rc count 1
     
 
@@ -56,12 +57,6 @@ async fn main() {
     let mut ev = EventInspector::default();
     let mut app_loader = AppLoaderMenu::default();
     
-    
-    //Profiler
-    let server_addr = format!("127.0.0.1:{}", puffin_http::DEFAULT_PORT);
-    let _puffin_server = puffin_http::Server::new(&server_addr).unwrap();
-    eprintln!("Run this to view profiling data:  puffin_viewer https://{server_addr}");
-    puffin::set_scopes_on(true);
 
 
 
@@ -109,7 +104,7 @@ async fn main() {
 
         }
 
-        puffin::GlobalProfiler::lock().new_frame();
+        
 
         next_frame().await;
     }
