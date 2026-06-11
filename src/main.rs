@@ -79,7 +79,6 @@ async fn main() {
         }
     });
     
-    let mut frame_count: i32 = 0;
     let app_ref = main_app.clone(); // Rc count 3
     let mut editor_visible: bool = false;
 
@@ -104,7 +103,7 @@ async fn main() {
 
         }
 
-        
+
 
         next_frame().await;
     }
