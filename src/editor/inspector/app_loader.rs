@@ -1,27 +1,27 @@
 
 
-use std::ops::Deref;
+use std::rc::Rc;
 
-
-use macroquad::{math::{self, vec2}, miniquad::log::Level::Warn, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
+use egui_macroquad::egui::mutex::RwLock;
+use macroquad::{math::{self, vec2}, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
-use crate::{core::{app::App, game::GameLoop, signal::*}, editor::{constants::*, inspector::*}, games::{MacrowareExe, TestGame, empty_game::EmptyGame}};
+use crate::{core::{app::App, signal::*}, editor::{constants::*, inspector::*}, games::{MacrowareExe, TestGame, empty_game::EmptyGame}};
 
 
 const UI_BLOCK_SIZE: f32 = 40.;
-
 
 // <'a> defines that main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
 
 pub struct AppLoaderMenu{
     is_visible: bool,
     position: Vec2,
-    pub on_click_signal: SignalDispatcher
+    pub on_click_signal: SignalDispatcher,
+    pub main_app_ref: Option<Rc<RwLock<App>>>
 }
 
 impl AppLoaderMenu {
     pub fn new(is_visible: bool, position: Vec2, ) -> Self {
-        Self { is_visible, position, on_click_signal: SignalDispatcher::new()}
+        Self { is_visible, position, ..Default::default()}
     }
 
 
@@ -36,7 +36,8 @@ impl Default for AppLoaderMenu {
         Self { 
             is_visible: true, 
             position: Vec2::ZERO,
-            on_click_signal: SignalDispatcher::new()
+            on_click_signal: SignalDispatcher::new(),
+            main_app_ref: None
         }
     }
 }

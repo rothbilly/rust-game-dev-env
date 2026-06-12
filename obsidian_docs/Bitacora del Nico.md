@@ -113,7 +113,6 @@ impl EventDispatcher {
 
 Diseño del sistema de escenas y nodos del motor
 
-
 **Opcion 1**: Comparten la misma raiz, pero el juego esta detro de una base `editor`
 
 ![](arch_03.png)
@@ -125,3 +124,82 @@ Diseño del sistema de escenas y nodos del motor
 **Opcion 3** : Editor y game comparten el arbol
 
 ![](arch_05.png)
+ 
+## 1. When to use Mutex vs. RwLock
+
+`Mutex` or `RwLock` lets those threads safely _modify_ the data one at a time.
+
+| Feature         | `Arc<Mutex<T>>`                                                      | `Arc<RwLock<T>>`                                                 |
+| --------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **Best For**    | Frequent writes, or a mix of reads and writes.                       | Frequent reads, rare writes.                                     |
+| **Concurrency** | Only **one** thread can access the data at a time (reads or writes). | **Multiple** readers can access concurrently, OR **one** writer. |
+| **Overhead**    | Lower locking overhead.                                              | Higher overhead (needs to track reader counts).                  |
+### Using Mutex
+
+The `Mutex` class in Rust provides mutual exclusion, allowing only one thread to access the data at a time. It is a fundamental synchronization primitive useful for protecting shared data from being simultaneously accessed by multiple threads.
+
+The `Mutex` class can be used to create a thread-safe wrapper around a piece of data. Here is a basic example:
+
+```rust
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+fn main() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+            *num += 1;
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    println!("Result: {}", *counter.lock().unwrap());
+}
+// Output: Result: 10
+```
+
+### Using RwLock
+
+The `RwLock` class in Rust provides a reader-writer lock, which allows multiple readers or a single writer to access the data at a time. It is useful for scenarios where read-heavy workloads need concurrent access, but write operations require exclusive access.
+
+The `RwLock` class can be used to create a thread-safe wrapper around a piece of data, allowing for multiple readers or a single writer. Here is a basic example:
+
+```rust
+use std::sync::{Arc, RwLock};
+use std::thread;
+
+fn main() {
+    let lock = Arc::new(RwLock::new(5));
+    let mut handles = vec![];
+
+    for _ in 0..10 {
+        let lock = Arc::clone(&lock);
+        let handle = thread::spawn(move || {
+            let read_guard = lock.read().unwrap();
+            println!("Read value: {}", *read_guard);
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+}
+// Output (order may vary):
+// Read value: 5
+// Read value: 5
+// ...
+```
+#### Considerations
+
+- `RwLock` can cause deadlocks if not used carefully. Ensure that locks are released appropriately.
+- A `RwLock` can become poisoned if a thread panics while holding the lock. Accessing a poisoned `RwLock` will result in a `PoisonError`.
+- Use `Arc` (Atomic Reference Counting) to share a `RwLock` across multiple threads.

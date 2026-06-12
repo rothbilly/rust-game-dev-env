@@ -48,7 +48,7 @@ fn app_conf() -> Conf {
 #[macroquad::main(app_conf)]
 async fn main() {
 
-    // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell
+    // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell/RwLock -- Maybe in the future use Arc<RwLock>
     let main_app = Rc::new(RwLock::new(App::initialize_and_ready::<SampleVirtualApp>())); // Rc count 1
     
 
@@ -69,6 +69,7 @@ async fn main() {
     app_loader.on_click_signal.connect( move |_option| {
         
 
+        // move this to internal method in editor
         match _option {
             Signal::IntCallback(_value) =>{
                 
