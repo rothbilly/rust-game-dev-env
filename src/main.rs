@@ -66,20 +66,6 @@ async fn main() {
 
 
     let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
-    // app_loader.on_click_signal.connect( move |_option| {
-    //     // move this to internal method in editor
-    //     match _option {
-    //         Signal::IntCallback(_value) =>{
-                
-    //             if let Ok(app_type) = AppType::try_from(*_value){
-    //                 let mut app_write = _app.write().unwrap();
-    //                 app_write.load_by_type(app_type);
-    //                 app_write.get_total_apps();
-    //             }
-    //         }
-    //         _ => ()
-    //     }
-    // });
     let app_registry = app_loader.app_registry.clone();
     app_loader.on_click_signal.connect(move |signal| {
         if let Signal::LoadApp(tag) = signal {

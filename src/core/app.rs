@@ -14,6 +14,13 @@ pub mod virtual_app;
 
 type AppConstructor = fn() -> Rc<RefCell<dyn GameLoop>>; // Every app implements a GameLoop.
 
+pub struct AppRegistration {
+    pub name : &'static str,
+    pub constructor : fn() -> Rc<RefCell<dyn GameLoop>>,
+}
+
+inventory::collect!(AppRegistration);
+
 pub struct AppRegistry {
     pub registry : HashMap<& 'static str, AppConstructor>,
 }
@@ -22,9 +29,10 @@ impl AppRegistry{
     pub fn new() -> Self{
         let mut r = Self { registry : HashMap::new() };
 
-        r.register::<SampleVirtualApp>("SampleVirtualApp");
-        r.register::<MacrowareExe>("MacrowareExe");
-        r.register::<TestGame>("Breakout");
+        for app in inventory::iter::<AppRegistration> {
+            r.registry.insert(app.name, app.constructor);
+            println!("[Registry] Automatically registered app: {}", app.name);
+        }
         r
     }
 

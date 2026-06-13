@@ -1,7 +1,7 @@
 
 use macroquad::{color, prelude::*};
 use crate::core::game::{GameLoop};
-
+use crate::core::app::AppRegistration;
 
 #[derive(Default)]
 pub struct SampleVirtualApp{
@@ -49,6 +49,14 @@ impl GameLoop for SampleVirtualApp {
     
     }
 }
+inventory::submit! {
+    AppRegistration {
+        name: "SampleVirtualApp",
+        constructor: || std::rc::Rc::new(std::cell::RefCell::new(SampleVirtualApp::default())),
+    }
+}
+
+
 impl IParentable for SampleVirtualApp {
     fn get_base_app(&self) -> Option<&Box<dyn IParentable>> {
         self.base_app.as_ref()
