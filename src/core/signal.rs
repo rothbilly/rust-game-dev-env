@@ -10,6 +10,7 @@ pub enum Signal{
     EmptyCallback,
     IntCallback(i32),
     BoolCallback(bool),
+    LoadApp(String),
 }
 
 #[derive(Default)]

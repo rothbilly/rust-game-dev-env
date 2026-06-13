@@ -24,7 +24,6 @@ use game_lib::core::{app::*};
 use game_lib::data::{settings::Settings};
 use game_lib::editor::inspector::event_inspector::*;
 use game_lib::core::app::virtual_app::SampleVirtualApp;
-use game_lib::editor::inspector::app_loader::AppType;
 
 
 
@@ -67,20 +66,31 @@ async fn main() {
 
 
     let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
-    app_loader.on_click_signal.connect( move |_option| {
-        
-
-        // move this to internal method in editor
-        match _option {
-            Signal::IntCallback(_value) =>{
+    // app_loader.on_click_signal.connect( move |_option| {
+    //     // move this to internal method in editor
+    //     match _option {
+    //         Signal::IntCallback(_value) =>{
                 
-                if let Ok(app_type) = AppType::try_from(*_value){
-                    let mut app_write = _app.write().unwrap();
-                    app_write.load_by_type(app_type);
-                    app_write.get_total_apps();
-                }
+    //             if let Ok(app_type) = AppType::try_from(*_value){
+    //                 let mut app_write = _app.write().unwrap();
+    //                 app_write.load_by_type(app_type);
+    //                 app_write.get_total_apps();
+    //             }
+    //         }
+    //         _ => ()
+    //     }
+    // });
+    let app_registry = app_loader.app_registry.clone();
+    app_loader.on_click_signal.connect(move |signal| {
+        if let Signal::LoadApp(tag) = signal {
+            if let Some(new_app) = app_registry.get(tag){
+                let mut app_write = _app.write().unwrap();
+
+                app_write.load_and_replace_app_at_last_2(new_app);
+                app_write.get_total_apps();
+            }else{
+                println!("[Editor] Error: Tag {} not in registry.", tag);
             }
-            _ => ()
         }
     });
     
