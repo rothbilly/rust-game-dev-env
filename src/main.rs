@@ -24,6 +24,7 @@ use game_lib::core::{app::*};
 use game_lib::data::{settings::Settings};
 use game_lib::editor::inspector::event_inspector::*;
 use game_lib::core::app::virtual_app::SampleVirtualApp;
+use game_lib::editor::inspector::app_loader::AppType;
 
 
 
@@ -73,13 +74,11 @@ async fn main() {
         match _option {
             Signal::IntCallback(_value) =>{
                 
-                match _value {
-                    0 => { _app.write().unwrap().load_and_replace_app_at_last::<SampleVirtualApp>();},
-                    1 => { _app.write().unwrap().load_and_replace_app_at_last::<MacrowareExe>(); },
-                    2 => { _app.write().unwrap().load_and_replace_app_at_last::<TestGame>();},
-                    _ => ()
+                if let Ok(app_type) = AppType::try_from(*_value){
+                    let mut app_write = _app.write().unwrap();
+                    app_write.load_by_type(app_type);
+                    app_write.get_total_apps();
                 }
-                _app.read().unwrap().get_total_apps();
             }
             _ => ()
         }

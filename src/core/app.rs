@@ -4,8 +4,11 @@ use std::{cell::RefCell, fmt::Debug, rc::Rc};
 use macroquad::prelude::*;
 
 
-
+use crate::editor::inspector::app_loader::AppType;
 use crate::core::game::GameLoop;
+use crate::core::app::virtual_app::SampleVirtualApp;
+use crate::games::MacrowareExe;
+use crate::games::TestGame;
 
 
 pub mod virtual_app;
@@ -24,6 +27,13 @@ impl App
         Self::default()
     }
 
+    pub fn load_by_type(&mut self, app_type : AppType) -> &mut App{
+        match app_type {
+            AppType::SampleVirtualApp => self.load_and_replace_app_at_last::<SampleVirtualApp>(),
+            AppType::MacroExe => self.load_and_replace_app_at_last::<MacrowareExe>(),
+            AppType::Breakout => self.load_and_replace_app_at_last::<TestGame>(),
+        }
+    }
 
     pub fn initialize_and_ready<T>() -> App
     where T:GameLoop + Default + 'static
