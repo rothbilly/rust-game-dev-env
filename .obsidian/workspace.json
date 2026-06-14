@@ -39,7 +39,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "README.md",
+                "file": "obsidian_docs/Bitacora del Nico.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -54,7 +54,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "README"
+              "title": "Bitacora del Nico"
             }
           }
         ],
@@ -131,7 +131,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "obsidian_docs/Bitacora del Nico.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -141,7 +141,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de README"
+              "title": "Enlaces entrantes de Bitacora del Nico"
             }
           },
           {
@@ -237,9 +237,9 @@
   },
   "active": "913b99e2ea99a358",
   "lastOpenFiles": [
+    "README.md",
     "obsidian_docs/screenshots/macro_quack_engine.png",
     "obsidian_docs/main_canvas.canvas",
-    "README.md",
     "assets/textures/rb_placeholder_128.png",
     "assets/textures",
     "obsidian_docs/Bitacora del Nico.md",
@@ -260,7 +260,6 @@
     "obsidian_docs/screenshots/arch_01.png",
     "obsidian_docs/screenshots/concept_01.png",
     "obsidian_docs/screenshots/scheme_01.png",
-    "obsidian_docs/screenshots/main_01.png",
     "obsidian_docs/Architecture.md",
     "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md"
   ]
