@@ -25,7 +25,6 @@ pub enum VirtualAppMode {
 }
 
 
-
 impl GameLoop for SampleVirtualApp {
     fn _render(&self) {
         clear_background(color::LIGHTGRAY);

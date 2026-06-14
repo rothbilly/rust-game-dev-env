@@ -13,7 +13,7 @@ type AppConstructor = fn() -> Rc<RefCell<dyn GameLoop>>; // Every app implements
 
 
 // ==========================================
-//  AppRegistration Flags
+//  AppRegistration
 // ==========================================
 
 pub struct AppRegistration {
@@ -33,7 +33,7 @@ impl AppRegistry{
 
         for app in inventory::iter::<AppRegistration> {
             r.registry.insert(app.name, app.constructor);
-            println!("[Registry] Automatically registered app: {}", app.name);
+            println!("[Registry] - Automatically registered app: {}", app.name);
         }
         r
     }
@@ -126,6 +126,8 @@ impl App
         if self.sub_apps.is_empty(){
             return
         } else{
+            //Deref a sub app from the vec! and drop its pointer from te Rc.
+            //if there a other pointer to the sub app, it keeps in memory until the last Rc is deref.
             let _ = self.sub_apps.pop();
             println!("[Main App] - App removed from the Sub app list")
         }

@@ -51,12 +51,12 @@ async fn main() {
     // Editor: move it to other part in the future.
     let mut ev = EventInspector::default();
     let mut app_loader = AppLoaderMenu::default();
-    
-
 
 
     let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     let app_registry = app_loader.app_registry.clone();
+
+
     app_loader.on_click_signal.connect(move |signal| {
         if let Signal::LoadApp(tag) = signal {
             if let Some(new_app) = app_registry.get(tag){
@@ -72,6 +72,9 @@ async fn main() {
     
     let app_ref = main_app.clone(); // Rc count 3
     let mut editor_visible: bool = false;
+
+    //setup
+    app_loader._setup();
 
     loop { // Main loop
         let mut delta = get_frame_time();
