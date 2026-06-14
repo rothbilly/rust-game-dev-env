@@ -49,6 +49,7 @@ impl GameLoop for SampleVirtualApp {
     
     }
 }
+
 inventory::submit! {
     AppRegistration {
         name: "SampleVirtualApp",

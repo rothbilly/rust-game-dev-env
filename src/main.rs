@@ -3,15 +3,11 @@
 use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, RwLock}; 
 
-
 // For async.
 use macroquad:: prelude::*;
 
-
 // egui
 use egui_macroquad::*;
-use puffin;
-
 
 
 // own crate imports
@@ -19,7 +15,6 @@ use rust_game_dev_env as game_lib;
 use game_lib::core::signal::Signal;
 use game_lib::editor::inspector::Inspector;
 use game_lib::editor::inspector::app_loader::AppLoaderMenu;
-use game_lib::games::{MacrowareExe, TestGame};
 use game_lib::core::{app::*};
 use game_lib::data::{settings::Settings};
 use game_lib::editor::inspector::event_inspector::*;

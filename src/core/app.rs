@@ -5,14 +5,16 @@ use macroquad::prelude::*;
 
 
 use crate::core::game::GameLoop;
-use crate::core::app::virtual_app::SampleVirtualApp;
-use crate::games::MacrowareExe;
-use crate::games::TestGame;
 use std::collections::HashMap;
-
 pub mod virtual_app;
 
+// Define a alias for a common composited type.
 type AppConstructor = fn() -> Rc<RefCell<dyn GameLoop>>; // Every app implements a GameLoop.
+
+
+// ==========================================
+//  AppRegistration Flags
+// ==========================================
 
 pub struct AppRegistration {
     pub name : &'static str,
@@ -47,7 +49,11 @@ impl AppRegistry{
 
 }
 
-/// # The App Base Module
+// ==========================================
+//  App Module
+// ==========================================
+
+
 #[derive(Default)]
 pub struct App
 {
