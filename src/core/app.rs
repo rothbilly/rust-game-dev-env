@@ -4,12 +4,48 @@ use std::{cell::RefCell, fmt::Debug, rc::Rc};
 use macroquad::prelude::*;
 
 
-
 use crate::core::game::GameLoop;
-
+use crate::core::app::virtual_app::SampleVirtualApp;
+use crate::games::MacrowareExe;
+use crate::games::TestGame;
+use std::collections::HashMap;
 
 pub mod virtual_app;
 
+type AppConstructor = fn() -> Rc<RefCell<dyn GameLoop>>; // Every app implements a GameLoop.
+
+pub struct AppRegistration {
+    pub name : &'static str,
+    pub constructor : fn() -> Rc<RefCell<dyn GameLoop>>,
+}
+
+inventory::collect!(AppRegistration);
+
+pub struct AppRegistry {
+    pub registry : HashMap<& 'static str, AppConstructor>,
+}
+
+impl AppRegistry{
+    pub fn new() -> Self{
+        let mut r = Self { registry : HashMap::new() };
+
+        for app in inventory::iter::<AppRegistration> {
+            r.registry.insert(app.name, app.constructor);
+            println!("[Registry] Automatically registered app: {}", app.name);
+        }
+        r
+    }
+
+    fn register<T>(&mut self, tag: &'static str)
+    where T: GameLoop + Default + 'static {
+        self.registry.insert(tag, || Rc::new(RefCell::new(T::default())));
+    }
+
+    pub fn get(&self, tag: &str) -> Option<Rc<RefCell<dyn GameLoop>>> {
+        self.registry.get(tag).map(|constructor| constructor())
+    }
+
+}
 
 /// # The App Base Module
 #[derive(Default)]
@@ -23,7 +59,6 @@ impl App
     pub fn new() -> Self {
         Self::default()
     }
-
 
     pub fn initialize_and_ready<T>() -> App
     where T:GameLoop + Default + 'static
@@ -47,10 +82,29 @@ impl App
         self
     }
 
+    pub fn append_new_sub_app_2(&mut self, shared_app : Rc<RefCell<dyn GameLoop>>) -> &mut Self{
+
+        self.sub_apps.push(shared_app); // We cannot create an RC RefCell because of conflict with <dyn GameLoop>
+
+        if let Some(new_app) = self.sub_apps.last_mut(){
+            new_app.clone()
+            .borrow_mut()
+            ._ready()
+        }
+        println!("[Main App] - Added a new sub app successfully");
+        self
+    }
+
     pub fn load_and_replace_app_at_last<T>(&mut self) -> &mut Self
     where T:GameLoop + Default + 'static {
         self.remove_last_app();
         self.append_new_sub_app::<T>();
+        self
+    }
+
+    pub fn load_and_replace_app_at_last_2(&mut self, new_app : Rc<RefCell<dyn GameLoop>>) -> &mut Self{
+        self.remove_last_app();
+        self.append_new_sub_app_2(new_app);
         self
     }
 

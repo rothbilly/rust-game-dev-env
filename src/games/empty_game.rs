@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 use crate::core::game::{GameLoop};
-
+use crate::core::app::AppRegistration; // To register it in the App registry.
 
 
 #[derive(Default)]
@@ -23,5 +23,13 @@ impl GameLoop for EmptyGame {
 
     fn _render(&self) {
 
+    }
+}
+
+// This automatically puts this App, which implements "GameLoop", into "AppRegistry" for posterior use.
+inventory::submit! {
+    AppRegistration {
+        name: "EmptyGame",
+        constructor: || std::rc::Rc::new(std::cell::RefCell::new(EmptyGame::default())),
     }
 }

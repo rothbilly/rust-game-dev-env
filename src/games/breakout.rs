@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 use crate::core::game::{Game, GameLoop};
-
+use crate::core::app::AppRegistration;
 
 const BLOCKS_W: usize = 10;
 const BLOCKS_H: usize = 10;
@@ -22,7 +22,6 @@ pub struct TestGame {
     platform_height: f32,
 
 }
-
 
 impl GameLoop for TestGame {
     fn _ready(&mut self){
@@ -133,6 +132,13 @@ impl GameLoop for TestGame {
             self.platform_height,
             DARKPURPLE,
         );
+    }
+}
+
+inventory::submit! {
+    AppRegistration {
+        name: "Breakout",
+        constructor: || std::rc::Rc::new(std::cell::RefCell::new(TestGame::default())),
     }
 }
 

@@ -61,22 +61,17 @@ async fn main() {
 
 
     let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
-    app_loader.on_click_signal.connect( move |_option| {
-        
+    let app_registry = app_loader.app_registry.clone();
+    app_loader.on_click_signal.connect(move |signal| {
+        if let Signal::LoadApp(tag) = signal {
+            if let Some(new_app) = app_registry.get(tag){
+                let mut app_write = _app.write().unwrap();
 
-        // move this to internal method in editor
-        match _option {
-            Signal::IntCallback(_value) =>{
-                
-                match _value {
-                    0 => { _app.write().unwrap().load_and_replace_app_at_last::<SampleVirtualApp>();},
-                    1 => { _app.write().unwrap().load_and_replace_app_at_last::<MacrowareExe>(); },
-                    2 => { _app.write().unwrap().load_and_replace_app_at_last::<TestGame>();},
-                    _ => ()
-                }
-                _app.read().unwrap().get_total_apps();
+                app_write.load_and_replace_app_at_last_2(new_app);
+                app_write.get_total_apps();
+            }else{
+                println!("[Editor] Error: Tag {} not in registry.", tag);
             }
-            _ => ()
         }
     });
     

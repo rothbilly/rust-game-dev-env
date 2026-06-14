@@ -4,7 +4,7 @@ use macroquad::color::colors;
 use egui_macroquad::*;
 
 use crate::core::game::{GameLoop};
-
+use crate::core::app::AppRegistration;
 use crate::components::gameobject::*;
 
 use std::collections::HashMap;
@@ -85,6 +85,7 @@ impl GameLoop for MacrowareExe {
         sphere.set_position(position);
     }
 
+    
     fn _render(&self) {
         clear_background(self.background_color);
         set_camera(&self.camera);
@@ -119,3 +120,11 @@ impl GameLoop for MacrowareExe {
         );
     }
 }
+
+inventory::submit! {
+    AppRegistration {
+        name: "MacrowareExe",
+        constructor: || std::rc::Rc::new(std::cell::RefCell::new(MacrowareExe::default())),
+    }
+}
+
