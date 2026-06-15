@@ -6,8 +6,10 @@
         "macroquad",
         "Macroware",
         "macrowareexe",
+        "miniquad",
         "nanoserde",
         "Parentable",
+        "srand",
         "titlebar",
         "wrapf"
     ]
