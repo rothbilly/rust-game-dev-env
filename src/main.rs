@@ -63,7 +63,7 @@ async fn main() {
                 let mut app_write = _app.write().unwrap();
 
                 app_write.load_and_replace_app_at_last_2(new_app);
-                app_write.get_total_apps();
+                //app_write.get_total_apps();
             }else{
                 println!("[Editor] Error: Tag {} not in registry.", tag);
             }

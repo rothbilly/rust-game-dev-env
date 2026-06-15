@@ -203,3 +203,14 @@ fn main() {
 - `RwLock` can cause deadlocks if not used carefully. Ensure that locks are released appropriately.
 - A `RwLock` can become poisoned if a thread panics while holding the lock. Accessing a poisoned `RwLock` will result in a `PoisonError`.
 - Use `Arc` (Atomic Reference Counting) to share a `RwLock` across multiple threads.
+
+# Semana 3 Junio
+
+## Rust reflection metadata y linkers
+
+
+| Crate     | Function                             | Example usage              |
+| --------- | ------------------------------------ | -------------------------- |
+| Linkme    | https://github.com/dtolnay/linkme    | #[distributed_slice]       |
+| inventory | https://github.com/dtolnay/inventory | inventory::collect!(Flag); |
+| ctor      |                                      |                            |

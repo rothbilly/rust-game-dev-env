@@ -36,6 +36,7 @@ pub mod games {
     pub mod breakout;
     pub mod macrowareexe;
     pub mod empty_game;
+    pub mod tutorial_game;
 
 
     pub use breakout::TestGame;
