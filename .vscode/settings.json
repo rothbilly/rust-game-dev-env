@@ -8,6 +8,7 @@
         "macrowareexe",
         "nanoserde",
         "Parentable",
-        "titlebar"
+        "titlebar",
+        "wrapf"
     ]
 }

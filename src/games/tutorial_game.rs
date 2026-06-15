@@ -1,7 +1,7 @@
 use macroquad::prelude::*;
 use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration; // To register it in the App registry.
-use macroquad::math;
+use crate::core::math::wrapf;
 
 const MOVEMENT_SPEED: f32 = 200.0;
 
@@ -27,8 +27,8 @@ impl GameLoop for TutorialGame {
 
     fn _update(&mut self, _delta: f32) {
         self.pos += self.dir * MOVEMENT_SPEED * _delta;
-        self.pos.x = clamp(self.pos.x, 0.0, screen_width());
-        self.pos.y = clamp(self.pos.y, 0.0, screen_height());
+        self.pos.x = wrapf(self.pos.x, 0.0, screen_width());
+        self.pos.y = wrapf(self.pos.y, 0.0, screen_height());
     }
 
     fn _render(&self) {

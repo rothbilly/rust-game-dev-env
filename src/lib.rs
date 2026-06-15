@@ -25,6 +25,7 @@ pub mod core {
         pub mod shader;
     }
     pub mod signal;
+    pub mod math;
 }
 
 

@@ -1,10 +1,7 @@
 
 
-
-
 pub mod event_inspector;
 pub mod app_loader;
-
 
 
 pub trait InspectorWindow: IVisibility + Inspector{}
