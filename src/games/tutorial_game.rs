@@ -1,5 +1,5 @@
 
-
+use macroquad::experimental::coroutines::*;
 use macroquad::prelude::*;
 use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration; // To register it in the App registry.
@@ -26,6 +26,12 @@ impl GameLoop for TutorialGame {
         
         self.pos.x = screen_width() / 2.0;
         self.pos.y = screen_height() / 2.0;
+
+        // start_coroutine(async {
+        //     wait_seconds(2.).await;
+        //     println!("2 seconds passed! Flash")
+        // });
+
     }
 
     fn _process_input(&mut self) {
@@ -34,6 +40,9 @@ impl GameLoop for TutorialGame {
     }
 
     fn _update(&mut self, _delta: f32) {
+
+
+
         self.pos += self.dir * MOVEMENT_SPEED * _delta;
         self.pos.x = wrapf(self.pos.x, 0.0, screen_width());
         self.pos.y = wrapf(self.pos.y, 0.0, screen_height());

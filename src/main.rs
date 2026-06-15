@@ -18,7 +18,7 @@ use game_lib::editor::inspector::app_loader::AppLoaderMenu;
 use game_lib::core::{app::*};
 use game_lib::data::{settings::Settings};
 use game_lib::editor::inspector::event_inspector::*;
-use game_lib::core::app::virtual_app::SampleVirtualApp;
+use game_lib::games::virtual_app::SampleVirtualApp;
 
 
 

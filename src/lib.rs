@@ -38,7 +38,7 @@ pub mod games {
     pub mod macrowareexe;
     pub mod empty_game;
     pub mod tutorial_game;
-
+    pub mod virtual_app;
 
     pub use breakout::TestGame;
     pub use macrowareexe::MacrowareExe;

@@ -6,7 +6,6 @@ use macroquad::prelude::*;
 
 use crate::core::game::GameLoop;
 use std::collections::HashMap;
-pub mod virtual_app;
 
 // Define a alias for a common composited type.
 type AppConstructor = fn() -> Rc<RefCell<dyn GameLoop>>; // Every app implements a GameLoop.
