@@ -43,7 +43,6 @@ impl Default for AppLoaderMenu {
     }
 }
 
-
 impl Inspector for AppLoaderMenu {
 
 
