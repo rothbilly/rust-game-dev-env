@@ -32,7 +32,7 @@ impl AppRegistry{
 
         for app in inventory::iter::<AppRegistration> {
             r.registry.insert(app.name, app.constructor);
-            println!("[Registry] - Automatically registered app: {}", app.name);
+            info!("[Registry] - Automatically registered app: {}", app.name);
         }
         r
     }

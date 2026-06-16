@@ -33,7 +33,7 @@ impl Settings {
         }
     }
 
-    pub fn save(&mut self) -> Result<(), Box<dyn std::error::Error>>{
+    pub fn save(&self) -> Result<(), Box<dyn std::error::Error>>{
         self.save_with_mode(SerializeMode::TOML, TOML_PATH_STR)?;
         Ok(())
     }

@@ -3,9 +3,9 @@
 use std::rc::Rc;
 use std::sync::{LazyLock, Mutex, RwLock}; 
 
+
 // For async.
 use macroquad:: prelude::*;
-
 // egui
 use egui_macroquad::*;
 
@@ -93,7 +93,6 @@ async fn main() {
         if is_key_down(KeyCode::Escape) {
             on_close_application();
             break;
-
         }
 
 
@@ -103,12 +102,13 @@ async fn main() {
 }
 
 fn on_close_application() {
-    println!("[Application] - Closing!");
-    let _ = GLOB_SETTINGS.write()
-        .unwrap()
-        .save();
+
 
     
 
+    println!("[Application] - Closing!");
+    let _ = GLOB_SETTINGS.read()
+        .unwrap()
+        .save();
 }
 
