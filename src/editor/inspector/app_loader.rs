@@ -10,9 +10,12 @@ use crate::{core::signal::*, editor::{constants::*, inspector::*}};
 use crate::core::app::AppRegistry;
 
 const UI_BLOCK_SIZE: f32 = 40.;
+pub use engine_macros::IName;
 
 
 // <'a> defines that main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
+
+#[derive(IName)]
 pub struct AppLoaderMenu{
     is_visible: bool,
     panel_height: f32,
@@ -95,7 +98,5 @@ impl Hash for AppLoaderMenu{
         self.get_struct_name().hash(state);
     }
 }
-
-impl IName for AppLoaderMenu{}
 
 impl InspectorWindow for AppLoaderMenu {}

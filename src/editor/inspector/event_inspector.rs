@@ -1,10 +1,11 @@
 
+use engine_macros::IName;
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
 use crate::editor::{constants::*, inspector::*};
 
 
-#[derive(Hash)]
+#[derive(IName)]
 pub struct EventInspector{
     is_visible: bool
 }
@@ -79,8 +80,5 @@ impl IVisibility for EventInspector{
         self.is_visible = _value
     }
 }
-
-impl IName for EventInspector {}
-
 
 impl InspectorWindow for EventInspector{}

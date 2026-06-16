@@ -3,7 +3,11 @@ use quote::quote;
 use syn::{parse_macro_input, Item,ItemStruct, Ident, Fields};
 
 
-// SetGetter Attribute macro
+// ==========================================
+//  Attribute Macro for SetGet
+// ==========================================
+
+
 #[proc_macro_attribute]
 pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 
@@ -61,6 +65,10 @@ pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+// ==========================================
+//  Attributte Macro for Regitering a App
+// ==========================================
+
 
 #[proc_macro_attribute]
 pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -102,3 +110,34 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 
 }
+
+// ==========================================
+//  Derive Macro for auto get the Struct Name
+// ==========================================
+
+use syn::{DeriveInput};
+
+//warn
+#[proc_macro_derive(IName)]
+pub fn i_name_derive(input: TokenStream) -> TokenStream {
+
+    let input = parse_macro_input!(input as DeriveInput);
+
+    let struct_name = &input.ident;
+
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let struct_name_str = struct_name.to_string();
+
+    let expanded = quote! {
+        impl #impl_generics crate::editor::inspector::IName for #struct_name #ty_generics #where_clause {
+            fn get_struct_name(&self) -> String {
+                #struct_name_str.to_string()
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+

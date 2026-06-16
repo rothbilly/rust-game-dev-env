@@ -1,9 +1,8 @@
 use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
-
+use std::any::{Any, type_name};
 use egui_macroquad::egui::{Context};
 use macroquad::prelude::info;
 
-use crate::editor::inspector;
 
 pub mod event_inspector;
 pub mod app_loader;
@@ -33,19 +32,27 @@ impl GlobalInspectors{
     {
         let new_inspector = Rc::new(RefCell::new(T::default()));
         let i_name = new_inspector.clone().borrow().get_struct_name();
-        self.inspectors.insert(i_name,  new_inspector.clone());
+        self.inspectors.insert(i_name,  new_inspector);
+        self.info_active_editor_names();
     }
 
     pub fn add_inspector<T>(&mut self, glob_inspector: &Rc<RefCell<T>>)
     where T: InspectorWindow + Default + 'static
     {
         self.inspectors.insert(glob_inspector.borrow().get_struct_name(), glob_inspector.clone()); // pass a reference to a currently existing inspector.
-
+       
     }
 
     pub fn  toggle_global_visibility(&mut self){
         self.editor_visible = !self.editor_visible;
-        info!("editors counters {}", self.inspectors.len())
+        self.info_active_editor_names();
+    }
+
+    pub fn info_active_editor_names(&self){
+        info!("editors counters {}", self.inspectors.len());
+        for (name,_) in self.inspectors.iter(){
+            info!("[Editors] - {}: is active ", name);
+        }
     }
 
     pub fn _editor_runtime(&self) {
@@ -74,9 +81,10 @@ impl GlobalInspectors{
 pub trait InspectorWindow: IVisibility + IName + Inspector{}
 
 
-pub trait IName{
+pub trait IName
+{
     fn get_struct_name(&self) -> String {
-        stringify!(self).to_string() //
+        stringify!(type) .to_string() //
     }
 }
 
