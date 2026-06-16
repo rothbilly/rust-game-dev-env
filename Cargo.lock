@@ -345,6 +345,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "engine_macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "epaint"
 version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1083,6 +1092,7 @@ version = "0.1.0"
 dependencies = [
  "bincode",
  "egui-macroquad",
+ "engine_macros",
  "inventory",
  "macroquad",
  "macrotest",

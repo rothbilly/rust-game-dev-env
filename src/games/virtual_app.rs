@@ -1,9 +1,11 @@
 
 use macroquad::{color, prelude::*};
+use engine_macros::*;
 use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration;
 
 #[derive(Default)]
+#[register_app("SampleVirtualApp")]
 pub struct SampleVirtualApp{
     _title: String,
     _mode: VirtualAppMode,
@@ -16,6 +18,7 @@ pub struct SampleVirtualApp{
 /// # App Mode 
 /// Define if the app is used for 2D or 3D Rendering or as editor UI
 #[derive(Default)]
+
 pub enum VirtualAppMode {
     #[default]
     Mode2D,
@@ -49,12 +52,7 @@ impl GameLoop for SampleVirtualApp {
     }
 }
 
-inventory::submit! {
-    AppRegistration {
-        name: "SampleVirtualApp",
-        constructor: || std::rc::Rc::new(std::cell::RefCell::new(SampleVirtualApp::default())),
-    }
-}
+
 
 
 impl IParentable for SampleVirtualApp {

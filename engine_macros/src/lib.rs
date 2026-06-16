@@ -1,8 +1,9 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, ItemStruct, Ident, Fields};
+use syn::{parse_macro_input, Item,ItemStruct, Ident, Fields};
 
 
+// SetGetter Attribute macro
 #[proc_macro_attribute]
 pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 
@@ -53,6 +54,47 @@ pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             fn set(&mut self, val: #field_type){
                 self.#target_field = val;
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+
+#[proc_macro_attribute]
+pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
+    // Parse the item the macro is attached to (e.g., `struct TestGameStruct`)
+    let input_item = parse_macro_input!(item as Item);
+
+    // Extract the identifier of the item to use in the constructor
+    let item_identifier = match &input_item {
+        Item::Struct(item_struct) => &item_struct.ident,
+        Item::Fn(item_fn) => &item_fn.sig.ident,
+        _ => {
+            return syn::Error::new_spanned(&input_item,
+            "register_app attribute can only be applied to structs or functions"
+            ).to_compile_error().into();
+        }
+    };
+
+    let app_name: String = if !attr.is_empty(){
+        let attr_meta = parse_macro_input!(attr as syn::LitStr);
+        attr_meta.value()
+        }
+        else {
+            item_identifier.to_string()
+        };
+    
+    let expanded = quote!{
+        // Keep the original struct/function definition intact
+        #input_item
+
+        // Submit to inventory
+        inventory::submit! {
+            AppRegistration {
+                name: #app_name,
+                constructor: || std::rc::Rc::new(std::cell::RefCell::new(#item_identifier::default())),
             }
         }
     };

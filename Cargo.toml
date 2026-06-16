@@ -20,6 +20,7 @@ puffin = "0.20.0"
 egui-macroquad = {version = "0.17.3"}
 puffin_http = "0.17.0"
 inventory = "0.3.24"
+engine_macros = {path = "engine_macros"}
 
 
 [dev-dependencies]
