@@ -81,7 +81,7 @@
                 "autoReveal": false
               },
               "icon": "lucide-folder-closed",
-              "title": "Files"
+              "title": "Explorador de archivos"
             }
           },
           {
@@ -141,7 +141,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -215,7 +215,7 @@
               "type": "graph",
               "state": {},
               "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "title": "Vista gráfica"
             }
           }
         ]
@@ -226,28 +226,32 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "switcher:Open quick switcher": false,
-      "graph:Open graph view": false,
-      "canvas:Create new canvas": false,
-      "daily-notes:Open today's daily note": false,
-      "templates:Insert template": false,
-      "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Crear nueva base": false
     }
   },
   "active": "913b99e2ea99a358",
   "lastOpenFiles": [
-    "target/debug/deps/rust_game_dev_env.pdb",
-    "target/debug/deps/rust_game_dev_env.exe",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/thin-lto-past-keys.bin",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/ezrk5offo1mkoj6v1iw04qw38.pre-lto.bc",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/enc4cznyeziu1z4lkk3wrlrug.pre-lto.bc",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/ezrk5offo1mkoj6v1iw04qw38.o",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/enc4cznyeziu1z4lkk3wrlrug.o",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/em9neayutdirzkpp6v6dq21jf.pre-lto.bc",
-    "target/debug/incremental/rust_game_dev_env-2dx2q1saewnpi/s-hjimghiih2-0m8ydvu-dro5pk82amj0k0zcs04x8i49w/em9neayutdirzkpp6v6dq21jf.o",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.khronos_usize_t.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLvoid.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.khronos_ssize_t.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.khronos_intptr_t.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLushort.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLuint64.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLuint.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLubyte.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLsizeiptr.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLsizei.html",
+    "target/doc/rust_game_dev_env/core/rendering/shader/graphics/raw_gl/type.GLshort.html",
+    "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
+    "target/doc/static.files/rust-logo-9a9549ea.svg",
+    "target/doc/static.files/favicon-32x32-eab170b8.png",
+    "target/doc/static.files/favicon-044be391.svg",
     "obsidian_docs/Bitacora del Nico.md",
     "obsidian_docs/Architecture.md",
     "README.md",
@@ -258,10 +262,6 @@
     "obsidian_docs/screenshots/arch_05.png",
     "obsidian_docs/screenshots/main_02.png",
     "obsidian_docs/screenshots/arch_03.png",
-    "obsidian_docs/screenshots/arch_02.png",
-    "obsidian_docs/screenshots/arch_01.png",
-    "obsidian_docs/screenshots/concept_01.png",
-    "obsidian_docs/screenshots/scheme_01.png",
-    "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md"
+    "obsidian_docs/screenshots/arch_02.png"
   ]
 }

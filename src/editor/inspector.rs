@@ -1,3 +1,4 @@
+use egui_macroquad::egui::Context;
 
 
 pub mod event_inspector;
@@ -19,6 +20,6 @@ pub trait Inspector {
     fn _draw_gui(&mut self) ->bool{
         false
     }
-    fn _draw_egui(&self){
+    fn _draw_egui(&self, _egui_ctx: &Context){
     }
 }

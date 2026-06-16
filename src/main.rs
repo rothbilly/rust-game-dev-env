@@ -71,6 +71,7 @@ async fn main() {
     
     let app_ref = main_app.clone(); // Rc count 3
     let mut editor_visible: bool = false;
+    let mut use_egui: bool = false;
 
     //setup
     app_loader._setup();
@@ -84,8 +85,19 @@ async fn main() {
             editor_visible = !editor_visible;
         }
         if editor_visible{
-            ev._draw_gui();
-            app_loader._draw_gui();
+
+
+            if use_egui {
+                egui_macroquad::ui(|egui_ctx| {
+                    ev._draw_egui(egui_ctx);
+                    app_loader._draw_egui(egui_ctx);
+                 });
+    
+                egui_macroquad::draw();
+            } else {
+                ev._draw_gui();
+                app_loader._draw_gui();
+            }
         }
 
         app_ref.read().unwrap()._runtime(delta);
