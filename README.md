@@ -12,7 +12,7 @@ Aprender y crear un juego en rust, aprender a utilizar el ecosistema y construir
 
 Parte del desafío es armar múltiples minijuegos que funcionen independientemente, y en conjunto hagan un juego incremental.
 
-Lo mas importante es **aprender** y compartir el **conocimento**
+Lo mas importante es **aprender** y compartir el **conocimiento**
 
 # El juego - Proyecto macroware32.exe
 

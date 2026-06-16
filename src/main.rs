@@ -21,17 +21,16 @@ use game_lib::editor::inspector::event_inspector::*;
 use game_lib::games::virtual_app::SampleVirtualApp;
 
 
-
 /// static = eternal lifetime
 /// LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
 /// Mutex = Can only be edited under a lock. Avoids race conditions.
-static GLOB_SETTINGS: LazyLock<Mutex<Settings>> = LazyLock::new(|| Mutex::new(Settings::new()));
+static GLOB_SETTINGS: LazyLock<RwLock<Settings>> = LazyLock::new(|| RwLock::new(Settings::new()));
 
 
 // This struct is from Macroquad and it's used to set parameters of the window.
 fn app_conf() -> Conf {
-    let settings = GLOB_SETTINGS.lock().unwrap().load_toml();
-
+    let settings = GLOB_SETTINGS.write().unwrap().load_toml();
+    
     Conf {
         window_title: "MacroQuack".to_owned(),
         window_width: settings.window_w,
@@ -46,7 +45,7 @@ async fn main() {
 
     // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell/RwLock -- Maybe in the future use Arc<RwLock>
     let main_app = Rc::new(RwLock::new(App::initialize_and_ready::<SampleVirtualApp>())); // Rc count 1
-    
+
 
     // Editor: move it to other part in the future.
     let mut ev = EventInspector::default();
@@ -105,7 +104,7 @@ async fn main() {
 
 fn on_close_application() {
     println!("[Application] - Closing!");
-    let _ = GLOB_SETTINGS        .lock()
+    let _ = GLOB_SETTINGS.write()
         .unwrap()
         .save();
 

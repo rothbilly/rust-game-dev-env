@@ -7,9 +7,9 @@ use macroquad::prelude::*;
 use crate::core::game::GameLoop;
 use std::collections::HashMap;
 
+
 // Define a alias for a common composited type.
 type AppConstructor = fn() -> Rc<RefCell<dyn GameLoop>>; // Every app implements a GameLoop.
-
 
 // ==========================================
 //  AppRegistration
@@ -45,7 +45,6 @@ impl AppRegistry{
     pub fn get(&self, tag: &str) -> Option<Rc<RefCell<dyn GameLoop>>> {
         self.registry.get(tag).map(|constructor| constructor())
     }
-
 }
 
 // ==========================================

@@ -208,7 +208,6 @@ fn main() {
 
 ## Rust reflection metadata y linkers
 
-
 | Crate     | Function                             | Example usage              |
 | --------- | ------------------------------------ | -------------------------- |
 | Linkme    | https://github.com/dtolnay/linkme    | #[distributed_slice]       |
