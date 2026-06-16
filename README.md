@@ -102,7 +102,7 @@ macroquack, un motor sobre macroquad con un enfoque opinionado en juegos increme
 | Nombre           | Link                                       |
 | ---------------- | ------------------------------------------ |
 | Laser Mazer Rust | https://github.com/tom-kaufman/laser-mazer |
-|                  |                                            |
+| Fish Fight       | https://github.com/fishfolk/jumpy          |
 
 ### Comandos importantes
 
