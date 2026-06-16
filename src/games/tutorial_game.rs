@@ -1,4 +1,5 @@
 
+use engine_macros::register_app;
 use macroquad::experimental::coroutines::*;
 use macroquad::prelude::*;
 use crate::core::game::{GameLoop};
@@ -8,9 +9,8 @@ use crate::core::math::wrapf;
 const MOVEMENT_SPEED: f32 = 200.0;
 
 
-
 #[derive(Default)]
-
+#[register_app("Tutorial Game")]
 pub struct TutorialGame{
     dir: Vec2,
     pos: Vec2,
@@ -84,13 +84,8 @@ impl GameLoop for TutorialGame {
     }
 }
 
-// This automatically puts this App, which implements "GameLoop", into "AppRegistry" for posterior use.
-inventory::submit! {
-    AppRegistration {
-        name: "TutorialGame", //set the name here
-        constructor: || std::rc::Rc::new(std::cell::RefCell::new(TutorialGame::default())),
-    }
-}
+
+
 
 #[derive(Default)]
 struct Shape {

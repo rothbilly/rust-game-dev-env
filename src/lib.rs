@@ -1,4 +1,8 @@
 
+
+// make macros public to all mods in this crate.
+pub(crate) use engine_macros::*;
+
 pub mod editor {
     pub mod constants;
     pub mod inspector;

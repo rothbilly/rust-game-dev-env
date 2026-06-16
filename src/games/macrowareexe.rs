@@ -1,3 +1,4 @@
+use engine_macros::register_app;
 use macroquad::{input, prelude::*};
 use macroquad::color::colors;
 
@@ -10,6 +11,7 @@ use crate::components::gameobject::*;
 use std::collections::HashMap;
 
 #[derive(Default)]
+#[register_app("Macroware.Exe")]
 pub struct MacrowareExe {
     background_color : Color,
     change_background : bool,
@@ -121,10 +123,4 @@ impl GameLoop for MacrowareExe {
     }
 }
 
-inventory::submit! {
-    AppRegistration {
-        name: "MacrowareExe",
-        constructor: || std::rc::Rc::new(std::cell::RefCell::new(MacrowareExe::default())),
-    }
-}
 

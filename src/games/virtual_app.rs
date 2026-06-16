@@ -5,7 +5,7 @@ use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration;
 
 #[derive(Default)]
-#[register_app("SampleVirtualApp")]
+#[register_app("Sample Virtual App")]
 pub struct SampleVirtualApp{
     _title: String,
     _mode: VirtualAppMode,

@@ -1,3 +1,4 @@
+use engine_macros::register_app;
 use macroquad::prelude::*;
 use crate::core::game::{Game, GameLoop};
 use crate::core::app::AppRegistration;
@@ -9,6 +10,7 @@ const SCR_H: f32 = 20.0;
 
 
 #[derive(Default)]
+#[register_app("Breakout")]
 pub struct TestGame {
     _base_game: Game,
     blocks: [[bool; BLOCKS_W]; BLOCKS_H],
@@ -132,13 +134,6 @@ impl GameLoop for TestGame {
             self.platform_height,
             DARKPURPLE,
         );
-    }
-}
-
-inventory::submit! {
-    AppRegistration {
-        name: "Breakout",
-        constructor: || std::rc::Rc::new(std::cell::RefCell::new(TestGame::default())),
     }
 }
 

@@ -11,19 +11,14 @@ pub trait IVisibility{
     fn set_visible(&mut self, _value: bool);
 }
 
-
 // Draw the GUI
 pub trait Inspector {
 
     fn _setup(&mut self){
-
     }
-
     fn _draw_gui(&mut self) ->bool{
         false
     }
-
     fn _draw_egui(&self){
-
     }
 }
