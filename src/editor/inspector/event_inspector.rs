@@ -80,4 +80,7 @@ impl IVisibility for EventInspector{
     }
 }
 
+impl IName for EventInspector {}
+
+
 impl InspectorWindow for EventInspector{}

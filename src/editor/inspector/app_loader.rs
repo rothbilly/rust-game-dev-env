@@ -1,6 +1,6 @@
 
 
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
@@ -81,11 +81,21 @@ impl Inspector for AppLoaderMenu {
 impl IVisibility for AppLoaderMenu{
     fn is_visible(&self) -> bool {
         self.is_visible
+
     }
 
     fn set_visible(&mut self, _value: bool) {
         self.is_visible = _value
     }
 }
+
+impl Hash for AppLoaderMenu{
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.is_visible.hash(state);
+        self.get_struct_name().hash(state);
+    }
+}
+
+impl IName for AppLoaderMenu{}
 
 impl InspectorWindow for AppLoaderMenu {}

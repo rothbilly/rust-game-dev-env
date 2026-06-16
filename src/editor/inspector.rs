@@ -1,8 +1,9 @@
-use std::{cell::RefCell, default, hash::Hash, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
 
 use egui_macroquad::egui::{Context};
-use macroquad::input::KeyCode::S;
+use macroquad::prelude::info;
 
+use crate::editor::inspector;
 
 pub mod event_inspector;
 pub mod app_loader;
@@ -22,7 +23,7 @@ enum DrawingBackend{
 pub struct GlobalInspectors{
     pub editor_visible: bool,
     backend: DrawingBackend,
-    inspectors: Vec<InspectorItem>
+    inspectors: HashMap<String, InspectorItem>
 }
 
 impl GlobalInspectors{
@@ -30,18 +31,21 @@ impl GlobalInspectors{
     pub fn new_inspector<T>(&mut self)
     where T: InspectorWindow + Default + 'static
     {
-        self.inspectors.push(Rc::new(RefCell::new(T::default())));
+        let new_inspector = Rc::new(RefCell::new(T::default()));
+        let i_name = new_inspector.clone().borrow().get_struct_name();
+        self.inspectors.insert(i_name,  new_inspector.clone());
     }
 
     pub fn add_inspector<T>(&mut self, glob_inspector: &Rc<RefCell<T>>)
     where T: InspectorWindow + Default + 'static
     {
-        self.inspectors.push(glob_inspector.clone()); // pass a reference to a currently existing inspector.
+        self.inspectors.insert(glob_inspector.borrow().get_struct_name(), glob_inspector.clone()); // pass a reference to a currently existing inspector.
 
     }
 
     pub fn  toggle_global_visibility(&mut self){
-        self.editor_visible = !self.editor_visible
+        self.editor_visible = !self.editor_visible;
+        info!("editors counters {}", self.inspectors.len())
     }
 
     pub fn _editor_runtime(&self) {
@@ -49,14 +53,14 @@ impl GlobalInspectors{
         {
             match self.backend {
                 DrawingBackend::Macroquad => {
-                    for inspector in self.inspectors.iter(){
+                    for (_, inspector) in self.inspectors.iter(){
                         inspector.borrow_mut()._draw_gui();
                     }
                 }
 
                 DrawingBackend::Egui =>{
                     egui_macroquad::ui(|egui_ctx| {
-                        for inspector in self.inspectors.iter(){
+                        for (_,inspector) in self.inspectors.iter(){
                             inspector.borrow_mut()._draw_egui(&egui_ctx);
                         }
                     });
@@ -67,7 +71,14 @@ impl GlobalInspectors{
     }
 }
 
-pub trait InspectorWindow: IVisibility + Inspector{}
+pub trait InspectorWindow: IVisibility + IName + Inspector{}
+
+
+pub trait IName{
+    fn get_struct_name(&self) -> String {
+        stringify!(self).to_string() //
+    }
+}
 
 pub trait IVisibility{
     fn is_visible(&self) -> bool;

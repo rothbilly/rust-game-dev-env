@@ -49,7 +49,6 @@ async fn main() {
     let main_app: Rc<RwLock<App>> = Rc::new(RwLock::new(App::initialize_and_ready::<SampleVirtualApp>())); 
     let global_inspectors: Rc<RwLock<GlobalInspectors>> = Rc::new(RwLock::new(GlobalInspectors::default()));
 
-
     let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
 
     global_inspectors.write().unwrap().new_inspector::<EventInspector>();
