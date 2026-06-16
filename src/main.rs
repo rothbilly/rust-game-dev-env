@@ -2,7 +2,7 @@
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{LazyLock, Mutex, RwLock}; 
+use std::sync::{LazyLock, RwLock}; 
 
 
 // For async.
@@ -50,7 +50,7 @@ async fn main() {
     let global_inspectors: Rc<RwLock<GlobalInspectors>> = Rc::new(RwLock::new(GlobalInspectors::default()));
 
 
-    let mut app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
+    let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
 
     global_inspectors.write().unwrap().new_inspector::<EventInspector>();
     global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
