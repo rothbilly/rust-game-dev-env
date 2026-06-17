@@ -55,6 +55,7 @@ async fn main() {
     let app_registry = app_loader.borrow().app_registry.clone();
 
 
+    // TODO!: move this to the editor or the app, and use dependency injection in the future to cleanup the main.
     app_loader.borrow_mut().on_click_signal.connect(move |signal| {
         if let Signal::LoadApp(tag) = signal {
             if let Some(new_app) = app_registry.get(tag){

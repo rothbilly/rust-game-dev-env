@@ -1,6 +1,7 @@
 use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
 use egui_macroquad::egui::{self, Context, Id, TopBottomPanel};
 use macroquad::prelude::info;
+use serde::{Deserialize, Serialize};
 
 use crate::data::settings::{self, GLOB_SETTINGS};
 
@@ -12,7 +13,7 @@ pub mod app_loader;
 // Define a alias for a common composited type.
 type InspectorItem =  Rc<RefCell<dyn InspectorWindow>>;
 
-#[derive(Default)]
+#[derive(Default, Debug, Serialize,  Deserialize)]
 pub enum DrawingBackend{
     #[default]
     Macroquad,

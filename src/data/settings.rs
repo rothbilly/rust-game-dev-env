@@ -6,6 +6,7 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 use crate::data::serialization::*;
+use crate::editor::inspector::DrawingBackend;
 
 const TOML_PATH_STR: &str = ".app/settings.toml";
 
@@ -22,7 +23,8 @@ pub struct Settings {
     volume: f32,
     pub window_h: i32,
     pub window_w: i32,
-    pub egui_render_scale: f32
+    pub egui_render_scale: f32,
+    editor_renderer: DrawingBackend
 }
 
 // This is akin to an empty constructor.
@@ -32,7 +34,8 @@ impl Default for Settings {
             volume: 0.5,
             window_h: 720,
             window_w: 1280,
-            egui_render_scale: 0.8
+            egui_render_scale: 0.8,
+            editor_renderer: DrawingBackend::Macroquad
         }
     }
 }
