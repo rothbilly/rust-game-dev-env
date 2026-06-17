@@ -11,7 +11,7 @@ use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
-use rust_game_dev_env::editor::inspector::GlobalInspectors;
+use rust_game_dev_env::editor::inspector::{DrawingBackend, GlobalInspectors};
 // own crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::signal::Signal;
@@ -53,6 +53,7 @@ async fn main() {
 
     global_inspectors.write().unwrap().new_inspector::<EventInspector>();
     global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
+    global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
 
     let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     let app_registry = app_loader.borrow().app_registry.clone();
@@ -73,6 +74,7 @@ async fn main() {
     
     let app_ref = main_app.clone(); // Rc count 3
     app_loader.borrow_mut()._setup();
+    
 
     loop { // Main loop
         let mut delta = get_frame_time();

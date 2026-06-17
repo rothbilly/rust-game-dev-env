@@ -2,6 +2,7 @@
 
 use std::{any::Any, rc::Rc};
 
+use egui_macroquad::egui;
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
 use crate::{core::signal::*, editor::{constants::*, inspector::*}};
@@ -17,6 +18,7 @@ pub use engine_macros::IName;
 
 #[derive(IName)]
 pub struct AppLoaderMenu{
+    window_name: String,
     is_visible: bool,
     panel_height: f32,
     pub app_registry : Rc<AppRegistry>,
@@ -38,6 +40,7 @@ impl AppLoaderMenu {
 impl Default for AppLoaderMenu {
     fn default() -> Self {
         Self { 
+            window_name: "App Loader".to_string(),
             is_visible: true,
             panel_height: UI_BLOCK_SIZE,
             app_registry : Rc::new(AppRegistry::new()),
@@ -59,7 +62,7 @@ impl Inspector for AppLoaderMenu {
         let window_status = Window::new(hash!(),
             vec2(screen_width() - PANEL_WIDTH - GLOB_MARGIN, GLOB_MARGIN),
             vec2(PANEL_WIDTH, self.panel_height +  PANEL_MARGIN * 2. ))
-        .label("App Loader")
+        .label(&self.window_name)
         .movable(true)
         .close_button(true)
         .titlebar(true)
@@ -78,6 +81,23 @@ impl Inspector for AppLoaderMenu {
     });
     window_status
     }
+
+    fn _draw_egui(&self, _egui_ctx: &Context) {
+        let window = egui::Window::new(&self.window_name);
+        window.show(_egui_ctx, |ui|{
+            ui.horizontal(|ui|{
+                ui.label("Select a app:");
+                for (tag,_) in self.app_registry.registry.iter(){
+                    if ui.button(*tag).clicked(){
+                        self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
+                    }
+                }
+
+            });
+        });
+    }
+
+
 }
 
 

@@ -12,7 +12,7 @@ pub mod app_loader;
 type InspectorItem =  Rc<RefCell<dyn InspectorWindow>>;
 
 #[derive(Default)]
-enum DrawingBackend{
+pub enum DrawingBackend{
     #[default]
     Macroquad,
     Egui
@@ -46,6 +46,10 @@ impl GlobalInspectors{
     pub fn  toggle_global_visibility(&mut self){
         self.editor_visible = !self.editor_visible;
         self.info_active_editor_names();
+    }
+
+    pub fn toggle_ui_backend(&mut self, new_bkd: DrawingBackend ){
+        self.backend = new_bkd
     }
 
     pub fn info_active_editor_names(&self){

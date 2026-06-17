@@ -11,11 +11,9 @@ pub struct EmptyGame;
 
 impl GameLoop for EmptyGame {
     fn _ready(&mut self) {
-
     }
 
     fn _process_input(&mut self) {
-
     }
 
     fn _update(&mut self, _delta: f32) {
@@ -23,7 +21,6 @@ impl GameLoop for EmptyGame {
     }
 
     fn _render(&self) {
-
     }
 }
 
