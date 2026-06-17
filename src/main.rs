@@ -26,8 +26,8 @@ use game_lib::games::virtual_app::SampleVirtualApp;
 
 // This struct is from Macroquad and it's used to set parameters of the window.
 fn app_conf() -> Conf {
-    let mut binding = GLOB_SETTINGS.write().unwrap();
-    let settings = binding.load_toml();
+    let mut settings_guard: std::sync::RwLockWriteGuard<'_, Settings> = GLOB_SETTINGS.write().unwrap();
+    let settings = settings_guard.load_toml();
     
     Conf {
         window_title: "MacroQuack".to_owned(),

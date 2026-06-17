@@ -61,7 +61,8 @@ impl Settings {
     /// Falls back to `Settings::default()` on read/parse errors.
     pub fn load_toml(&mut self) -> &mut Self {
         info!("[Settings] - loading settings");
-        *self = Settings::load_from_toml_path(TOML_PATH_STR); //a deref here, set the internal value, not the pointer;
+        //a deref here, consumes the old value and set self to the new value, not the pointer;
+        *self = Settings::load_from_toml_path(TOML_PATH_STR);
         self
     }
 
