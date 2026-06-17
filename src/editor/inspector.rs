@@ -1,5 +1,5 @@
 use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
-use egui_macroquad::egui::{Context, util::undoer::Settings};
+use egui_macroquad::egui::{self, Context, Id, TopBottomPanel};
 use macroquad::prelude::info;
 
 use crate::data::settings::{self, GLOB_SETTINGS};
@@ -54,9 +54,8 @@ impl GlobalInspectors{
     }
 
     pub fn info_active_editor_names(&self){
-        info!("editors counters {}", self.inspectors.len());
         for (name,_) in self.inspectors.iter(){
-            info!("[Editors] - {}: is active ", name);
+            info!("[Inspector] - {}: is active ", name);
         }
     }
 
@@ -72,8 +71,13 @@ impl GlobalInspectors{
 
                 DrawingBackend::Egui => {
                     egui_macroquad::ui(|egui_ctx| {
+                        //render settings
                         egui_ctx.set_pixels_per_point(GLOB_SETTINGS.read().unwrap().egui_render_scale);
-
+                        egui_ctx.set_theme(egui::Theme::Light);
+                        egui::TopBottomPanel::top(Id::new("MacroQuack")).show(egui_ctx, |ui|{
+                            
+                        });
+                        
                         for (_,inspector) in self.inspectors.iter(){
                             inspector.borrow_mut()._draw_egui(&egui_ctx);
                         }

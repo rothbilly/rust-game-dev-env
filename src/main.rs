@@ -94,10 +94,8 @@ async fn main() {
 
 fn on_close_application() {
 
-
     println!("[Application] - Closing!");
     let _ = GLOB_SETTINGS.read()
         .unwrap()
         .save();
 }
-

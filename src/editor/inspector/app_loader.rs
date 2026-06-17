@@ -70,7 +70,7 @@ impl Inspector for AppLoaderMenu {
             Group::new(hash!(), Vec2::new(PANEL_WIDTH - 2.*PANEL_MARGIN,self.panel_height))
                 .layout(Layout::Vertical)
                 .ui(ui,|ui|{
-                    ui.label(None, "App List"); // Not optimal,use a enum in the future
+                    ui.label(None, "App List");
 
                     for tag in self.app_registry.registry.keys(){
                         if ui.button(None, *tag){
