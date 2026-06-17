@@ -83,18 +83,16 @@ impl Inspector for AppLoaderMenu {
     }
 
     fn _draw_egui(&self, _egui_ctx: &Context) {
-        let window = egui::Window::new(&self.window_name);
-        window.show(_egui_ctx, |ui|{
-            ui.horizontal(|ui|{
-                ui.label("Select a app:");
+        egui::Window::new(&self.window_name)
+        .show(_egui_ctx, |ui|{
+            ui.label("Select a app:");
                 for (tag,_) in self.app_registry.registry.iter(){
                     if ui.button(*tag).clicked(){
                         self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
                     }
                 }
-
             });
-        });
+    
     }
 
 

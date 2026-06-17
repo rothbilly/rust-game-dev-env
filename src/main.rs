@@ -2,7 +2,7 @@
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{LazyLock, RwLock}; 
+use std::sync::RwLock; 
 
 
 // For async.
@@ -18,15 +18,10 @@ use game_lib::core::signal::Signal;
 use game_lib::editor::inspector::Inspector;
 use game_lib::editor::inspector::app_loader::AppLoaderMenu;
 use game_lib::core::{app::*};
-use game_lib::data::{settings::Settings};
+use game_lib::data::settings::{Settings, GLOB_SETTINGS};
 use game_lib::editor::inspector::event_inspector::*;
 use game_lib::games::virtual_app::SampleVirtualApp;
 
-
-/// static = eternal lifetime
-/// LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
-/// Mutex = Can only be edited under a lock. Avoids race conditions.
-static GLOB_SETTINGS: LazyLock<RwLock<Settings>> = LazyLock::new(|| RwLock::new(Settings::new()));
 
 
 // This struct is from Macroquad and it's used to set parameters of the window.
@@ -84,8 +79,8 @@ async fn main() {
             global_inspectors.write().unwrap().toggle_global_visibility()
         }
 
-        global_inspectors.read().unwrap()._editor_runtime();
         app_ref.read().unwrap()._runtime(delta);
+        global_inspectors.read().unwrap()._editor_runtime(); // the order of drawing is important 
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();

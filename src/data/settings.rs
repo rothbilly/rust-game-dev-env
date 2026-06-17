@@ -1,4 +1,5 @@
-use std::fs;
+use std::sync::RwLock;
+use std::{fs, sync::LazyLock};
 use std::path::Path;
 
 use macroquad::prelude::*;
@@ -9,18 +10,26 @@ use crate::data::serialization::*;
 const TOML_PATH_STR: &str = ".app/settings.toml";
 
 
+/// static = eternal lifetime
+/// LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
+/// Mutex = Can only be edited under a lock. Avoids race conditions.
+pub static GLOB_SETTINGS: LazyLock<RwLock<Settings>> = LazyLock::new(|| RwLock::new(Settings::new()));
+
+
+
 // Derive is "automatic" code. Using default implementations.
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
     volume: f32,
     pub window_h: i32,
     pub window_w: i32,
+    pub egui_render_scale: f32
 }
 
 // This is akin to an empty constructor.
 impl Default for Settings {
     fn default() -> Self {
-        Settings::new()
+        Self::new()
     }
 }
 
@@ -30,6 +39,7 @@ impl Settings {
             volume: 0.5,
             window_h: 720,
             window_w: 1280,
+            egui_render_scale: 0.8
         }
     }
 

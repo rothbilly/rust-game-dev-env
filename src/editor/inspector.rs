@@ -1,7 +1,8 @@
 use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
-use std::any::{Any, type_name};
-use egui_macroquad::egui::{Context};
+use egui_macroquad::egui::{Context, util::undoer::Settings};
 use macroquad::prelude::info;
+
+use crate::data::settings::{self, GLOB_SETTINGS};
 
 
 pub mod event_inspector;
@@ -69,8 +70,10 @@ impl GlobalInspectors{
                     }
                 }
 
-                DrawingBackend::Egui =>{
+                DrawingBackend::Egui => {
                     egui_macroquad::ui(|egui_ctx| {
+                        egui_ctx.set_pixels_per_point(GLOB_SETTINGS.read().unwrap().egui_render_scale);
+
                         for (_,inspector) in self.inspectors.iter(){
                             inspector.borrow_mut()._draw_egui(&egui_ctx);
                         }
