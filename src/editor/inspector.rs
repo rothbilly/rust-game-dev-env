@@ -1,5 +1,5 @@
-use std::{cell::RefCell, collections::HashMap, fmt::format, hash::Hash, rc::Rc};
-use egui_macroquad::egui::{self, Color32, Context, Id, Label, TopBottomPanel};
+use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
+use egui_macroquad::egui::{self, Color32, Context, Id};
 use egui_macroquad::egui::RichText;
 
 use macroquad::{prelude::*};
@@ -7,10 +7,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::data::settings::{GLOB_SETTINGS};
 
-
+// every inspector on its own mod.
 pub mod event_inspector;
 pub mod app_loader;
-
+pub mod settings_inspector;
 
 // Define a alias for a common composited type.
 type InspectorItem =  Rc<RefCell<dyn InspectorWindow>>;
@@ -89,7 +89,7 @@ impl GlobalEditor{
                                 });
                                 ui.menu_button("Windows", |ui|{
                                     if ui.button("App Loader").clicked() {
-
+                                        
                                     }
                                 });
                             });
@@ -101,7 +101,7 @@ impl GlobalEditor{
                                 ui.separator();
                                 ui.label(&format!("FPS: {}", get_fps()));
                                 ui.separator();
-                                ui.label(&format!("FPS: {:.2}", get_time()));
+                                ui.label(&format!("Game Time: {:.2}", get_time()));
                                 
 
 
@@ -145,7 +145,7 @@ pub trait Inspector {
     fn _draw_gui(&mut self) ->bool{
         false
     }
-    fn _draw_egui(&self, _egui_ctx: &Context){
+    fn _draw_egui(&mut self, _egui_ctx: &Context){
 
     }
 }

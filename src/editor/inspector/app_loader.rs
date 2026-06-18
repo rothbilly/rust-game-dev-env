@@ -1,6 +1,7 @@
 
 
-use std::{any::Any, rc::Rc};
+use std::rc::Rc;
+use std::sync::RwLock; 
 
 use egui_macroquad::egui;
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
@@ -14,7 +15,7 @@ const UI_BLOCK_SIZE: f32 = 40.;
 pub use engine_macros::IName;
 
 
-// <'a> defines that main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
+// <'a> defines RwLockthat main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
 
 #[derive(IName)]
 pub struct AppLoaderMenu{
@@ -26,8 +27,10 @@ pub struct AppLoaderMenu{
 }
 
 impl AppLoaderMenu {
-    pub fn new(is_visible: bool ) -> Self {
-        Self { is_visible, ..Default::default()}
+    pub fn new(_is_visible: bool ) -> Self {
+        Self { 
+            is_visible: _is_visible,
+            ..Default::default()}
     }
 
 
@@ -82,8 +85,10 @@ impl Inspector for AppLoaderMenu {
     window_status
     }
 
-    fn _draw_egui(&self, _egui_ctx: &Context) {
+    fn _draw_egui(&mut self, _egui_ctx: &Context) {
         egui::Window::new(&self.window_name)
+        .title_bar(true)
+        .open( &mut self.is_visible)
         .show(_egui_ctx, |ui|{
             ui.label("Select a app:");
                 for (tag,_) in self.app_registry.registry.iter(){
