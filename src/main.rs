@@ -11,7 +11,7 @@ use macroquad:: prelude::*;
 use egui_macroquad::*;
 
 
-use rust_game_dev_env::editor::inspector::{DrawingBackend, GlobalInspectors};
+use rust_game_dev_env::editor::inspector::{DrawingBackend, GlobalEditor};
 // own crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::signal::Signal;
@@ -43,7 +43,7 @@ async fn main() {
 
     // If Non Static - Reference Counted Rc, Interior Mutability by a RefCell/RwLock -- Maybe in the future use Arc<RwLock>
     let main_app: Rc<RwLock<App>> = Rc::new(RwLock::new(App::initialize_and_ready::<SampleVirtualApp>())); 
-    let global_inspectors: Rc<RwLock<GlobalInspectors>> = Rc::new(RwLock::new(GlobalInspectors::default()));
+    let global_inspectors: Rc<RwLock<GlobalEditor>> = Rc::new(RwLock::new(GlobalEditor::default()));
 
     let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
 

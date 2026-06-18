@@ -39,7 +39,7 @@ impl GameLoop for SampleVirtualApp {
             ..Default::default()
         });
 
-        draw_text(&format!("FPS: {}", get_fps()), 16., 24., 24., color::RED);
+        //draw_text(&format!("FPS: {}", get_fps()), 16., 24., 24., color::RED);
         
         let center = get_text_center("Macro Engine", None, 32, 1.0, 0.);
         

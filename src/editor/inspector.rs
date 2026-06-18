@@ -1,9 +1,11 @@
-use std::{cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
-use egui_macroquad::egui::{self, Context, Id, TopBottomPanel};
-use macroquad::prelude::info;
+use std::{cell::RefCell, collections::HashMap, fmt::format, hash::Hash, rc::Rc};
+use egui_macroquad::egui::{self, Color32, Context, Id, Label, TopBottomPanel};
+use egui_macroquad::egui::RichText;
+
+use macroquad::{prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::data::settings::{self, GLOB_SETTINGS};
+use crate::data::settings::{GLOB_SETTINGS};
 
 
 pub mod event_inspector;
@@ -21,13 +23,13 @@ pub enum DrawingBackend{
 }
 
 #[derive(Default)]
-pub struct GlobalInspectors{
+pub struct GlobalEditor{
     pub editor_visible: bool,
     backend: DrawingBackend,
     inspectors: HashMap<String, InspectorItem>
 }
 
-impl GlobalInspectors{
+impl GlobalEditor{
 
     pub fn new_inspector<T>(&mut self)
     where T: InspectorWindow + Default + 'static
@@ -60,6 +62,8 @@ impl GlobalInspectors{
         }
     }
 
+
+
     pub fn _editor_runtime(&self) {
         if self.editor_visible
         {
@@ -75,9 +79,37 @@ impl GlobalInspectors{
                         //render settings
                         egui_ctx.set_pixels_per_point(GLOB_SETTINGS.read().unwrap().egui_render_scale);
                         egui_ctx.set_theme(egui::Theme::Light);
-                        egui::TopBottomPanel::top(Id::new("MacroQuack")).show(egui_ctx, |ui|{
-                            
+
+                        egui::TopBottomPanel::top(Id::new("MacroQuackTop")).show(egui_ctx, |ui|{
+                            egui::menu::bar(ui, |ui|{
+                                ui.menu_button("App", |ui|{
+                                    if ui.button("Exit").clicked() {
+                                        ui.close_menu();
+                                    }
+                                });
+                                ui.menu_button("Windows", |ui|{
+                                    if ui.button("App Loader").clicked() {
+
+                                    }
+                                });
+                            });
                         });
+
+                        egui::TopBottomPanel::bottom(Id::new("MacroQuackBottom")).show(egui_ctx, |ui|{
+                            egui::menu::bar(ui, |ui|{
+                                ui.label(RichText::new(&format!("frame time: {:.3} ms", get_frame_time()* 1000.0)).color(Color32::RED));
+                                ui.separator();
+                                ui.label(&format!("FPS: {}", get_fps()));
+                                ui.separator();
+                                ui.label(&format!("FPS: {:.2}", get_time()));
+                                
+
+
+                            });
+                        });
+
+                        //egui::SidePanel::right(Id::new("Inspector")).show(egui_ctx, |ui|{});
+
                         
                         for (_,inspector) in self.inspectors.iter(){
                             inspector.borrow_mut()._draw_egui(&egui_ctx);
