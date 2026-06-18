@@ -76,7 +76,7 @@ impl App
     pub fn append_new_sub_app<T>(&mut self) -> &mut Self
     where T:GameLoop + Default + 'static {
         self.sub_apps.push(Rc::new(RefCell::new(T::default())));
-        puffin::profile_function!();
+        
         if let Some(new_app) = self.sub_apps.last_mut(){
             new_app.clone()
             .borrow_mut()
