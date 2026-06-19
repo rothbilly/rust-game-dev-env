@@ -26,7 +26,7 @@ pub enum DrawingBackend{
 pub struct GlobalEditor{
     pub editor_visible: bool,
     backend: DrawingBackend,
-    inspectors: HashMap<String, InspectorItem>
+    editor_windows: HashMap<String, InspectorItem>
 }
 
 impl GlobalEditor{
@@ -36,14 +36,14 @@ impl GlobalEditor{
     {
         let new_inspector = Rc::new(RefCell::new(T::default()));
         let i_name = new_inspector.clone().borrow().get_struct_name();
-        self.inspectors.insert(i_name,  new_inspector);
+        self.editor_windows.insert(i_name,  new_inspector);
         self.info_active_editor_names();
     }
 
     pub fn add_inspector<T>(&mut self, glob_inspector: &Rc<RefCell<T>>)
     where T: InspectorWindow + Default + 'static
     {
-        self.inspectors.insert(glob_inspector.borrow().get_struct_name(), glob_inspector.clone()); // pass a reference to a currently existing inspector.
+        self.editor_windows.insert(glob_inspector.borrow().get_struct_name(), glob_inspector.clone()); // pass a reference to a currently existing inspector.
        
     }
 
@@ -57,7 +57,7 @@ impl GlobalEditor{
     }
 
     pub fn info_active_editor_names(&self){
-        for (name,_) in self.inspectors.iter(){
+        for (name,_) in self.editor_windows.iter(){
             info!("[Inspector] - {}: is active ", name);
         }
     }
@@ -71,7 +71,7 @@ impl GlobalEditor{
 
 
                 DrawingBackend::Macroquad => {
-                    for (_, inspector) in self.inspectors.iter(){
+                    for (_, inspector) in self.editor_windows.iter(){
                         inspector.borrow_mut()._draw_gui();
                     }
                 }
@@ -97,7 +97,7 @@ impl GlobalEditor{
                                 });
 
                                 ui.menu_button("Windows", |ui|{
-                                    for (key, editor) in self.inspectors.iter(){
+                                    for (key, editor) in self.editor_windows.iter(){
                                         if ui.button(key).clicked() {
                                             editor.borrow_mut().set_visible(true);
                                         }
@@ -105,6 +105,10 @@ impl GlobalEditor{
                                 });
                             });
                         });
+
+                        // ==========================================
+                        //  Bottom Panel
+                        // ==========================================
 
                         egui::TopBottomPanel::bottom(Id::new("MacroQuackBottom")).show(egui_ctx, |ui|{
                             egui::menu::bar(ui, |ui|{
@@ -114,15 +118,16 @@ impl GlobalEditor{
                                 ui.separator();
                                 ui.label(&format!("Game Time: {:.2}", get_time()));
                                 
-
-
                             });
                         });
 
                         //egui::SidePanel::right(Id::new("Inspector")).show(egui_ctx, |ui|{});
 
+                        // ==========================================
+                        //  Each Window
+                        // ==========================================
                         
-                        for (_,inspector) in self.inspectors.iter(){
+                        for (_,inspector) in self.editor_windows.iter(){
                             inspector.borrow_mut()._draw_egui(&egui_ctx);
                         }
                     });
