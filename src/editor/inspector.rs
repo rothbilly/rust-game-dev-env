@@ -68,17 +68,25 @@ impl GlobalEditor{
         if self.editor_visible
         {
             match self.backend {
+
+
                 DrawingBackend::Macroquad => {
                     for (_, inspector) in self.inspectors.iter(){
                         inspector.borrow_mut()._draw_gui();
                     }
                 }
 
+
                 DrawingBackend::Egui => {
                     egui_macroquad::ui(|egui_ctx| {
                         //render settings
                         egui_ctx.set_pixels_per_point(GLOB_SETTINGS.read().unwrap().egui_render_scale);
                         egui_ctx.set_theme(egui::Theme::Light);
+
+                        // ==========================================
+                        //  Top Panel
+                        // ==========================================
+
 
                         egui::TopBottomPanel::top(Id::new("MacroQuackTop")).show(egui_ctx, |ui|{
                             egui::menu::bar(ui, |ui|{
@@ -87,9 +95,12 @@ impl GlobalEditor{
                                         ui.close_menu();
                                     }
                                 });
+
                                 ui.menu_button("Windows", |ui|{
-                                    if ui.button("App Loader").clicked() {
-                                        
+                                    for (key, editor) in self.inspectors.iter(){
+                                        if ui.button(key).clicked() {
+                                            editor.borrow_mut().set_visible(true);
+                                        }
                                     }
                                 });
                             });
