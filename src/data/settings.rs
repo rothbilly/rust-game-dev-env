@@ -26,7 +26,8 @@ pub struct Settings {
     pub window_h: i32,
     pub window_w: i32,
     pub egui_render_scale: f32,
-    editor_renderer: DrawingBackend
+    editor_renderer: DrawingBackend,
+    pub fullscreen: bool
 }
 
 // This is akin to an empty constructor.
@@ -37,7 +38,8 @@ impl Default for Settings {
             window_h: 720,
             window_w: 1280,
             egui_render_scale: 0.8,
-            editor_renderer: DrawingBackend::Macroquad
+            editor_renderer: DrawingBackend::Macroquad,
+            fullscreen: true
         }
     }
 }

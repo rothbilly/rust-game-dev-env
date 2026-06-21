@@ -14,6 +14,7 @@
         "serde",
         "srand",
         "titlebar",
+        "vsync",
         "wrapf"
     ]
 }

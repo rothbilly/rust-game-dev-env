@@ -7,7 +7,7 @@ pub use engine_macros::IName;
 use engine_macros::IVisibility;
 
 
-use macroquad::{math::clamp, };
+use macroquad::{conf, math::clamp, miniquad::window::set_fullscreen };
 
 use crate::{data::settings::{ GLOB_SETTINGS}, editor::inspector::{Inspector, InspectorWindow}};
 
@@ -53,8 +53,18 @@ impl Inspector for SettingsInspector {
                         settings_lock.egui_render_scale  = clamp(settings_lock.egui_render_scale + 0.1, 0.1, 2.0);
                         self.is_value_changed_flag = true
                     }
-                    
                 });
+
+                ui.horizontal(|ui|{
+                    ui.label("Fullscreen Mode");
+                    let _text = if settings_lock.fullscreen {"On"} else {"Off"};
+
+                    if ui.toggle_value(&mut settings_lock.fullscreen, _text).clicked(){
+                        set_fullscreen(settings_lock.fullscreen);
+                        self.is_value_changed_flag = true
+                    }
+                });
+            
 
                 if self.is_value_changed_flag {
                     if ui.button("Save Settings").clicked() {

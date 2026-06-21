@@ -34,6 +34,7 @@ fn app_conf() -> Conf {
         window_width: settings.window_w,
         window_height: settings.window_h,
         window_resizable: true,
+        fullscreen: settings.fullscreen,
         ..Default::default()
     }
 }
