@@ -2,14 +2,14 @@
 
 
 
-use egui_macroquad::egui::{self, Align2, Modal};
+use egui_macroquad::egui::{self, Align2};
 pub use engine_macros::IName;
 use engine_macros::IVisibility;
 
 
-use macroquad::{math::clamp, prelude::error};
+use macroquad::{math::clamp, };
 
-use crate::{data::settings::{self, GLOB_SETTINGS, Settings}, editor::inspector::{IVisibility, Inspector, InspectorWindow}};
+use crate::{data::settings::{ GLOB_SETTINGS}, editor::inspector::{Inspector, InspectorWindow}};
 
 
 #[derive(Default, IName, IVisibility)]
@@ -35,7 +35,6 @@ impl Inspector for SettingsInspector {
     fn _draw_egui(&mut self, _egui_ctx: &egui_macroquad::egui::Context){
         let mut settings_lock = GLOB_SETTINGS.write().unwrap();
   
-
 
         egui::Window::new(&self.window_name)
             .anchor(Align2::RIGHT_TOP, [-30.,30.])
@@ -66,7 +65,6 @@ impl Inspector for SettingsInspector {
                 }
             });
 
-        
         
     }
 

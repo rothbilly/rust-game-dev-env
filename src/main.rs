@@ -16,7 +16,6 @@ use rust_game_dev_env::editor::inspector::{DrawingBackend, GlobalEditor};
 // own crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::signal::Signal;
-use game_lib::editor::inspector::Inspector;
 use game_lib::editor::inspector::app_loader::AppLoaderMenu;
 use game_lib::core::{app::*};
 use game_lib::data::settings::{Settings, GLOB_SETTINGS};
