@@ -54,15 +54,15 @@ async fn main() {
 
     global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
 
-    let _app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     let app_registry = app_loader.borrow().app_registry.clone();
-
-
+    
+    
+    let closure_app = main_app.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     // TODO!: move this to the editor or the app, and use dependency injection in the future to cleanup the main.
     app_loader.borrow_mut().on_click_signal.connect(move |signal| {
         if let Signal::LoadApp(tag) = signal {
             if let Some(new_app) = app_registry.get(tag){
-                let mut app_write = _app.write().unwrap();
+                let mut app_write = closure_app.write().unwrap();
 
                 app_write.load_and_replace_app_at_last_2(new_app);
                 //app_write.get_total_apps();
@@ -72,7 +72,7 @@ async fn main() {
         }
     });
     
-    let app_ref = main_app.clone(); // Rc count 3
+    let loop_app_ref = main_app.clone(); // Rc count 3
 
     global_inspectors.read().unwrap()._editor_setup();
     
@@ -85,7 +85,7 @@ async fn main() {
             global_inspectors.write().unwrap().toggle_global_visibility()
         }
 
-        app_ref.read().unwrap()._runtime(delta);
+        loop_app_ref.read().unwrap()._runtime(delta);
         global_inspectors.read().unwrap()._editor_runtime(); // the order of drawing is important 
 
         if is_key_down(KeyCode::Escape) {

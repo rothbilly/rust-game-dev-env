@@ -11,8 +11,9 @@ pub struct Game
 
 /// # The main trait
 /// Here every game has to implement this trait.
-/// 
-/// 
+
+
+
 pub trait  GameLoop{
     fn _ready(&mut self){}
     fn _process_input(&mut self){}

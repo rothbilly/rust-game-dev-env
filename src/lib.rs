@@ -3,6 +3,11 @@
 // make macros public to all mods in this crate.
 pub (crate) use engine_macros::*;
 
+// ==========================================
+//  Engine
+// ==========================================
+
+
 pub mod editor {
     pub mod constants;
     pub mod inspector;
@@ -15,6 +20,7 @@ pub mod toolbox {
         pub mod macro_rules;
     }
 }
+
 
 pub mod data {
     pub mod serialization;
@@ -37,6 +43,11 @@ pub mod components {
     pub mod gameobject;
 }
 
+// ==========================================
+//  Games consumes the engine
+// ==========================================
+
+
 pub mod games {
     pub mod breakout;
     pub mod macrowareexe;
@@ -47,4 +58,3 @@ pub mod games {
     pub use breakout::TestGame;
     pub use macrowareexe::MacrowareExe;
 }
-
