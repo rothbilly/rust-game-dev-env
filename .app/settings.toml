@@ -1,5 +1,5 @@
 volume = 0.5
 window_h = 720
 window_w = 1280
-egui_render_scale = 0.9
+egui_render_scale = 0.89999974
 editor_renderer = "Macroquad"

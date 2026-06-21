@@ -55,7 +55,7 @@ impl Default for AppLoaderMenu {
 
 impl Inspector for AppLoaderMenu {
 
-    
+
     fn _setup(&mut self){
         self.panel_height = UI_BLOCK_SIZE * self.app_registry.registry.keys().len() as f32;
         // println!("[App Loader Setup] - panel size set to {}", &self.panel_height)
@@ -92,12 +92,12 @@ impl Inspector for AppLoaderMenu {
         .open( &mut self.is_visible)
         .show(_egui_ctx, |ui|{
             ui.label("Select a app:");
-                for (tag,_) in self.app_registry.registry.iter(){
-                    if ui.button(*tag).clicked(){
-                        self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
-                    }
+            for (tag,_) in self.app_registry.registry.iter(){
+                if ui.button(*tag).clicked(){
+                    self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
                 }
-            });
+            }
+        });
     
     }
 

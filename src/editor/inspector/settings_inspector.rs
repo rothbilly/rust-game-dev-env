@@ -1,13 +1,13 @@
 
 
-use std::{fs::TryLockError, ops::Deref, sync::RwLock};
 
-use egui_macroquad::egui::{self, Align2, mutex::RwLockWriteGuard};
+
+use egui_macroquad::egui::{self, Align2, Modal};
 pub use engine_macros::IName;
 use engine_macros::IVisibility;
 
 
-use macroquad::prelude::error;
+use macroquad::{math::clamp, prelude::error};
 
 use crate::{data::settings::{self, GLOB_SETTINGS, Settings}, editor::inspector::{IVisibility, Inspector, InspectorWindow}};
 
@@ -16,7 +16,7 @@ use crate::{data::settings::{self, GLOB_SETTINGS, Settings}, editor::inspector::
 pub struct SettingsInspector{
     window_name: String,
     is_visible: bool,
-    panel_height: f32,
+    is_value_changed_flag: bool
 }
 
 impl InspectorWindow for SettingsInspector {}
@@ -33,25 +33,42 @@ impl Inspector for SettingsInspector {
     }
 
     fn _draw_egui(&mut self, _egui_ctx: &egui_macroquad::egui::Context){
-        let settings_lock = GLOB_SETTINGS.try_write();
-        match settings_lock {
-            Ok(guard) => {
-                let mut settings = &*guard;
+        let mut settings_lock = GLOB_SETTINGS.write().unwrap();
+  
 
-                egui::Window::new(&self.window_name)
-                .anchor(Align2::RIGHT_TOP, [-30.,30.])
-                .title_bar(true)
-                .open( &mut self.is_visible)
-                .show(_egui_ctx, |ui|{
 
+        egui::Window::new(&self.window_name)
+            .anchor(Align2::RIGHT_TOP, [-30.,30.])
+            .title_bar(true)
+            .open( &mut self.is_visible)
+            .show(_egui_ctx, |ui|{
+                ui.horizontal(|ui|{
+
+                    ui.label("Egui Render Scale");
+                    if ui.button("<").clicked(){
+                        settings_lock.egui_render_scale  = clamp(settings_lock.egui_render_scale - 0.1, 0.1, 2.0);
+                        self.is_value_changed_flag = true
+                    }
+                    ui.add_enabled( false, egui::DragValue::new(&mut settings_lock.egui_render_scale));
+                    if ui.button(">").clicked(){
+                        settings_lock.egui_render_scale  = clamp(settings_lock.egui_render_scale + 0.1, 0.1, 2.0);
+                        self.is_value_changed_flag = true
+                    }
+                    
                 });
 
-            }
-            Err(TryLockError) => {
-                error!("Settings are locked from another reference")
-            }
-        }
+                if self.is_value_changed_flag {
+                    if ui.button("Save Settings").clicked() {
+                        if let Ok(_) =  settings_lock.save() {
+                            self.is_value_changed_flag = false
+                        }
+                    }
+                }
+            });
+
+        
         
     }
+
 }
 
