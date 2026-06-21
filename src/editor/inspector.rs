@@ -62,7 +62,11 @@ impl GlobalEditor{
         }
     }
 
-
+    pub fn _editor_setup(&self ){
+        for (_, editor) in self.editor_windows.iter(){
+            editor.borrow_mut()._setup();
+        }
+    }
 
     pub fn _editor_runtime(&self) {
         if self.editor_visible

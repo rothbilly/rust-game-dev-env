@@ -1,7 +1,9 @@
 {
     "cSpell.words": [
+        "codegen",
         "DARKPURPLE",
         "egui",
+        "frunk",
         "gameobject",
         "macroquad",
         "Macroware",
@@ -9,6 +11,7 @@
         "miniquad",
         "nanoserde",
         "Parentable",
+        "serde",
         "srand",
         "titlebar",
         "wrapf"

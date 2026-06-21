@@ -22,6 +22,8 @@ inventory = "0.3.24"
 
 engine_macros = {path = "engine_macros"}
 
+# frunk = { version = "0.4.4"}
+# frunk_core = { version = "0.4.4" }
 
 [dev-dependencies]
 

@@ -55,7 +55,7 @@ impl Default for AppLoaderMenu {
 
 impl Inspector for AppLoaderMenu {
 
-
+    
     fn _setup(&mut self){
         self.panel_height = UI_BLOCK_SIZE * self.app_registry.registry.keys().len() as f32;
         // println!("[App Loader Setup] - panel size set to {}", &self.panel_height)
