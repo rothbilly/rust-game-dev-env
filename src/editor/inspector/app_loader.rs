@@ -1,23 +1,24 @@
 
 
 use std::rc::Rc;
-use std::sync::RwLock; 
 
 use egui_macroquad::egui;
+use engine_macros::IVisibility;
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
 use crate::{core::signal::*, editor::{constants::*, inspector::*}};
-
-
+pub use engine_macros::IName;
 use crate::core::app::AppRegistry;
 
+
+
 const UI_BLOCK_SIZE: f32 = 40.;
-pub use engine_macros::IName;
 
 
-// <'a> defines RwLockthat main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
+// <'a> defines RwLock that main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
 
 #[derive(IName)]
+#[derive(IVisibility)]
 pub struct AppLoaderMenu{
     window_name: String,
     is_visible: bool,
@@ -104,16 +105,7 @@ impl Inspector for AppLoaderMenu {
 }
 
 
-impl IVisibility for AppLoaderMenu{
-    fn is_visible(&self) -> bool {
-        self.is_visible
-
-    }
-
-    fn set_visible(&mut self, _value: bool) {
-        self.is_visible = _value
-    }
-}
+impl InspectorWindow for AppLoaderMenu {}
 
 impl Hash for AppLoaderMenu{
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -122,4 +114,3 @@ impl Hash for AppLoaderMenu{
     }
 }
 
-impl InspectorWindow for AppLoaderMenu {}

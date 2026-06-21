@@ -140,4 +140,32 @@ pub fn i_name_derive(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+// ==========================================
+//  Derive Macro for auto implement IVisibility trait
+// ==========================================
 
+
+#[proc_macro_derive(IVisibility)]
+pub fn ivisibility_derive(input: TokenStream) -> TokenStream {
+    // Parse the representation of the struct
+    let input = parse_macro_input!(input as DeriveInput);
+    
+    // Get the identifier (name) of the struct
+    let name = input.ident;
+
+    // Generate the implementation
+    let expanded = quote! {
+        impl crate::editor::inspector::IVisibility for #name {
+            fn is_visible(&self) -> bool {
+                self.is_visible
+            }
+
+            fn set_visible(&mut self, value: bool) {
+                self.is_visible = value;
+            }
+        }
+    };
+
+
+    TokenStream::from(expanded)
+}

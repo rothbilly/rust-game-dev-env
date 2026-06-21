@@ -5,7 +5,7 @@ use crate::core::app::AppRegistration; // To register it in the App registry.
 
 
 #[derive(Default)]
-#[register_app("EmptyGame")]
+#[register_app("EmptyGame")] // Custom Registration macro
 pub struct EmptyGame;
 
 
