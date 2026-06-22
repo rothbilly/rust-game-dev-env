@@ -1,6 +1,7 @@
 
 use engine_macros::register_app;
 use macroquad::experimental::coroutines::*;
+
 use macroquad::prelude::*;
 use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration; // To register it in the App registry.
@@ -16,7 +17,8 @@ pub struct TutorialGame{
     pos: Vec2,
     squares: Vec<Shape>,
     circle: Shape,
-    is_gameover: bool
+    is_gameover: bool,
+    camera: Option<Camera2D>
 }
 
 

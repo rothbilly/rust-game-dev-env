@@ -44,7 +44,7 @@ impl ScreenVisualEffect {
     }
     // this need to be refactor, each game set its own camera as its need, maybe each game renders to a global target idk.
     // Use this BEFORE render the scene during loop
-    pub fn setup_renderer_camera(&self,camera_mode: CameraMode){
+    pub fn setup_test_renderer_camera(&self,camera_mode: CameraMode){
 
         match camera_mode {
             CameraMode::Camera2DMode =>{

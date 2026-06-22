@@ -88,9 +88,12 @@ async fn main() {
             global_inspectors.write().unwrap().toggle_global_visibility()
         }
 
-        crt.setup_renderer_camera(CameraMode::Camera2DMode);
+
+        // Game Layer
         loop_app_ref.read().unwrap()._runtime(delta);
+        // VFX Layer
         crt.render_vfx();
+        // Editor Layer
         global_inspectors.read().unwrap()._editor_runtime(); // the order of drawing is important 
 
         if is_key_down(KeyCode::Escape) {
