@@ -67,7 +67,7 @@ async fn main() {
             if let Some(new_app) = app_registry.get(tag){
                 let mut app_write = closure_app.write().unwrap();
 
-                app_write.load_and_replace_app_at_last_2(new_app);
+                app_write.load_and_replace_app_at_last(new_app);
                 //app_write.get_total_apps();
             }else{
                 println!("[Editor] Error: Tag {} not in registry.", tag);
@@ -92,7 +92,7 @@ async fn main() {
         // Game Layer
         loop_app_ref.read().unwrap()._runtime(delta);
         // VFX Layer
-        crt.render_vfx();
+        //crt.render_vfx();
         // Editor Layer
         global_inspectors.read().unwrap()._editor_runtime(); // the order of drawing is important 
 

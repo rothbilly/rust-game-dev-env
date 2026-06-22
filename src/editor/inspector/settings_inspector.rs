@@ -1,7 +1,5 @@
 
 
-
-
 use egui_macroquad::egui::{self, Align2};
 pub use engine_macros::IName;
 use engine_macros::IVisibility;

@@ -74,20 +74,9 @@ impl App
         app
     }
 
-    pub fn append_new_sub_app<T>(&mut self) -> &mut Self
-    where T:GameLoop + Default + 'static {
-        self.sub_apps.push(Rc::new(RefCell::new(T::default())));
-        
-        if let Some(new_app) = self.sub_apps.last_mut(){
-            new_app.clone()
-            .borrow_mut()
-            ._ready();
-        }
-        println!("[Main App] - Added a new sub app successfully");
-        self
-    }
 
-    pub fn append_new_sub_app_2(&mut self, shared_app : Rc<RefCell<dyn GameLoop>>) -> &mut Self{
+
+    pub fn append_new_sub_app(&mut self, shared_app : Rc<RefCell<dyn GameLoop>>) -> &mut Self{
 
         self.sub_apps.push(shared_app); // We cannot create an RC RefCell because of conflict with <dyn GameLoop>
 
@@ -100,16 +89,10 @@ impl App
         self
     }
 
-    pub fn load_and_replace_app_at_last<T>(&mut self) -> &mut Self
-    where T:GameLoop + Default + 'static {
-        self.remove_last_app();
-        self.append_new_sub_app::<T>();
-        self
-    }
 
-    pub fn load_and_replace_app_at_last_2(&mut self, new_app : Rc<RefCell<dyn GameLoop>>) -> &mut Self{
+    pub fn load_and_replace_app_at_last(&mut self, new_app : Rc<RefCell<dyn GameLoop>>) -> &mut Self{
         self.remove_last_app();
-        self.append_new_sub_app_2(new_app);
+        self.append_new_sub_app(new_app);
         self
     }
 

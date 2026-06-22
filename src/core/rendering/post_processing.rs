@@ -60,11 +60,7 @@ impl ScreenVisualEffect {
                     ..Default::default()
                 });
              }
-        }
-    
-
-
-        
+        }        
     }
 
     // Use this AFTER render the scene during loop
