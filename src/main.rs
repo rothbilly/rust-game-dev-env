@@ -5,12 +5,15 @@ use std::rc::Rc;
 use std::sync::RwLock; 
 
 
+
+use macroquad::math::Vec2;
 // For async.
 use macroquad:: prelude::*;
 // egui
 use egui_macroquad::*;
 
 
+use rust_game_dev_env::core::rendering::post_processing::{CameraMode, ScreenVisualEffect};
 use rust_game_dev_env::editor::inspector::settings_inspector::SettingsInspector;
 use rust_game_dev_env::editor::inspector::{DrawingBackend, GlobalEditor};
 // own crate imports
@@ -75,7 +78,7 @@ async fn main() {
     let loop_app_ref = main_app.clone(); // Rc count 3
 
     global_inspectors.read().unwrap()._editor_setup();
-    
+    let crt = ScreenVisualEffect::create_from_sample(Vec2{x: screen_width()/2.0, y: screen_height()/2.0}, FilterMode::Nearest);
 
     loop { // Main loop
         let mut delta = get_frame_time();
@@ -85,7 +88,9 @@ async fn main() {
             global_inspectors.write().unwrap().toggle_global_visibility()
         }
 
+        crt.setup_renderer_camera(CameraMode::Camera2DMode);
         loop_app_ref.read().unwrap()._runtime(delta);
+        crt.render_vfx();
         global_inspectors.read().unwrap()._editor_runtime(); // the order of drawing is important 
 
         if is_key_down(KeyCode::Escape) {

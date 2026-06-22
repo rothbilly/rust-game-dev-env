@@ -33,6 +33,7 @@ pub mod core {
     pub mod rendering {
         pub mod letterbox;
         pub mod shader;
+        pub mod post_processing;
     }
     pub mod signal;
     pub mod math;

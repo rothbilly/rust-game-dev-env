@@ -42,7 +42,6 @@ impl GameLoop for TutorialGame {
     fn _update(&mut self, _delta: f32) {
 
 
-
         self.pos += self.dir * MOVEMENT_SPEED * _delta;
         self.pos.x = wrapf(self.pos.x, 0.0, screen_width());
         self.pos.y = wrapf(self.pos.y, 0.0, screen_height());

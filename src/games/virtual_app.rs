@@ -29,15 +29,18 @@ pub enum VirtualAppMode {
 
 
 impl GameLoop for SampleVirtualApp {
-    fn _render(&self) {
-        clear_background(color::LIGHTGRAY);
-
-        
+    fn _ready(&mut self){
         set_camera(&Camera2D {
             zoom: vec2(1. / screen_width() * 2., 1. / screen_height() * 2.),
             target: vec2(screen_width() / 2., screen_height() / 2.),
             ..Default::default()
         });
+    } 
+
+    fn _render(&self) {
+        clear_background(color::LIGHTGRAY);
+
+    
 
         //draw_text(&format!("FPS: {}", get_fps()), 16., 24., 24., color::RED);
         
