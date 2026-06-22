@@ -85,7 +85,7 @@ impl App
             .borrow_mut()
             ._ready()
         }
-        println!("[Main App] - Added a new sub app successfully");
+        info!("[Main App] - Added a new sub app successfully");
         self
     }
 

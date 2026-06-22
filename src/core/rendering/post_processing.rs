@@ -42,7 +42,7 @@ impl ScreenVisualEffect {
             material
             }
     }
-    // this need to be refactor, each game set its own camera as its need, maybe each game renders to a global target idk.
+    // this need to be refactor, each game set its own camera as its need, maybe each game renders to a global target or pass the target to the game scene camera
     // Use this BEFORE render the scene during loop
     pub fn setup_test_renderer_camera(&self,camera_mode: CameraMode){
 

@@ -4,7 +4,7 @@
 pub (crate) use engine_macros::*;
 
 // ==========================================
-//  Engine
+//  Engine mods
 // ==========================================
 
 
@@ -45,7 +45,7 @@ pub mod components {
 }
 
 // ==========================================
-//  Games consumes the engine
+//  Games mods - in the future in its own crate maybe  
 // ==========================================
 
 
