@@ -18,7 +18,7 @@ pub struct TutorialGame{
     squares: Vec<Shape>,
     circle: Shape,
     is_gameover: bool,
-    camera: Option<Camera2D>
+    game_camera: Option<Box<dyn Camera>> // Can be a camera 2d pr 3D or None
 }
 
 

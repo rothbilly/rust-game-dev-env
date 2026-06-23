@@ -12,7 +12,7 @@ pub struct Game
 /// # The main trait
 /// Here every game has to implement this trait.
 
-
+trait BaseGame : GameLoop + GameCamera{}  
 
 pub trait  GameLoop{
     fn _ready(&mut self){}
@@ -21,6 +21,18 @@ pub trait  GameLoop{
     fn _render(&self){}
 }
 
+
+type SomeCamera = Option<Box<dyn Camera>>;
+
+pub trait GameCamera{
+    fn try_get_camera(&self) -> SomeCamera{
+        None
+    }
+
+    fn has_camera(&self) -> bool;
+
+    fn set_render_target(&mut self);
+}
 
 
 

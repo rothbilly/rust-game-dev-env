@@ -5,7 +5,7 @@ use std::{cell::RefCell, fmt::Debug, rc::Rc};
 use macroquad::prelude::*;
 
 
-use crate::core::game::GameLoop;
+use crate::core::game::{GameCamera, GameLoop};
 use std::collections::HashMap;
 
 
@@ -120,6 +120,10 @@ impl App
     }
 
 
+    // ==========================================
+    //  App Module Built In Calls
+    // ==========================================
+
     pub fn _ready(&self) -> &Self{
         for app in self.sub_apps.iter(){
             app.clone()
@@ -129,7 +133,7 @@ impl App
         self
     }
 
-    /// the application process ordering
+    
     pub fn _runtime(&self , delta_time: f32){
         if self.sub_apps.len() == 0 {return}
 
