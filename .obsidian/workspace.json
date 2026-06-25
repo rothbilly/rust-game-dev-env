@@ -82,7 +82,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -155,7 +155,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Notas de Jose.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -165,7 +165,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de Notas de Jose"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
@@ -259,7 +259,7 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "2cacea1f9b4628de",
+  "active": "913b99e2ea99a358",
   "lastOpenFiles": [
     "Notas de Jose.md",
     "README.md",
