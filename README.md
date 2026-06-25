@@ -128,3 +128,5 @@ cargo doc --no-deps --open
 ## Notas extras
 
 [Bitacora del Nico](Bitacora%20del%20Nico.md)
+
+[[Notas de Jose]]
