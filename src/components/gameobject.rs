@@ -11,7 +11,7 @@ pub trait Updateable{
     fn _update(&mut self, delta : f32);
 }
 
-// Multi-type trait. Here should be everything that a GameObject implements.
+// Multi-type trait aka auto traits. Here should be everything that a GameObject implements.
 pub trait GameObject: Draweable + Updateable {
     fn position(&self) -> Vec3;
     fn set_position(&mut self, pos: Vec3);

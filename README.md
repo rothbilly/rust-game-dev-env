@@ -6,7 +6,7 @@ En `Visual Studio Code` compilar con `Ctrl + Shift + B`, en terminal usar `cargo
 
 ## Objetivos 
 
-Aprender y crear un juego en rust, aprender a utilizar el ecosistema y construir un playground/engine que facilite la creación de juegos en un motor de bajo nivel.
+Aprender y crear un juego en rust, aprender a utilizar el ecosistema y construir un playground/engine que facilite la creación de juegos en un motor de bajo nivel. poder lograr algo que sea ligero y renderize muchos elementos visuales en pantalla sin problemas,
 
 ### Estrategia
 
@@ -123,7 +123,6 @@ Compilar API Docs
 
 ```
 cargo doc --no-deps --open
-
 ```
 
 ## Notas extras
