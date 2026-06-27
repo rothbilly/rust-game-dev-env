@@ -26,7 +26,7 @@ pub struct Settings {
     pub egui_render_scale: f32,
     editor_renderer: DrawingBackend,
     pub fullscreen: bool,
-    pub swap_interval: i32,
+    pub swap_interval: i32, //GPU hint, not reliable, debug only
 }
 
 // This is akin to an empty constructor.
