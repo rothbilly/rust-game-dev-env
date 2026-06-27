@@ -4,3 +4,4 @@ window_w = 1280
 egui_render_scale = 0.9
 editor_renderer = "Macroquad"
 fullscreen = false
+swap_interval = 1

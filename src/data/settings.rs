@@ -1,14 +1,12 @@
+use std::path::Path;
 use std::sync::RwLock;
 use std::{fs, sync::LazyLock};
-use std::path::Path;
-
-
 
 use macroquad::prelude::*;
 
-use serde::{Deserialize, Serialize};
 use crate::data::serialization::*;
 use crate::editor::inspector::DrawingBackend;
+use serde::{Deserialize, Serialize};
 
 const TOML_PATH_STR: &str = ".app/settings.toml";
 
@@ -16,8 +14,8 @@ const TOML_PATH_STR: &str = ".app/settings.toml";
 /// static = eternal lifetime
 /// LazyLock = delays execution until it is called on code. Avoids having to define static at compile time.
 /// Mutex = Can only be edited under a lock. Avoids race conditions.
-pub static GLOB_SETTINGS: LazyLock<RwLock<Settings>> = LazyLock::new(|| RwLock::new(Settings::new()));
-
+pub static GLOB_SETTINGS: LazyLock<RwLock<Settings>> =
+    LazyLock::new(|| RwLock::new(Settings::new()));
 
 // Derive is "automatic" code. Using default implementations.
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,7 +25,8 @@ pub struct Settings {
     pub window_w: i32,
     pub egui_render_scale: f32,
     editor_renderer: DrawingBackend,
-    pub fullscreen: bool
+    pub fullscreen: bool,
+    pub swap_interval: i32,
 }
 
 // This is akin to an empty constructor.
@@ -39,7 +38,8 @@ impl Default for Settings {
             window_w: 1280,
             egui_render_scale: 0.8,
             editor_renderer: DrawingBackend::Macroquad,
-            fullscreen: true
+            fullscreen: true,
+            swap_interval: 1,
         }
     }
 }
@@ -50,7 +50,7 @@ impl Settings {
         Self::default()
     }
 
-    pub fn save(&self) -> Result<(), Box<dyn std::error::Error>>{
+    pub fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.save_with_mode(SerializeMode::TOML, TOML_PATH_STR)?;
         Ok(())
     }
@@ -76,8 +76,8 @@ impl Settings {
     /// Load settings from a custom TOML file path (accepts `String`, `&str`, or `&Path`).
     pub fn load_from_toml_path<P: AsRef<Path>>(path: P) -> Settings {
         if let Ok(contents) = fs::read_to_string(path.as_ref()) {
-            if let Ok(setting) = toml::from_str::<Settings>(&contents){
-                return setting
+            if let Ok(setting) = toml::from_str::<Settings>(&contents) {
+                return setting;
             }
         }
         Settings::default()
@@ -88,11 +88,4 @@ impl Settings {
     }
 }
 
-
-
-
-impl ISerializableData for Settings{
-
-}
-
-
+impl ISerializableData for Settings {}

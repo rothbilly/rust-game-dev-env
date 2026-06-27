@@ -38,6 +38,12 @@ fn app_conf() -> Conf {
         window_height: settings.window_h,
         window_resizable: true,
         fullscreen: settings.fullscreen,
+        platform: {
+            miniquad::conf::Platform {
+                swap_interval: Some(settings.swap_interval),
+                ..Default::default()
+            }
+        },
         ..Default::default()
     }
 }
