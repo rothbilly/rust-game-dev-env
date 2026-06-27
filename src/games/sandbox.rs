@@ -9,6 +9,10 @@ pub const EMPTY: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 pub const SOFTBLUE: Color = Color::new(0.66, 0.71, 0.89, 1.0);
 pub const SAND: Color = Color::new(0.89, 0.84, 0.66, 1.0);
 
+// TODO: add multithreading and dirty rects
+// maybe add brush patterns
+// add tile type selection
+
 #[derive(Default)]
 #[register_app("Sandbox")] // Custom Registration macro
 pub struct Sandbox {
@@ -16,15 +20,14 @@ pub struct Sandbox {
     selected_tile_type: TileType,
     tile_size: i32,
     brush_size: (i32, i32),
-    //next_tiles: Vec<TileType>,
     tiles: Vec<TileType>,
-    move_queue: Vec<((i32, i32), (i32, i32))>,
+    move_queue: Vec<((i32, i32), (i32, i32))>, // we queue the available moves to avoid doble buffering
 }
 
 impl GameLoop for Sandbox {
     fn _ready(&mut self) {
         let screen_size = (screen_width(), screen_height());
-        self.tile_size = 4;
+        self.tile_size = 5;
         self.selected_tile_type = TileType::Sand;
         self.world_size = (
             (screen_size.0 / self.tile_size as f32).floor() as i32,
@@ -34,7 +37,6 @@ impl GameLoop for Sandbox {
         self.brush_size = (16, 16);
         let vec_size = (self.world_size.0 * self.world_size.1) as usize;
 
-        //self.next_tiles = vec![TileType::Empty; vec_size];
         self.tiles = vec![TileType::Empty; vec_size];
         self.move_queue = Vec::new();
         self.move_queue.reserve(vec_size);
@@ -43,6 +45,7 @@ impl GameLoop for Sandbox {
     fn _process_input(&mut self) {
         let (mouse_x, mouse_y) = mouse_position();
         let (screen_w, screen_h) = screen_size();
+
         //out of screen
         if mouse_x < 0.0 || mouse_x >= screen_w || mouse_y < 0.0 || mouse_y >= screen_h {
             return;
@@ -88,57 +91,38 @@ impl GameLoop for Sandbox {
                 if tile == TileType::Empty {
                     continue;
                 }
-                if !self.process_tile(&tile, (x, y)) {
+                if !self.process_tile(tile, (x, y)) {
                     self.tiles[idx] = tile;
                 }
             }
         }
 
-        //self.move_queue.sort_by_key(|pair| pair.0);
-        self.move_queue.shuffle();
-        self.move_queue.dedup_by_key(|k| k.0);
+        // we shuffle and then dedup by destination,
+        // this way we assure there only one randomly
+        // selected tile that is going to move into the available position
+        let move_queue = &mut self.move_queue;
+        move_queue.shuffle();
+        move_queue.dedup_by_key(|k| k.0);
 
-        let size = self.move_queue.len();
-        for i in 0..size {
-            let mov = self.move_queue[i];
-            self.move_tile(mov.1, mov.0);
+        let mut mov = move_queue.pop();
+        while (match mov {
+            Some(val) => {
+                self.move_tile(val.1, val.0);
+                Some(())
+            }
+            _ => None,
+        })
+        .is_some()
+        {
+            mov = self.move_queue.pop();
         }
-        self.move_queue.clear();
-
-        // let move_queue = &self.move_queue;
-        // let size = move_queue.len();
-        // let idx = 0;
-        // for i in 0..size - 1 {
-        //     let next_dest = move_queue[i + 1].0;
-        // }
-
-        //swap and clear
-        //std::mem::swap(&mut self.tiles, &mut self.next_tiles);
-        //self.next_tiles.fill_with(|| TileType::Empty);
     }
 
     fn _render(&self) {
-        //clear_background(BLACK);
-
-        let tile_size = self.tile_size as f32;
-        let mouse_screen = mouse_position();
-        let mouse_tile: (i32, i32) = (
-            (mouse_screen.0 / tile_size).floor() as i32,
-            (mouse_screen.1 / tile_size).floor() as i32,
-        );
-
-        draw_text(
-            std::format!("mouse tile: {:?}", mouse_tile),
-            32.0,
-            64.0,
-            32.0,
-            WHITE,
-        );
-
+        //we draw each tile individually, probably there is better ways to do this
         let tile_size = self.tile_size as f32;
         let len = self.tiles.len();
         for i in 0..len {
-            //let idx = i as usize;
             let tile = self.tiles[i];
             if tile == TileType::Empty {
                 continue;
@@ -157,7 +141,8 @@ impl GameLoop for Sandbox {
 }
 
 impl Sandbox {
-    fn process_tile(&mut self, tile: &TileType, pos: (i32, i32)) -> bool {
+    // we take advantage of the way conditions are validated, the || (or) operator will not check any other option if the first one is true
+    fn process_tile(&mut self, tile: TileType, pos: (i32, i32)) -> bool {
         match tile {
             TileType::Sand => self.try_move_down(pos) || self.try_move_down_sides(pos), //,
             TileType::Water => {
@@ -170,6 +155,7 @@ impl Sandbox {
         }
     }
 
+    // behaviours are quite simple for now, we will probably change this later
     fn try_move_down(&mut self, from: (i32, i32)) -> bool {
         let to = (from.0, from.1 + 1);
 
@@ -247,7 +233,6 @@ impl Sandbox {
         left || right
     }
 
-    #[inline]
     fn move_tile(&mut self, from: (i32, i32), to: (i32, i32)) {
         let from_idx = self.pos_to_idx(from);
         let to_idx = self.pos_to_idx(to);
@@ -265,12 +250,10 @@ impl Sandbox {
     #[inline]
     fn is_empty(&self, pos: (i32, i32)) -> bool {
         self.in_bounds(pos) && (self.tiles[self.pos_to_idx(pos)] == TileType::Empty)
-        //&& (self.next_tiles[self.pos_to_idx(pos)] == TileType::Empty)
     }
 
     #[inline]
     fn pos_to_idx(&self, pos: (i32, i32)) -> usize {
-        // y * width + x
         (pos.1 * self.world_size.0 + pos.0) as usize
     }
 
