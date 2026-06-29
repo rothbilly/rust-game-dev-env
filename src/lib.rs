@@ -50,12 +50,11 @@ pub mod components {
 
 
 pub mod games {
-    pub mod breakout;
-    pub mod macrowareexe;
-    pub mod empty_game;
-    pub mod tutorial_game;
-    pub mod virtual_app;
-
-    pub use breakout::TestGame;
-    pub use macrowareexe::MacrowareExe;
+    // pub mod breakout;
+    // pub mod macrowareexe;
+    // pub mod empty_game;
+    // pub mod tutorial_game;
+    // pub mod virtual_app;
+    // pub mod physics_test;
+    automod::dir!(pub "src/games");
 }
