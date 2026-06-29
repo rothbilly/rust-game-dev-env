@@ -2,7 +2,7 @@ use macroquad::prelude::*;
 use std::ops::{Deref, DerefMut};
 use std::collections::HashMap;
 
-use crate::components::gameobject::GameObject;
+use crate::components::gameobject::*;
 
 #[derive(Default)]
 pub struct Game
@@ -35,10 +35,25 @@ pub trait GameLoop : DerefMut<Target = Game>{
     }
 
     fn render(&self){
+        if let Some(ref camera) = self.game_camera {
+            set_camera(camera.as_ref());
+        }
         clear_background(self.background_color);
+
         for (_id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
-            game_object._draw();
+            if (matches!(game_object.layer(), RenderLayer::World)){
+                game_object._draw();
+            }
         } 
+        set_default_camera();
+
+        for (_id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
+            if (matches!(game_object.layer(), RenderLayer::Screen)){
+                game_object._draw();
+            }
+        } 
+
+
         self._render();
     }
 
