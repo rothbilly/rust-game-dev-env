@@ -10,8 +10,8 @@ use crate::components::gameobject::*;
 
 use std::collections::HashMap;
 
-#[derive(Default)]
 #[register_app("Macroware.Exe")]
+#[derive(Default)]
 pub struct MacrowareExe {
     background_color : Color,
     change_background : bool,

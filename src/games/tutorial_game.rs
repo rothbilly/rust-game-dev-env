@@ -10,8 +10,8 @@ use crate::core::math::wrapf;
 const MOVEMENT_SPEED: f32 = 200.0;
 
 
-#[derive(Default)]
 #[register_app("Tutorial Game")]
+#[derive(Default)]
 pub struct TutorialGame{
     dir: Vec2,
     pos: Vec2,

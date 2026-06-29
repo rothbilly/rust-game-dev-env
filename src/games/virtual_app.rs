@@ -4,8 +4,8 @@ use engine_macros::*;
 use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration;
 
-#[derive(Default)]
 #[register_app("Sample Virtual App")]
+#[derive(Default)]
 pub struct SampleVirtualApp{
     _title: String,
     _mode: VirtualAppMode,

@@ -1,16 +1,17 @@
 use engine_macros::register_app;
 use macroquad::prelude::*;
+use macroquad::color::colors;
 use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration; // To register it in the App registry.
 
 
-#[derive(Default)]
 #[register_app("PhysicsTest")] // Custom Registration macro
-pub struct EmptyGame;
+#[derive(Default)]
+pub struct PhysicsTest;
 
-
-impl GameLoop for EmptyGame {
+impl GameLoop for PhysicsTest {
     fn _ready(&mut self) {
+        self.background_color = LIGHTGRAY;
     }
 
     fn _process_input(&mut self) {
