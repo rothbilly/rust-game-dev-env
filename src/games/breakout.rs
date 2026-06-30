@@ -6,10 +6,9 @@ use crate::core::app::AppRegistration;
 const BLOCKS_W: usize = 10;
 const BLOCKS_H: usize = 10;
 
-#[derive(Default)]
 #[register_app("Breakout")]
+#[derive(Default)]
 pub struct TestGame {
-    _base_game: Game,
     blocks: [[bool; BLOCKS_W]; BLOCKS_H],
     ball_x: f32,
     ball_y: f32,

@@ -44,13 +44,8 @@ pub mod components {
 // ==========================================
 
 pub mod games {
-    pub mod breakout;
-    pub mod empty_game;
-    pub mod macrowareexe;
-    pub mod sandbox;
-    pub mod tutorial_game;
-    pub mod virtual_app;
-
-    pub use breakout::TestGame;
-    pub use macrowareexe::MacrowareExe;
+    // pub mod breakout;
+    // pub mod macrowareexe;
+    // ...
+    automod::dir!(pub "src/games");
 }

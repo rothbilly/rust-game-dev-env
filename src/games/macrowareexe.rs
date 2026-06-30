@@ -10,10 +10,9 @@ use crate::components::gameobject::*;
 
 use std::collections::HashMap;
 
-#[derive(Default)]
 #[register_app("Macroware.Exe")]
+#[derive(Default)]
 pub struct MacrowareExe {
-    background_color : Color,
     change_background : bool,
     camera : Camera3D, // Camera could be in its own "substruct"
     camera_dir : Vec3,
@@ -21,7 +20,6 @@ pub struct MacrowareExe {
     down : bool,
     left: bool,
     right: bool,
-    game_objects : HashMap<String, Box<dyn GameObject>>,
 }
 
 impl GameLoop for MacrowareExe {
@@ -32,7 +30,6 @@ impl GameLoop for MacrowareExe {
         self.camera.up = vec3(0., 1., 0.);
         self.camera_dir = Vec3::ZERO;
         self.camera.projection = Projection::Perspective;
-        self.game_objects = HashMap::new();
 
         let sphere = Box::new(Sphere::new(vec3(-8., 0., 0.), BLUE, 1.0));
         let sphere2 = Box::new(Sphere::new(vec3(-4., 0., 0.), RED, 2.0));
@@ -57,6 +54,12 @@ impl GameLoop for MacrowareExe {
     }
 
     fn _update(&mut self, delta : f32) {
+
+        let up = self.up;
+        let down = self.down;
+        let left = self.left;
+        let right = self.right;
+        
         if self.change_background {
             self.background_color = match self.background_color {
                 LIGHTGRAY => PURPLE,
@@ -64,24 +67,20 @@ impl GameLoop for MacrowareExe {
                 _ => self.background_color
             };
         }
-
-        for (_id, game_object) in &mut self.game_objects {
-            game_object._update(delta);
-        }
-
+        
 
         let sphere = self.game_objects.get_mut("sphere").unwrap();
         let mut position = sphere.position();
-        if self.up {
+        if up {
             position.x += 10. * delta;
         }
-        if self.down {
+        if down {
             position.x -= 10. * delta;
         }
-        if self.left{
+        if left{
             position.z -= 10. * delta;
         }
-        if self.right{
+        if right{
             position.z += 10. * delta;
         }
         sphere.set_position(position);
@@ -89,16 +88,9 @@ impl GameLoop for MacrowareExe {
 
     
     fn _render(&self) {
-        clear_background(self.background_color);
         set_camera(&self.camera);
         draw_grid(20, 1., BLACK, GRAY);
-
-
-        for (_id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
-            game_object._draw();
-        } 
-
-        set_default_camera(); // for 2d
+        // set_default_camera(); // for 2d
         draw_hexagon(
             mouse_position().0,
             mouse_position().1,

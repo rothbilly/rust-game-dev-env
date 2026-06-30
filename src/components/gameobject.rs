@@ -1,10 +1,20 @@
 
 use macroquad::prelude::*;
 
+pub enum RenderLayer {
+    World,
+    Screen,
+}
+
+
 // I don't know what's the best practice but I made Draweable and Updateable as independent traits.
 // Because even though every gameobject is updateable and draweable, maybe some objects implement different updates?
 pub trait Draweable{
     fn _draw(&self);
+
+    fn layer(&self) -> RenderLayer {
+        RenderLayer::World
+    }
 }
 
 pub trait Updateable{
@@ -61,6 +71,10 @@ impl HasBaseGameObject for Sphere{
 }
 
 impl Draweable for Sphere {
+    fn layer(&self) -> RenderLayer {
+        RenderLayer::World
+    }
+
     fn _draw(&self){
         draw_sphere(self.base_data.position, 
                     self.radius, 
