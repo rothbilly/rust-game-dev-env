@@ -1,7 +1,7 @@
 
 use macroquad::{color, prelude::*};
 use engine_macros::*;
-use crate::core::game::{GameLoop};
+use crate::core::game::{GameLoop, IPausable};
 use crate::core::app::AppRegistration;
 
 #[register_app("Sample Virtual App")]
@@ -11,14 +11,12 @@ pub struct SampleVirtualApp{
     _mode: VirtualAppMode,
     _rect: Rect,
     is_active: bool,
-    base_app: Option<Box<dyn IParentable>>
 }
 
 
 /// # App Mode 
 /// Define if the app is used for 2D or 3D Rendering or as editor UI
 #[derive(Default)]
-
 pub enum VirtualAppMode {
     #[default]
     Mode2D,
@@ -40,17 +38,25 @@ impl GameLoop for SampleVirtualApp {
     fn _render(&self) {
         clear_background(color::LIGHTGRAY);
 
-    
-
         //draw_text(&format!("FPS: {}", get_fps()), 16., 24., 24., color::RED);
+        let intro_text = "Macro Engine";
+        let tooltip = "press F3 or Alt to open the inspector";
+
+        let center = get_text_center(intro_text, None, 32, 1.0, 0.);
+        let tooltip_center = get_text_center(tooltip, None, 32, 1.0, 0.);
         
-        let center = get_text_center("Macro Engine", None, 32, 1.0, 0.);
-        
-        draw_text("Macro Engine",
+        draw_text(intro_text,
         screen_width()/2. - center.x,
         screen_height()/2. - center.y,
         32.,
+        color::DARKGRAY);
+
+                draw_text(tooltip,
+        screen_width()/2. - tooltip_center.x,
+        screen_height()/2. - tooltip_center.y + 32.0,
+        24.,
         color::GRAY);
+
     
     }
 }
@@ -58,11 +64,6 @@ impl GameLoop for SampleVirtualApp {
 
 
 
-impl IParentable for SampleVirtualApp {
-    fn get_base_app(&self) -> Option<&Box<dyn IParentable>> {
-        self.base_app.as_ref()
-    }
-}
 impl IPausable for SampleVirtualApp{
     fn is_active(&self) -> bool{
         self.is_active
@@ -72,22 +73,3 @@ impl IPausable for SampleVirtualApp{
     }
 }
 
-// Example: In this moment only works as a tag for some structs, for example get all struct that implement this.
-impl IGame for SampleVirtualApp{}
-impl IVirtualApp for SampleVirtualApp{}
-
-/// This can be converted in a derive macro as #[derive(IVirtualApp)] that implement the sub traits
-pub trait IGame : GameLoop + IParentable + IPausable{}
-pub trait IVirtualApp : IParentable + IPausable{}
-
-
-
-/// Enforce the struct to have a composition base_app field; 
-pub trait IParentable{
-    fn get_base_app(&self) -> Option<&Box<dyn IParentable>>;
-}
-
-pub trait IPausable {
-    fn is_active(&self) -> bool;
-    fn set_active(&mut self, _value: bool);
-}

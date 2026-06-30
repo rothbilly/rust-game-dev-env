@@ -1,7 +1,10 @@
-use engine_macros::register_app;
-use macroquad::prelude::*;
-use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration; // To register it in the App registry.
+use engine_macros::register_app;
+use crate::core::game::{GameLoop};
+use macroquad::prelude::*;
+
+
+/// Use this game as a template for new games
 
 
 #[register_app("EmptyGame")] // Custom Registration macro

@@ -12,12 +12,6 @@ pub struct Game
     pub game_camera: Option<Box<dyn Camera>>, // Can be a camera 2d pr 3D or None
 }
 
-
-/// # The main trait
-/// Here every game has to implement this trait.
-
-pub trait BaseGame : GameLoop + GameCamera{}  
-
 pub trait GameLoop : DerefMut<Target = Game>{
 
     fn ready(&mut self) {
@@ -78,5 +72,22 @@ pub trait GameCamera{
 }
 
 
+/// Enforce the struct to have a composition base_app field; 
+pub trait IParentable{
+    fn get_base_app(&self) -> Option<&Box<dyn IParentable>>;
+}
+
+pub trait IPausable {
+    fn is_active(&self) -> bool;
+    fn set_active(&mut self, _value: bool);
+}
 
 
+
+/// # The main trait
+/// Here every game has to implement this trait.
+/// This can be converted in a derive macro as #[derive(BaseGame)] that implement the sub traits
+
+pub trait BaseGame : GameLoop + GameCamera + IParentable + IPausable {}  
+
+pub trait IGame : GameLoop + IParentable + IPausable{}
