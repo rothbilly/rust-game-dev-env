@@ -8,8 +8,6 @@ use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration;
 use crate::components::gameobject::*;
 
-use std::collections::HashMap;
-
 #[register_app("Macroware.Exe")]
 #[derive(Default)]
 pub struct MacrowareExe {

@@ -2,7 +2,7 @@ use crate::core::app::AppRegistration; // To register it in the App registry.
 use crate::core::game::GameLoop;
 use engine_macros::register_app;
 use macroquad::miniquad::window::screen_size;
-use macroquad::miniquad::PrimitiveType::Triangles;
+
 use macroquad::prelude::*;
 use quad_rand::ChooseRandom;
 
@@ -14,8 +14,8 @@ pub const SAND: Color = Color::new(0.89, 0.84, 0.66, 1.0);
 // maybe add brush patterns
 // add tile type selection
 
-#[derive(Default)]
 #[register_app("Sandbox")] // Custom Registration macro
+#[derive(Default)]
 pub struct Sandbox {
     world_size: (i32, i32),
     selected_tile_type: TileType,

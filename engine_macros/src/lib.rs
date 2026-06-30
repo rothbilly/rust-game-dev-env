@@ -66,7 +66,7 @@ pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 // ==========================================
-//  Attributte Macro for Regitering a App
+//  Attribute Macro for Registering a App
 // ==========================================
 
 
@@ -142,11 +142,9 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 
 
-
 // ==========================================
 //  Derive Macro for auto get the Struct Name
 // ==========================================
-
 
 
 use syn::{DeriveInput};
