@@ -43,7 +43,7 @@ impl GameLoop for SampleVirtualApp {
         let tooltip = "press F3 or Alt to open the inspector";
 
         let center = get_text_center(intro_text, None, 32, 1.0, 0.);
-        let tooltip_center = get_text_center(tooltip, None, 32, 1.0, 0.);
+        let tooltip_center = get_text_center(tooltip, None, 24, 1.0, 0.);
         
         draw_text(intro_text,
         screen_width()/2. - center.x,
@@ -53,7 +53,7 @@ impl GameLoop for SampleVirtualApp {
 
                 draw_text(tooltip,
         screen_width()/2. - tooltip_center.x,
-        screen_height()/2. - tooltip_center.y + 32.0,
+        screen_height()/2. - tooltip_center.y + 32.,
         24.,
         color::GRAY);
 

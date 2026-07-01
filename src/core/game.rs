@@ -83,7 +83,6 @@ pub trait IPausable {
 }
 
 
-
 /// # The main trait
 /// Here every game has to implement this trait.
 /// This can be converted in a derive macro as #[derive(BaseGame)] that implement the sub traits
