@@ -83,7 +83,7 @@ impl App
         if let Some(new_app) = self.sub_apps.last_mut(){
             new_app.clone()
             .borrow_mut()
-            ._ready()
+            .ready()
         }
         info!("[Main App] - Added a new sub app successfully");
         self
@@ -128,7 +128,7 @@ impl App
         for app in self.sub_apps.iter(){
             app.clone()
             .borrow_mut()
-            ._ready();
+            .ready();
         }
         self
     }
@@ -140,9 +140,9 @@ impl App
         for rc in self.sub_apps.iter(){
             let _rc = rc.clone();
             let mut _app = _rc.borrow_mut();
-            _app._process_input();
-            _app._update(delta_time);
-            _app._render();
+            _app.process_input();
+            _app.update(delta_time);
+            _app.render();
         }
 
     }

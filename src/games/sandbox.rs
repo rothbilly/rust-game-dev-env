@@ -12,8 +12,8 @@ pub const SAND: Color = Color::new(0.89, 0.84, 0.66, 1.0);
 // maybe add brush patterns
 // add tile type selection
 
-#[derive(Default)]
 #[register_app("Sandbox")] // Custom Registration macro
+#[derive(Default)]
 pub struct Sandbox {
     world_size: (i32, i32),
     selected_tile_type: TileType,

@@ -66,7 +66,7 @@ pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 // ==========================================
-//  Attributte Macro for Regitering a App
+//  Attribute Macro for Registering a App
 // ==========================================
 
 
@@ -74,9 +74,9 @@ pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Parse the item the macro is attached to (e.g., `struct TestGameStruct`)
     let input_item = parse_macro_input!(item as Item);
-
+    let binding = input_item.clone();
     // Extract the identifier of the item to use in the constructor
-    let item_identifier = match &input_item {
+    let item_identifier = match &binding {
         Item::Struct(item_struct) => &item_struct.ident,
         Item::Fn(item_fn) => &item_fn.sig.ident,
         _ => {
@@ -94,9 +94,38 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
             item_identifier.to_string()
         };
     
+    let mutated_item = match input_item {
+        Item::Struct(mut item_struct) => {
+            if let syn::Fields::Unit = item_struct.fields {
+                item_struct.fields = syn::Fields::Named(syn::parse_quote!({}));
+            }
+
+            if let syn::Fields::Named(ref mut fields) = item_struct.fields {
+                fields.named.push(syn::parse_quote! {
+                    pub base: crate::core::game::Game
+                });
+            }
+            quote! { #item_struct }
+        },
+        other => quote! { #other }
+    };
+    
     let expanded = quote!{
         // Keep the original struct/function definition intact
-        #input_item
+        #mutated_item
+
+        impl std::ops::Deref for #item_identifier {
+            type Target = crate::core::game::Game;
+            fn deref(&self) -> &Self::Target {
+                &self.base
+            }
+        }
+
+        impl std::ops::DerefMut for #item_identifier {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                &mut self.base
+            }
+        }
 
         // Submit to inventory
         inventory::submit! {
@@ -113,11 +142,9 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 
 
-
 // ==========================================
 //  Derive Macro for auto get the Struct Name
 // ==========================================
-
 
 
 use syn::{DeriveInput};
