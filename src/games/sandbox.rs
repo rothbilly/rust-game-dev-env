@@ -7,6 +7,7 @@ use macroquad::prelude::*;
 pub const EMPTY: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 pub const SOFTBLUE: Color = Color::new(0.66, 0.71, 0.89, 1.0);
 pub const SAND: Color = Color::new(0.89, 0.84, 0.66, 1.0);
+pub const GUNPOWDER: Color = Color::new(0.122, 0.125, 0.165, 1.0);
 
 // TODO: add multithreading and dirty rects
 // maybe add brush patterns
@@ -164,14 +165,6 @@ impl GameLoop for Sandbox {
         }
 
         let screen_size = screen_size();
-
-        draw_text(
-            format!("brush size: {:?}", self.brush_size),
-            32.0,
-            screen_size.0 - 260.0,
-            32.0,
-            WHITE,
-        );
 
         let gap = 8;
         let sqr_size = 48;
@@ -735,7 +728,7 @@ impl TileType {
             Self::BurntWood => DARKBROWN,
             Self::Coal => DARKGRAY,
             Self::Fire => ORANGE,
-            Self::Gunpowder => GRAY,
+            Self::Gunpowder => GUNPOWDER,
             _ => MAGENTA,
         }
     }
