@@ -1,6 +1,5 @@
 use crate::core::app::AppRegistration; // To register it in the App registry.
 use crate::core::game::GameLoop;
-use egui_macroquad::egui::ahash::{HashMap, HashMapExt};
 use engine_macros::register_app;
 use macroquad::miniquad::window::screen_size;
 use macroquad::prelude::*;
@@ -720,7 +719,6 @@ enum TileType {
     Coal = 9,
     Fire = 10,
     Gunpowder = 11,
-    Size = 12,
 }
 
 impl TileType {
