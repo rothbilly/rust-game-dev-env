@@ -13,13 +13,14 @@ pub const GUNPOWDER: Color = Color::new(0.122, 0.125, 0.165, 1.0);
 // maybe add brush patterns
 // add tile type selection
 
+const TILE_SIZE: i32 = 4;
+
 #[register_app("Sandbox")] // Custom Registration macro
 #[derive(Default)]
 pub struct Sandbox {
     world_size: (i32, i32),
     selected_tile_type: TileType,
     available_tiles: [TileType; 10],
-    tile_size: i32,
     brush_size: i32,
     tiles: Vec<TileType>,
     next_tiles: Vec<TileType>,
@@ -31,7 +32,6 @@ impl GameLoop for Sandbox {
     fn _ready(&mut self) {
         let screen_size = (screen_width(), screen_height());
         self.frame_counter = 0;
-        self.tile_size = 8;
         self.selected_tile_type = TileType::Sand;
         self.available_tiles = [
             TileType::Sand,
@@ -47,8 +47,8 @@ impl GameLoop for Sandbox {
         ];
 
         self.world_size = (
-            (screen_size.0 / self.tile_size as f32).floor() as i32,
-            (screen_size.1 / self.tile_size as f32).floor() as i32,
+            (screen_size.0 / TILE_SIZE as f32).floor() as i32,
+            (screen_size.1 / TILE_SIZE as f32).floor() as i32,
         );
 
         self.brush_size = 4;
@@ -91,8 +91,8 @@ impl GameLoop for Sandbox {
             return;
         }
 
-        let grid_x = (mouse_x / self.tile_size as f32).floor() as i32;
-        let grid_y = (mouse_y / self.tile_size as f32).floor() as i32;
+        let grid_x = (mouse_x / TILE_SIZE as f32).floor() as i32;
+        let grid_y = (mouse_y / TILE_SIZE as f32).floor() as i32;
 
         let mut tile_type = self.selected_tile_type;
         let mouse_left = is_mouse_button_down(MouseButton::Left);
@@ -140,13 +140,12 @@ impl GameLoop for Sandbox {
 
         std::mem::swap(&mut self.next_tiles, &mut self.tiles);
         self.next_tiles.fill_with(|| TileType::Empty);
-
         self.frame_counter = self.frame_counter + 1;
     }
 
     fn _render(&self) {
         //we draw each tile individually, probably there is better ways to do this
-        let tile_size = self.tile_size as f32;
+        let tile_size = TILE_SIZE as f32;
         let len = self.tiles.len();
         for i in 0..len {
             let tile = self.tiles[i];
@@ -215,7 +214,7 @@ impl GameLoop for Sandbox {
 
         let mouse = mouse_position();
 
-        let brush_size = (self.brush_size * self.tile_size) as f32;
+        let brush_size = (self.brush_size * TILE_SIZE) as f32;
         draw_rectangle_lines(
             mouse.0 - brush_size / 2.0,
             mouse.1 - brush_size / 2.0,
@@ -262,9 +261,12 @@ impl Sandbox {
                         _ => {}
                     }
                 }
-                if fire_tiles > 0 {
-                    let idx = self.pos_to_idx(pos);
-                    self.next_tiles[idx] = TileType::Fire;
+                if fire_tiles > 0 && self.roll(0.6) {
+                    if self.roll(0.6) {
+                        self.set_tile(self.pos_to_idx(pos), TileType::Fire);
+                    } else {
+                        self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
+                    }
                     return true;
                 }
 
@@ -288,14 +290,14 @@ impl Sandbox {
                 }
 
                 if fire_tiles >= 4 {
-                    let idx = self.pos_to_idx(pos);
-                    self.next_tiles[idx] = TileType::Vapor;
+                    self.set_tile(self.pos_to_idx(pos), TileType::Vapor);
                     return true;
                 }
 
-                self.try_move_down(pos)
+                (self.roll(0.05) && self.try_move_sides(pos))
+                    || self.try_move_down(pos)
+                    || self.try_move_down_sides(pos)
                     || self.try_move_sides(pos)
-                    || (self.roll(0.5) && self.try_move_sides(pos))
             }
 
             TileType::Smoke => {
@@ -316,8 +318,8 @@ impl Sandbox {
                 }
 
                 if fire_tiles >= 3 {
-                    let idx = self.pos_to_idx(pos);
-                    self.next_tiles[idx] = TileType::Fire;
+                    self.set_tile(self.pos_to_idx(pos), TileType::Fire);
+
                     return true;
                 }
 
@@ -347,35 +349,23 @@ impl Sandbox {
                     }
                 }
 
-                if water_tiles >= 5 {
-                    let idx = self.pos_to_idx(pos);
-                    self.next_tiles[idx] = TileType::Water;
+                if water_tiles >= 4 {
+                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
                     return true;
-                } else if vapor_tiles >= 3 {
-                    if self.roll(0.00001) {
-                        let idx = self.pos_to_idx(pos);
-                        self.next_tiles[idx] = TileType::Water;
-                        return true;
-                    }
+                } else if vapor_tiles >= 3 && self.roll(0.00001) {
+                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+                    return true;
                 }
 
-                if self.roll(0.28) {
-                    let rng = rand::gen_range(0, 100);
-
-                    return match rng {
-                        0..40 => self.try_move_up(pos),
-                        40..80 => self.try_move_up_sides(pos),
-                        80..90 => self.try_move_sides(pos),
-                        90..95 => self.try_move_down_sides(pos),
-                        95..100 => self.try_move_down(pos),
-                        _ => false,
-                    };
-                }
-                false
+                (self.roll(0.25) && self.try_move_up_sides(pos))
+                    || self.try_move_up(pos)
+                    || self.try_move_sides(pos)
+                    || self.try_move_down(pos)
             }
             TileType::Snow => {
                 let mut fire_tiles: i8 = 0;
                 let mut water_tiles: i8 = 0;
+                let mut vapor_tiles: i8 = 0;
                 let mut n_tile: TileType;
                 for pos in neighbor_indices {
                     if pos == -1 {
@@ -390,13 +380,24 @@ impl Sandbox {
                         TileType::Water => {
                             water_tiles = water_tiles + 1;
                         }
+                        TileType::Vapor => {
+                            vapor_tiles = vapor_tiles + 1;
+                        }
                         _ => {}
                     }
                 }
 
-                if fire_tiles >= 3 || water_tiles >= 5 {
-                    let idx = self.pos_to_idx(pos);
-                    self.next_tiles[idx] = TileType::Water;
+                if fire_tiles >= 3 {
+                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+
+                    return true;
+                }
+                if water_tiles >= 3 && self.roll(0.01) {
+                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+                    return true;
+                }
+                if vapor_tiles >= 3 && self.roll(0.3) {
+                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
                     return true;
                 }
 
@@ -434,29 +435,26 @@ impl Sandbox {
                 }
 
                 if water_tiles >= 4 {
-                    let idx = self.pos_to_idx(pos);
-                    self.next_tiles[idx] = TileType::Vapor;
+                    self.set_tile(self.pos_to_idx(pos), TileType::Vapor);
                     return true;
                 } else if gunpowder_tiles > 1 {
-                    let idx = self.pos_to_idx(pos);
-                    self.next_tiles[idx] = TileType::Smoke;
+                    self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
                     return true;
                 }
 
-                if self.roll(0.05) {
-                    self.end_life(self.pos_to_idx(pos));
+                if self.roll(0.03) {
+                    self.set_tile(self.pos_to_idx(pos), TileType::Empty);
                     return true;
                 }
 
                 let rng = rand::gen_range(0, 100);
 
                 match rng {
-                    0..10 => self.try_move_down(pos),
-                    10..20 => self.try_move_down_sides(pos),
-                    20..30 => self.try_move_sides(pos),
-                    30..60 => self.try_move_up_sides(pos),
-                    60..100 => self.try_move_up(pos),
-                    _ => false,
+                    0..20 => self.try_move_down(pos),
+                    20..40 => self.try_move_down_sides(pos),
+                    40..60 => self.try_move_sides(pos),
+                    60..80 => self.try_move_up_sides(pos),
+                    _ => self.try_move_up(pos),
                 }
             }
             TileType::Wood => {
@@ -480,12 +478,13 @@ impl Sandbox {
                     }
                 }
 
-                if fire_tiles > water_tiles {
-                    if self.roll(0.1) {
-                        let idx = self.pos_to_idx(pos);
-                        self.next_tiles[idx] = TileType::BurntWood;
-                        return true;
+                if fire_tiles > water_tiles && self.roll(0.2) {
+                    if self.roll(0.7) {
+                        self.set_tile(self.pos_to_idx(pos), TileType::BurntWood);
+                    } else {
+                        self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
                     }
+                    return true;
                 }
                 false
             }
@@ -511,13 +510,15 @@ impl Sandbox {
                 }
 
                 if fire_tiles - water_tiles > 1 {
-                    if self.roll(0.1) {
-                        let idx = self.pos_to_idx(pos);
-                        self.next_tiles[idx] = TileType::Coal;
-                        return true;
+                    let rng = rand::gen_range(0, 100);
+                    match rng {
+                        0..20 => self.set_tile(self.pos_to_idx(pos), TileType::Fire),
+                        20..40 => self.set_tile(self.pos_to_idx(pos), TileType::Smoke),
+                        _ => self.set_tile(self.pos_to_idx(pos), TileType::Coal),
                     }
+                    return true;
                 }
-                false
+                self.try_move_down(pos) || (self.roll(0.05) && self.try_move_down_sides(pos))
             }
             TileType::Coal => {
                 let mut fire_tiles: i8 = 0;
@@ -540,14 +541,15 @@ impl Sandbox {
                     }
                 }
 
-                if fire_tiles > water_tiles {
-                    if self.roll(0.1) {
-                        let idx = self.pos_to_idx(pos);
-                        self.next_tiles[idx] = TileType::Fire;
-                        return true;
+                if (fire_tiles - water_tiles) > 0 && self.roll(0.05) {
+                    if self.roll(0.4) {
+                        self.set_tile(self.pos_to_idx(pos), TileType::Fire);
+                    } else {
+                        self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
                     }
+                    return true;
                 }
-                false
+                self.try_move_down(pos) || (self.roll(0.05) && self.try_move_down_sides(pos))
             }
             _ => false,
         }
@@ -639,8 +641,9 @@ impl Sandbox {
         self.tiles[from_idx] = TileType::Empty;
     }
 
-    fn end_life(&mut self, idx: usize) {
-        self.next_tiles[idx] = TileType::Empty;
+    #[inline]
+    fn set_tile(&mut self, idx: usize, tile_type: TileType) {
+        self.next_tiles[idx] = tile_type;
     }
 
     fn get_neighbor_indices(&self, from: (i32, i32)) -> [isize; 8] {
@@ -700,18 +703,18 @@ impl Sandbox {
 enum TileType {
     #[default]
     Invalid = -1,
-    Empty = 0,
-    Static = 1,
-    Sand = 2,
-    Water = 3,
-    Smoke = 4,
-    Vapor = 5,
-    Snow = 6,
-    Wood = 7,
-    BurntWood = 8,
-    Coal = 9,
-    Fire = 10,
-    Gunpowder = 11,
+    Empty,
+    Static,
+    Sand,
+    Water,
+    Smoke,
+    Vapor,
+    Snow,
+    Wood,
+    BurntWood,
+    Coal,
+    Fire,
+    Gunpowder,
 }
 
 impl TileType {
