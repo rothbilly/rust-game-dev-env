@@ -1,6 +1,5 @@
 
 use engine_macros::register_app;
-use macroquad::experimental::coroutines::*;
 
 use macroquad::prelude::*;
 use crate::core::game::{GameLoop};
@@ -15,9 +14,10 @@ const MOVEMENT_SPEED: f32 = 200.0;
 pub struct TutorialGame{
     dir: Vec2,
     squares: Vec<Shape>,
+    bullets: Vec<Shape>,
     circle: Shape,
     is_game_over: bool,
-    game_camera: Option<Box<dyn Camera>> // Can be a camera 2d pr 3D or None
+
 }
 
 
@@ -27,7 +27,8 @@ impl GameLoop for TutorialGame {
         
         self.circle.x = screen_width() / 2.0;
         self.circle.y = screen_height() / 2.0;
-        self.circle.size = 16.0
+        self.circle.size = 16.0;
+        self.circle.speed = MOVEMENT_SPEED.clone();
         // start_coroutine(async {
         //     wait_seconds(2.).await;
         //     println!("2 seconds passed! Flash")
@@ -38,6 +39,7 @@ impl GameLoop for TutorialGame {
     fn _process_input(&mut self) {
         self.dir.x = is_key_down(KeyCode::D) as u8 as f32 -  is_key_down(KeyCode::A) as u8 as f32;
         self.dir.y = is_key_down(KeyCode::S) as u8 as f32 -  is_key_down(KeyCode::W) as u8 as f32;
+
     }
 
     fn _update(&mut self, _delta: f32) {
@@ -46,6 +48,7 @@ impl GameLoop for TutorialGame {
 
             if is_key_pressed(KeyCode::Space){ //reset
                 self.squares.clear();
+                self.bullets.clear();
                 self.circle.x = screen_height() * 0.5;
                 self.circle.y = screen_width() * 0.5; // using glam vec2
                 self.is_game_over = false
@@ -54,33 +57,62 @@ impl GameLoop for TutorialGame {
         // Main game loop
         } else {
 
-            self.circle.set_pos( self.circle.get_pos() + self.dir * MOVEMENT_SPEED * _delta);
+            self.circle.set_pos( self.circle.get_pos() + self.dir * self.circle.speed * _delta);
             self.circle.x = wrapf(self.circle.x, 0.0, screen_width());
             self.circle.y = wrapf(self.circle.y, 0.0, screen_height());
             
-            //squares
+            //Spawn Squares
             if rand::gen_range(0,99) >= 95{
                 let size = rand::gen_range(16.0, 64.0);
                 self.squares.push(Shape { size,
                     speed: rand::gen_range(50.0, 150.0),
                     x: rand::gen_range(size / 2.0, screen_width() - size / 2.0),
-                    y: -size
+                    y: -size,
+                    is_collided: false
                 });
                 // println!("totals squares: {}", self.squares.len())
+            }
+
+            //Shoot
+            if is_key_pressed(KeyCode::Space){
+                self.bullets.push(Shape {
+                    x: self.circle.x,
+                    y: self.circle.y,
+                    speed: self.circle.speed * 2.0,
+                    size: 5.0,
+                    is_collided: false,
+                });
             }
 
             // Move Squares
             for square in &mut self.squares {
                 square.y += square.speed * _delta;
             }
+            for bullet in &mut self.bullets {
+                bullet.y -= bullet.speed * _delta;
+            }
 
-
+            // Check Collisions
             if  self.squares.iter().any(|square| self.circle.collides_with(square)){
-
                 self.is_game_over = true
             }
 
+            for square in self.squares.iter_mut() {
+                for bullet in self.bullets.iter_mut() {
+                    if bullet.collides_with(square) {
+                        bullet.is_collided = true;
+                        square.is_collided = true;
+                    }
+                }
+            }
+
+            // Retain or remove from the game
             self.squares.retain(|square| square.y < screen_height() + square.size);
+            self.bullets.retain(|bullet| bullet.y > 0.0 - bullet.size / 2.0);
+
+            self.squares.retain(|square| {!square.is_collided});
+            self.bullets.retain(|bullet| {!bullet.is_collided});
+
         }
     }
 
@@ -92,6 +124,10 @@ impl GameLoop for TutorialGame {
             let game_over_text = "GAME OVER";
             let text_dimensions = measure_text(game_over_text, None, 50, 1.0);
             draw_text(game_over_text, screen_width() * 0.5 - text_dimensions.width * 0.5, screen_height() * 0.5, 50., WHITE);
+        }
+
+        for bullet in &self.bullets {
+            draw_circle(bullet.x, bullet.y, bullet.size / 2.0, RED);
         }
 
         for square in self.squares.iter() {
@@ -116,6 +152,7 @@ struct Shape {
     speed: f32,
     x: f32,
     y: f32,
+    is_collided:bool
 }
 
 impl Shape {
