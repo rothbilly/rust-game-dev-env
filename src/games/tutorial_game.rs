@@ -8,7 +8,8 @@ use crate::core::app::AppRegistration; // To register it in the App registry.
 use crate::core::math::wrapf;
 
 const MOVEMENT_SPEED: f32 = 200.0;
-const SCORE_PATH: &str = ".app/games/tutorial_game/high_score.dat";
+const SCORE_PATH: &str = ".app/games/tutorial_game/";
+const SCORE_NAME: &str = "high_score.dat";
 
 
 #[register_app("Tutorial Game")]
@@ -37,11 +38,11 @@ impl GameLoop for TutorialGame {
         //     println!("2 seconds passed! Flash")
         // });
         self.score = 0;
-        self.high_score = fs::read_to_string(&SCORE_PATH)
+
+        println!("read from in {}{}", SCORE_PATH, SCORE_NAME);
+        self.high_score = fs::read_to_string(format!("{}{}", SCORE_PATH, SCORE_NAME))
             .map_or(Ok(0),|i| {i.parse::<u32>()})
             .unwrap_or(0);
-
-
     }
 
     fn _process_input(&mut self) {
@@ -56,9 +57,14 @@ impl GameLoop for TutorialGame {
 
             if self.score == self.high_score {
 
-                fs::write(SCORE_PATH, self.high_score.to_string()).ok();
+                println!(" write in {}{}", SCORE_PATH, SCORE_NAME);
+
+                fs::create_dir_all(SCORE_PATH).ok();
+                fs::write(
+                    format!("{}{}", SCORE_PATH, SCORE_NAME),
+                    self.high_score.to_string()).unwrap();
             }
-            self.score = 0;
+             self.score = 0;
 
 
             if is_key_pressed(KeyCode::Space){ //reset
