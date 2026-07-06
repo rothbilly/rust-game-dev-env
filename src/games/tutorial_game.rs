@@ -1,5 +1,6 @@
 
 use engine_macros::register_app;
+use std::fs;
 
 use macroquad::prelude::*;
 use crate::core::game::{GameLoop};
@@ -7,6 +8,7 @@ use crate::core::app::AppRegistration; // To register it in the App registry.
 use crate::core::math::wrapf;
 
 const MOVEMENT_SPEED: f32 = 200.0;
+const SCORE_PATH: &str = ".app/games/tutorial_game/high_score.dat";
 
 
 #[register_app("Tutorial Game")]
@@ -17,7 +19,8 @@ pub struct TutorialGame{
     bullets: Vec<Shape>,
     circle: Shape,
     is_game_over: bool,
-
+    score: u32,
+    high_score: u32
 }
 
 
@@ -33,6 +36,11 @@ impl GameLoop for TutorialGame {
         //     wait_seconds(2.).await;
         //     println!("2 seconds passed! Flash")
         // });
+        self.score = 0;
+        self.high_score = fs::read_to_string(&SCORE_PATH)
+            .map_or(Ok(0),|i| {i.parse::<u32>()})
+            .unwrap_or(0);
+
 
     }
 
@@ -45,6 +53,13 @@ impl GameLoop for TutorialGame {
     fn _update(&mut self, _delta: f32) {
 
         if self.is_game_over{
+
+            if self.score >= self.high_score {
+
+                fs::write(SCORE_PATH, self.high_score.to_string()).ok();
+            }
+            self.score = 0;
+
 
             if is_key_pressed(KeyCode::Space){ //reset
                 self.squares.clear();
@@ -102,6 +117,9 @@ impl GameLoop for TutorialGame {
                     if bullet.collides_with(square) {
                         bullet.is_collided = true;
                         square.is_collided = true;
+
+                        self.score += square.size.round() as u32;
+                        self.high_score = self.high_score.max(self.score);
                     }
                 }
             }
@@ -139,6 +157,24 @@ impl GameLoop for TutorialGame {
                 GREEN,
             );
         }
+
+        draw_text(
+            format!("Score: {}", self.score).as_str(),
+            10.0,
+            35.0,
+            25.0,
+            WHITE,
+        );
+        let high_score_text = format!("High score: {}", self.high_score);
+
+        let text_dimensions = measure_text(high_score_text.as_str(), None, 25, 1.0);
+        draw_text(
+            high_score_text.as_str(),
+            screen_width() - text_dimensions.width - 10.0,
+            35.0,
+            25.0,
+            WHITE,
+        );
 
     }
 }
