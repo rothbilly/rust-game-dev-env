@@ -14,10 +14,9 @@ const MOVEMENT_SPEED: f32 = 200.0;
 #[derive(Default)]
 pub struct TutorialGame{
     dir: Vec2,
-    pos: Vec2,
     squares: Vec<Shape>,
     circle: Shape,
-    is_gameover: bool,
+    is_game_over: bool,
     game_camera: Option<Box<dyn Camera>> // Can be a camera 2d pr 3D or None
 }
 
@@ -26,9 +25,9 @@ impl GameLoop for TutorialGame {
     fn _ready(&mut self) {
         rand::srand(miniquad::date::now() as u64);
         
-        self.pos.x = screen_width() / 2.0;
-        self.pos.y = screen_height() / 2.0;
-
+        self.circle.x = screen_width() / 2.0;
+        self.circle.y = screen_height() / 2.0;
+        self.circle.size = 16.0
         // start_coroutine(async {
         //     wait_seconds(2.).await;
         //     println!("2 seconds passed! Flash")
@@ -43,34 +42,57 @@ impl GameLoop for TutorialGame {
 
     fn _update(&mut self, _delta: f32) {
 
+        if self.is_game_over{
 
-        self.pos += self.dir * MOVEMENT_SPEED * _delta;
-        self.pos.x = wrapf(self.pos.x, 0.0, screen_width());
-        self.pos.y = wrapf(self.pos.y, 0.0, screen_height());
-
+            if is_key_pressed(KeyCode::Space){ //reset
+                self.squares.clear();
+                self.circle.x = screen_height() * 0.5;
+                self.circle.y = screen_width() * 0.5; // using glam vec2
+                self.is_game_over = false
+            }
         
-        //squares
-        if rand::gen_range(0,99) >= 95{
-            let size = rand::gen_range(16.0, 64.0);
-            self.squares.push(Shape { size,
-                speed: rand::gen_range(50.0, 150.0),
-                x: rand::gen_range(size / 2.0, screen_width() - size / 2.0),
-                y: -size
-            });
-            println!("totals squares: {}", self.squares.len())
-        }
+        // Main game loop
+        } else {
 
-        for square in &mut self.squares {
-            square.y += square.speed * _delta;
-        }
-        self.squares.retain(|square| square.y < screen_height() + square.size);
-        
+            self.circle.set_pos( self.circle.get_pos() + self.dir * MOVEMENT_SPEED * _delta);
+            self.circle.x = wrapf(self.circle.x, 0.0, screen_width());
+            self.circle.y = wrapf(self.circle.y, 0.0, screen_height());
+            
+            //squares
+            if rand::gen_range(0,99) >= 95{
+                let size = rand::gen_range(16.0, 64.0);
+                self.squares.push(Shape { size,
+                    speed: rand::gen_range(50.0, 150.0),
+                    x: rand::gen_range(size / 2.0, screen_width() - size / 2.0),
+                    y: -size
+                });
+                // println!("totals squares: {}", self.squares.len())
+            }
 
+            // Move Squares
+            for square in &mut self.squares {
+                square.y += square.speed * _delta;
+            }
+
+
+            if  self.squares.iter().any(|square| self.circle.collides_with(square)){
+
+                self.is_game_over = true
+            }
+
+            self.squares.retain(|square| square.y < screen_height() + square.size);
+        }
     }
 
     fn _render(&self) {
         clear_background(DARKPURPLE);
-        draw_circle(self.pos.x, self.pos.y, 16.0, YELLOW);
+        draw_circle(self.circle.x, self.circle.y, self.circle.size, YELLOW);
+
+        if self.is_game_over{
+            let game_over_text = "GAME OVER";
+            let text_dimensions = measure_text(game_over_text, None, 50, 1.0);
+            draw_text(game_over_text, screen_width() * 0.5 - text_dimensions.width * 0.5, screen_height() * 0.5, 50., WHITE);
+        }
 
         for square in self.squares.iter() {
             draw_rectangle(
@@ -108,5 +130,14 @@ impl Shape {
             w: self.size,
             h: self.size,
         }
+    }
+
+    fn set_pos(&mut self, pos: Vec2){
+        self.x = pos.x;
+        self.y = pos.y;
+    }
+
+    fn get_pos(&self) -> Vec2{
+        Vec2::new(self.x , self.y)
     }
 }
