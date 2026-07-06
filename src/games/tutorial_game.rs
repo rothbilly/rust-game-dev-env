@@ -54,7 +54,7 @@ impl GameLoop for TutorialGame {
 
         if self.is_game_over{
 
-            if self.score >= self.high_score {
+            if self.score == self.high_score {
 
                 fs::write(SCORE_PATH, self.high_score.to_string()).ok();
             }
