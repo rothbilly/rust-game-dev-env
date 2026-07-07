@@ -5,6 +5,7 @@
         "egui",
         "frunk",
         "gameobject",
+        "lowp",
         "macroquad",
         "Macroware",
         "macrowareexe",
