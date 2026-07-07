@@ -4,10 +4,10 @@ use engine_macros::register_app;
 use macroquad::miniquad::window::screen_size;
 use macroquad::prelude::*;
 
-pub const EMPTY: Color = Color::new(0.0, 0.0, 0.0, 0.0);
-pub const SOFTBLUE: Color = Color::new(0.66, 0.71, 0.89, 1.0);
-pub const SAND: Color = Color::new(0.89, 0.84, 0.66, 1.0);
-pub const GUNPOWDER: Color = Color::new(0.122, 0.125, 0.165, 1.0);
+pub const EMPTY_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
+pub const SOFTBLUE_COLOR: Color = Color::new(0.66, 0.71, 0.89, 1.0);
+pub const SAND_COLOR: Color = Color::new(0.89, 0.84, 0.66, 1.0);
+pub const GUN_POWDER_COLOR: Color = Color::new(0.122, 0.125, 0.165, 1.0);
 
 // TODO: add multithreading and dirty rects
 // maybe add brush patterns
@@ -19,11 +19,11 @@ const TILE_SIZE: i32 = 4;
 #[derive(Default)]
 pub struct Sandbox {
     world_size: (i32, i32),
-    selected_tile_type: TileType,
-    available_tiles: [TileType; 10],
+    selected_tile_type: u8,
+    available_tiles: [u8; 10],
     brush_size: i32,
-    tiles: Vec<TileType>,
-    next_tiles: Vec<TileType>,
+    tiles: Vec<u8>,
+    next_tiles: Vec<u8>,
     frame_counter: i64,
     draw_debug: bool,
 }
@@ -32,18 +32,9 @@ impl GameLoop for Sandbox {
     fn _ready(&mut self) {
         let screen_size = (screen_width(), screen_height());
         self.frame_counter = 0;
-        self.selected_tile_type = TileType::Sand;
+        self.selected_tile_type = SAND;
         self.available_tiles = [
-            TileType::Sand,
-            TileType::Water,
-            TileType::Wood,
-            TileType::Gunpowder,
-            TileType::Fire,
-            TileType::Static,
-            TileType::Vapor,
-            TileType::Smoke,
-            TileType::Snow,
-            TileType::Coal,
+            SAND, WATER, FIRE, GUN_POWDER, WOOD, STEEL, VAPOR, SMOKE, SNOW, LAVA,
         ];
 
         self.world_size = (
@@ -54,8 +45,8 @@ impl GameLoop for Sandbox {
         self.brush_size = 4;
         let vec_size = (self.world_size.0 * self.world_size.1) as usize;
 
-        self.tiles = vec![TileType::Empty; vec_size];
-        self.next_tiles = vec![TileType::Empty; vec_size];
+        self.tiles = vec![EMPTY; vec_size];
+        self.next_tiles = vec![EMPTY; vec_size];
         self.draw_debug = true;
     }
 
@@ -102,7 +93,7 @@ impl GameLoop for Sandbox {
         }
 
         if mouse_right {
-            tile_type = TileType::Empty;
+            tile_type = EMPTY;
         }
 
         let brush_size = self.brush_size;
@@ -139,7 +130,7 @@ impl GameLoop for Sandbox {
         }
 
         std::mem::swap(&mut self.next_tiles, &mut self.tiles);
-        self.next_tiles.fill_with(|| TileType::Empty);
+        self.next_tiles.fill_with(|| EMPTY);
         self.frame_counter = self.frame_counter + 1;
     }
 
@@ -149,7 +140,7 @@ impl GameLoop for Sandbox {
         let len = self.tiles.len();
         for i in 0..len {
             let tile = self.tiles[i];
-            if tile == TileType::Empty {
+            if tile == EMPTY {
                 continue;
             }
             let x = (i % self.world_size.0 as usize) as f32;
@@ -159,7 +150,7 @@ impl GameLoop for Sandbox {
                 y * tile_size,
                 tile_size,
                 tile_size,
-                tile.get_color(),
+                get_tile_color(&tile),
             );
         }
 
@@ -198,7 +189,7 @@ impl GameLoop for Sandbox {
                 y + margin as f32,
                 sqr_size as f32,
                 sqr_size as f32,
-                t.get_color(),
+                get_tile_color(&t),
             );
             let fontsize = sqr_size as f32;
             draw_text(
@@ -231,7 +222,7 @@ impl Sandbox {
     fn check_tile(&mut self, x: &i32, y: &i32) {
         let idx = self.pos_to_idx((*x, *y));
         let tile = self.tiles[idx];
-        if tile == TileType::Empty {
+        if tile == EMPTY {
             return;
         }
         if !self.process_tile(tile, (*x, *y)) {
@@ -239,15 +230,15 @@ impl Sandbox {
         }
     }
 
-    fn process_tile(&mut self, tile: TileType, pos: (i32, i32)) -> bool {
+    fn process_tile(&mut self, tile: u8, pos: (i32, i32)) -> bool {
         let neighbor_indices = self.get_neighbor_indices(pos);
 
         // we take advantage of the way conditions are validated, the || (or) operator will not check any other option if the first one is true
         match tile {
-            TileType::Sand => self.try_move_down(pos) || self.try_move_down_sides(pos),
-            TileType::Gunpowder => {
+            SAND => self.try_move_down(pos) || self.try_move_down_sides(pos),
+            GUN_POWDER => {
                 let mut fire_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -255,7 +246,7 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Fire => {
+                        FIRE => {
                             fire_tiles = fire_tiles + 1;
                         }
                         _ => {}
@@ -263,18 +254,18 @@ impl Sandbox {
                 }
                 if fire_tiles > 0 && self.roll(0.6) {
                     if self.roll(0.6) {
-                        self.set_tile(self.pos_to_idx(pos), TileType::Fire);
+                        self.set_tile(self.pos_to_idx(pos), FIRE);
                     } else {
-                        self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
+                        self.set_tile(self.pos_to_idx(pos), SMOKE);
                     }
                     return true;
                 }
 
                 self.try_move_down(pos) || self.try_move_down_sides(pos)
             }
-            TileType::Water => {
+            WATER => {
                 let mut fire_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -282,7 +273,7 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Fire => {
+                        FIRE => {
                             fire_tiles = fire_tiles + 1;
                         }
                         _ => {}
@@ -290,7 +281,7 @@ impl Sandbox {
                 }
 
                 if fire_tiles >= 4 {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Vapor);
+                    self.set_tile(self.pos_to_idx(pos), VAPOR);
                     return true;
                 }
 
@@ -300,9 +291,9 @@ impl Sandbox {
                     || self.try_move_sides(pos)
             }
 
-            TileType::Smoke => {
+            SMOKE => {
                 let mut fire_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -310,7 +301,7 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Fire => {
+                        FIRE => {
                             fire_tiles = fire_tiles + 1;
                         }
                         _ => {}
@@ -318,7 +309,7 @@ impl Sandbox {
                 }
 
                 if fire_tiles >= 3 {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Fire);
+                    self.set_tile(self.pos_to_idx(pos), FIRE);
 
                     return true;
                 }
@@ -328,10 +319,10 @@ impl Sandbox {
                     || self.try_move_sides(pos)
                     || self.try_move_down(pos)
             }
-            TileType::Vapor => {
+            VAPOR => {
                 let mut water_tiles: i8 = 0;
                 let mut vapor_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -339,10 +330,10 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Water => {
+                        WATER => {
                             water_tiles = water_tiles + 1;
                         }
-                        TileType::Vapor => {
+                        VAPOR => {
                             vapor_tiles = vapor_tiles + 1;
                         }
                         _ => {}
@@ -350,11 +341,15 @@ impl Sandbox {
                 }
 
                 if water_tiles >= 4 {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+                    self.set_tile(self.pos_to_idx(pos), WATER);
                     return true;
                 } else if vapor_tiles >= 3 && self.roll(0.00001) {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+                    self.set_tile(self.pos_to_idx(pos), WATER);
                     return true;
+                }
+
+                if self.roll(0.0001) {
+                    self.set_tile(self.pos_to_idx(pos), EMPTY);
                 }
 
                 (self.roll(0.25) && self.try_move_up_sides(pos))
@@ -362,11 +357,11 @@ impl Sandbox {
                     || self.try_move_sides(pos)
                     || self.try_move_down(pos)
             }
-            TileType::Snow => {
+            SNOW => {
                 let mut fire_tiles: i8 = 0;
                 let mut water_tiles: i8 = 0;
                 let mut vapor_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -374,13 +369,13 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Fire => {
+                        FIRE => {
                             fire_tiles = fire_tiles + 1;
                         }
-                        TileType::Water => {
+                        WATER => {
                             water_tiles = water_tiles + 1;
                         }
-                        TileType::Vapor => {
+                        VAPOR => {
                             vapor_tiles = vapor_tiles + 1;
                         }
                         _ => {}
@@ -388,16 +383,16 @@ impl Sandbox {
                 }
 
                 if fire_tiles >= 3 {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+                    self.set_tile(self.pos_to_idx(pos), WATER);
 
                     return true;
                 }
                 if water_tiles >= 3 && self.roll(0.01) {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+                    self.set_tile(self.pos_to_idx(pos), WATER);
                     return true;
                 }
                 if vapor_tiles >= 3 && self.roll(0.3) {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Water);
+                    self.set_tile(self.pos_to_idx(pos), WATER);
                     return true;
                 }
 
@@ -413,10 +408,10 @@ impl Sandbox {
                 false
             }
 
-            TileType::Fire => {
+            FIRE => {
                 let mut water_tiles: i8 = 0;
                 let mut gunpowder_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -424,10 +419,10 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Water | TileType::Snow => {
+                        WATER | SNOW => {
                             water_tiles = water_tiles + 1;
                         }
-                        TileType::Gunpowder => {
+                        GUN_POWDER => {
                             gunpowder_tiles = gunpowder_tiles + 1;
                         }
                         _ => {}
@@ -435,15 +430,15 @@ impl Sandbox {
                 }
 
                 if water_tiles >= 4 {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Vapor);
+                    self.set_tile(self.pos_to_idx(pos), VAPOR);
                     return true;
                 } else if gunpowder_tiles > 1 {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
+                    self.set_tile(self.pos_to_idx(pos), SMOKE);
                     return true;
                 }
 
-                if self.roll(0.03) {
-                    self.set_tile(self.pos_to_idx(pos), TileType::Empty);
+                if self.roll(0.02) {
+                    self.set_tile(self.pos_to_idx(pos), EMPTY);
                     return true;
                 }
 
@@ -457,10 +452,10 @@ impl Sandbox {
                     _ => self.try_move_up(pos),
                 }
             }
-            TileType::Wood => {
+            WOOD => {
                 let mut fire_tiles: i8 = 0;
                 let mut water_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -468,10 +463,10 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Fire => {
+                        FIRE => {
                             fire_tiles = fire_tiles + 1;
                         }
-                        TileType::Water => {
+                        WATER => {
                             water_tiles = water_tiles + 1;
                         }
                         _ => {}
@@ -480,18 +475,18 @@ impl Sandbox {
 
                 if fire_tiles > water_tiles && self.roll(0.2) {
                     if self.roll(0.7) {
-                        self.set_tile(self.pos_to_idx(pos), TileType::BurntWood);
+                        self.set_tile(self.pos_to_idx(pos), BURNTWOOD);
                     } else {
-                        self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
+                        self.set_tile(self.pos_to_idx(pos), SMOKE);
                     }
                     return true;
                 }
                 false
             }
-            TileType::BurntWood => {
+            BURNTWOOD => {
                 let mut fire_tiles: i8 = 0;
                 let mut water_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -499,10 +494,10 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Fire => {
+                        FIRE => {
                             fire_tiles = fire_tiles + 1;
                         }
-                        TileType::Water => {
+                        WATER => {
                             water_tiles = water_tiles + 1;
                         }
                         _ => {}
@@ -512,18 +507,18 @@ impl Sandbox {
                 if fire_tiles - water_tiles > 1 {
                     let rng = rand::gen_range(0, 100);
                     match rng {
-                        0..20 => self.set_tile(self.pos_to_idx(pos), TileType::Fire),
-                        20..40 => self.set_tile(self.pos_to_idx(pos), TileType::Smoke),
-                        _ => self.set_tile(self.pos_to_idx(pos), TileType::Coal),
+                        0..20 => self.set_tile(self.pos_to_idx(pos), FIRE),
+                        20..40 => self.set_tile(self.pos_to_idx(pos), SMOKE),
+                        _ => self.set_tile(self.pos_to_idx(pos), COAL),
                     }
                     return true;
                 }
                 self.try_move_down(pos) || (self.roll(0.05) && self.try_move_down_sides(pos))
             }
-            TileType::Coal => {
+            COAL => {
                 let mut fire_tiles: i8 = 0;
                 let mut water_tiles: i8 = 0;
-                let mut n_tile: TileType;
+                let mut n_tile: u8;
                 for pos in neighbor_indices {
                     if pos == -1 {
                         continue;
@@ -531,10 +526,10 @@ impl Sandbox {
                     let idx = pos as usize;
                     n_tile = self.tiles[idx];
                     match n_tile {
-                        TileType::Fire => {
+                        FIRE => {
                             fire_tiles = fire_tiles + 1;
                         }
-                        TileType::Water => {
+                        WATER => {
                             water_tiles = water_tiles + 1;
                         }
                         _ => {}
@@ -543,9 +538,9 @@ impl Sandbox {
 
                 if (fire_tiles - water_tiles) > 0 && self.roll(0.05) {
                     if self.roll(0.4) {
-                        self.set_tile(self.pos_to_idx(pos), TileType::Fire);
+                        self.set_tile(self.pos_to_idx(pos), FIRE);
                     } else {
-                        self.set_tile(self.pos_to_idx(pos), TileType::Smoke);
+                        self.set_tile(self.pos_to_idx(pos), SMOKE);
                     }
                     return true;
                 }
@@ -638,12 +633,7 @@ impl Sandbox {
         let to_idx = self.pos_to_idx(to);
         let tile = self.tiles[from_idx];
         self.next_tiles[to_idx] = tile;
-        self.tiles[from_idx] = TileType::Empty;
-    }
-
-    #[inline]
-    fn set_tile(&mut self, idx: usize, tile_type: TileType) {
-        self.next_tiles[idx] = tile_type;
+        self.tiles[from_idx] = EMPTY;
     }
 
     fn get_neighbor_indices(&self, from: (i32, i32)) -> [isize; 8] {
@@ -672,11 +662,14 @@ impl Sandbox {
     }
 
     #[inline]
+    fn set_tile(&mut self, idx: usize, tile_type: u8) {
+        self.next_tiles[idx] = tile_type;
+    }
+
+    #[inline]
     fn is_empty(&self, pos: (i32, i32)) -> bool {
         let idx = self.pos_to_idx(pos);
-        self.in_bounds(pos)
-            && self.tiles[idx] == TileType::Empty
-            && self.next_tiles[idx] == TileType::Empty
+        self.in_bounds(pos) && self.tiles[idx] == EMPTY && self.next_tiles[idx] == EMPTY
     }
 
     #[inline]
@@ -699,40 +692,35 @@ impl Sandbox {
     }
 }
 
-#[derive(Default, Hash, Clone, PartialEq, Eq, Copy, Debug)]
-enum TileType {
-    #[default]
-    Invalid = -1,
-    Empty,
-    Static,
-    Sand,
-    Water,
-    Smoke,
-    Vapor,
-    Snow,
-    Wood,
-    BurntWood,
-    Coal,
-    Fire,
-    Gunpowder,
-}
+const EMPTY: u8 = 0;
+const STEEL: u8 = 1;
+const SAND: u8 = 2;
+const WATER: u8 = 3;
+const SMOKE: u8 = 4;
+const VAPOR: u8 = 5;
+const SNOW: u8 = 6;
+const WOOD: u8 = 7;
+const BURNTWOOD: u8 = 8;
+const COAL: u8 = 9;
+const FIRE: u8 = 10;
+const GUN_POWDER: u8 = 11;
+const LAVA: u8 = 12;
 
-impl TileType {
-    pub fn get_color(&self) -> Color {
-        match *self {
-            Self::Empty => EMPTY,
-            Self::Static => SOFTBLUE,
-            Self::Sand => SAND,
-            Self::Water => SKYBLUE,
-            Self::Smoke => GRAY,
-            Self::Vapor => LIGHTGRAY,
-            Self::Snow => WHITE,
-            Self::Wood => BROWN,
-            Self::BurntWood => DARKBROWN,
-            Self::Coal => DARKGRAY,
-            Self::Fire => ORANGE,
-            Self::Gunpowder => GUNPOWDER,
-            _ => MAGENTA,
-        }
+pub fn get_tile_color(val: &u8) -> Color {
+    match *val {
+        EMPTY => EMPTY_COLOR,
+        STEEL => SOFTBLUE_COLOR,
+        SAND => SAND_COLOR,
+        WATER => SKYBLUE,
+        SMOKE => GRAY,
+        VAPOR => LIGHTGRAY,
+        SNOW => WHITE,
+        WOOD => BROWN,
+        BURNTWOOD => DARKBROWN,
+        COAL => DARKGRAY,
+        FIRE => ORANGE,
+        GUN_POWDER => GUN_POWDER_COLOR,
+        LAVA => RED,
+        _ => MAGENTA,
     }
 }
