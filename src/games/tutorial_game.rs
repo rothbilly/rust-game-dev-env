@@ -193,6 +193,7 @@ impl GameLoop for TutorialGame {
                     fs::write(
                         format!("{}{}", SCORE_PATH, SCORE_FILE_NAME),
                         self.high_score.to_string()).unwrap();
+                    self.score = 0;
                 }
             }
         }
