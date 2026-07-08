@@ -11,8 +11,8 @@ const MOVEMENT_SPEED: f32 = 200.0;
 const SCORE_PATH: &str = ".app/storage/tutorial_game/";
 const SCORE_FILE_NAME: &str = "high_score.dat";
 
- const FRAGMENT_SHADER: &str = include_str!(r"..\..\assets\shaders\starfield_shader.glsl");
- const VERTEX_SHADER: &str = include_str!(r"..\..\assets\shaders\quad_vertex.glsl");
+ const FRAGMENT_SHADER: &str = include_str!(r"../../assets/shaders/starfield_shader.glsl");
+ const VERTEX_SHADER: &str = include_str!(r"../../assets/shaders/quad_vertex.glsl");
 
 
 
