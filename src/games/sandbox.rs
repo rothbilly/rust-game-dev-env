@@ -9,81 +9,86 @@ pub const SOFTBLUE_COLOR: Color = Color::new(0.66, 0.71, 0.89, 1.0);
 pub const SAND_COLOR: Color = Color::new(0.89, 0.84, 0.66, 1.0);
 pub const GUN_POWDER_COLOR: Color = Color::new(0.122, 0.125, 0.165, 1.0);
 
-// TODO: add multithreading and dirty rects
-// maybe add brush patterns
-// add tile type selection
+/*
+    IMPORTANT: improve single thread performance before adding multithreading
+    TODO: add spatial partitioning and dirty rects
+    TODO: add UI back
+    maybe add brush patterns
+*/
 
-const TILE_SIZE: i32 = 4;
+// Screen references
+// Snes NTSC 256 * 224 @60Hz PAL 256 * 240 @50Hz
+// GBA 240 * 160 3:2 @60Hz
+// maybe change this to be "Game size/res??"
+const WORLD_WIDTH: i32 = 256 * 2;
+const WORLD_HEIGHT: i32 = 240 * 2;
+const ASPECT_RATIO: f32 = WORLD_WIDTH as f32 / WORLD_HEIGHT as f32;
 
 #[register_app("Sandbox")] // Custom Registration macro
-#[derive(Default)]
 pub struct Sandbox {
-    world_size: (i32, i32),
     selected_tile_type: u8,
     available_tiles: [u8; 10],
-    brush_size: i32,
+    brush_size: i16,
+    max_brush_size: i16,
     tiles: Vec<u8>,
     next_tiles: Vec<u8>,
-    frame_counter: i64,
+    frame_counter: u64,
+    world_image: Image,
+    world_texture: Texture2D,
+    camera: Camera2D,
     draw_debug: bool,
+}
+
+impl Default for Sandbox {
+    fn default() -> Self {
+        Self {
+            selected_tile_type: SAND,
+            available_tiles: [
+                LAVA, SAND, WATER, FIRE, GUN_POWDER, WOOD, STEEL, VAPOR, SMOKE, SNOW,
+            ],
+            brush_size: 4,
+            max_brush_size: 64,
+            tiles: Vec::<u8>::new(),
+            next_tiles: Vec::<u8>::new(),
+            frame_counter: 0,
+            world_image: Image::empty(),
+            world_texture: Texture2D::empty(),
+            camera: Camera2D::default(),
+            draw_debug: true,
+            base: Default::default(),
+        }
+    }
 }
 
 impl GameLoop for Sandbox {
     fn _ready(&mut self) {
-        let screen_size = (screen_width(), screen_height());
-        self.frame_counter = 0;
-        self.selected_tile_type = SAND;
-        self.available_tiles = [
-            SAND, WATER, FIRE, GUN_POWDER, WOOD, STEEL, VAPOR, SMOKE, SNOW, LAVA,
-        ];
-
-        self.world_size = (
-            (screen_size.0 / TILE_SIZE as f32).floor() as i32,
-            (screen_size.1 / TILE_SIZE as f32).floor() as i32,
-        );
-
-        self.brush_size = 4;
-        let vec_size = (self.world_size.0 * self.world_size.1) as usize;
-
-        self.tiles = vec![EMPTY; vec_size];
-        self.next_tiles = vec![EMPTY; vec_size];
-        self.draw_debug = true;
+        let vec_size = (WORLD_WIDTH * WORLD_HEIGHT) as usize;
+        self.tiles = vec![SAND; vec_size];
+        self.next_tiles = vec![SAND; vec_size];
+        self.world_image = Image::gen_image_color(WORLD_WIDTH as u16, WORLD_HEIGHT as u16, BLACK);
+        self.world_texture = Texture2D::from_image(&self.world_image);
+        self.world_texture.set_filter(FilterMode::Nearest);
     }
 
     fn _process_input(&mut self) {
         let pressed_keys = get_keys_pressed();
         for key in &pressed_keys {
-            match key {
-                KeyCode::Key1 => self.selected_tile_type = self.available_tiles[0],
-                KeyCode::Key2 => self.selected_tile_type = self.available_tiles[1],
-                KeyCode::Key3 => self.selected_tile_type = self.available_tiles[2],
-                KeyCode::Key4 => self.selected_tile_type = self.available_tiles[3],
-                KeyCode::Key5 => self.selected_tile_type = self.available_tiles[4],
-                KeyCode::Key6 => self.selected_tile_type = self.available_tiles[5],
-                KeyCode::Key7 => self.selected_tile_type = self.available_tiles[6],
-                KeyCode::Key8 => self.selected_tile_type = self.available_tiles[7],
-                KeyCode::Key9 => self.selected_tile_type = self.available_tiles[8],
-                KeyCode::Key0 => self.selected_tile_type = self.available_tiles[9],
-                _ => {}
+            let key_value = *key as i32;
+            let idx = key_value - KeyCode::Key0 as i32;
+            if idx >= 0 && idx <= 9 {
+                self.selected_tile_type = self.available_tiles[idx as usize];
             }
         }
 
         let mouse_wheel = mouse_wheel();
 
-        self.brush_size = self.brush_size + mouse_wheel.1.round() as i32;
-        self.brush_size = self.brush_size.clamp(1, 32);
+        self.brush_size = self.brush_size + (mouse_wheel.1.round() * 2.0) as i16;
+        self.brush_size = self.brush_size.clamp(1, self.max_brush_size);
 
-        let (mouse_x, mouse_y) = mouse_position();
+        let mouse = self.mouse_to_world();
 
-        let (screen_w, screen_h) = screen_size();
-
-        //out of screen
-        if mouse_x < 0.0 || mouse_x >= screen_w || mouse_y < 0.0 || mouse_y >= screen_h {
-            return;
-        }
-
-        let grid_x = (mouse_x / TILE_SIZE as f32).floor() as i32;
-        let grid_y = (mouse_y / TILE_SIZE as f32).floor() as i32;
+        let grid_x = mouse.x.floor() as i16;
+        let grid_y = mouse.y.floor() as i16;
 
         let mut tile_type = self.selected_tile_type;
         let mouse_left = is_mouse_button_down(MouseButton::Left);
@@ -100,8 +105,8 @@ impl GameLoop for Sandbox {
 
         for y in 0..brush_size {
             for x in 0..brush_size {
-                let tile_x = grid_x - (brush_size / 2) + x;
-                let tile_y = grid_y - (brush_size / 2) + y;
+                let tile_x = grid_x - (brush_size as i16 / 2) + x as i16;
+                let tile_y = grid_y - (brush_size as i16 / 2) + y as i16;
 
                 if !self.in_bounds((tile_x, tile_y)) {
                     continue;
@@ -116,110 +121,101 @@ impl GameLoop for Sandbox {
 
     fn _update(&mut self, _delta: f32) {
         if self.frame_counter % 2 == 0 {
-            for y in 0..self.world_size.1 {
-                for x in (0..self.world_size.0).rev() {
-                    self.check_tile(&x, &y);
+            for y in 0..WORLD_HEIGHT {
+                for x in (0..WORLD_WIDTH).rev() {
+                    self.check_tile(&(x as i16), &(y as i16));
                 }
             }
         } else {
-            for y in 0..self.world_size.1 {
-                for x in 0..self.world_size.0 {
-                    self.check_tile(&x, &y);
+            for y in 0..WORLD_HEIGHT {
+                for x in 0..WORLD_WIDTH {
+                    self.check_tile(&(x as i16), &(y as i16));
                 }
             }
         }
 
         std::mem::swap(&mut self.next_tiles, &mut self.tiles);
         self.next_tiles.fill_with(|| EMPTY);
-        self.frame_counter = self.frame_counter + 1;
-    }
 
-    fn _render(&self) {
-        //we draw each tile individually, probably there is better ways to do this
-        let tile_size = TILE_SIZE as f32;
-        let len = self.tiles.len();
-        for i in 0..len {
+        for i in 0..self.tiles.len() {
             let tile = self.tiles[i];
-            if tile == EMPTY {
-                continue;
-            }
-            let x = (i % self.world_size.0 as usize) as f32;
-            let y = (i / self.world_size.0 as usize) as f32;
-            draw_rectangle(
-                x * tile_size,
-                y * tile_size,
-                tile_size,
-                tile_size,
+            self.world_image.set_pixel(
+                (i % WORLD_WIDTH as usize) as u32,
+                (i / WORLD_WIDTH as usize) as u32,
                 get_tile_color(&tile),
             );
         }
+        self.world_texture.update(&self.world_image);
+        self.frame_counter = (self.frame_counter + 1) % 60;
+        self.update_camera();
+    }
 
-        let screen_size = screen_size();
+    fn _render(&self) {
+        set_camera(&self.camera);
+        draw_texture(&self.world_texture, 0.0, 0.0, WHITE);
 
-        let gap = 8;
-        let sqr_size = 48;
-        let len = self.available_tiles.len();
-        let margin = 9;
-        let y = screen_size.1 - 176.0 + sqr_size as f32;
+        let mouse = self.mouse_to_world();
+        let brush_size = self.brush_size as f32;
         draw_rectangle_lines(
-            32.0,
-            y,
-            (len * (sqr_size + gap - 1) + margin * 2) as f32,
-            (sqr_size + margin * 2) as f32,
+            mouse.x - (brush_size / 2.0),
+            mouse.y - (brush_size / 2.0),
+            brush_size,
+            brush_size,
             4.0,
-            WHITE,
-        );
-
-        let mut x = (32 + margin) as f32;
-        let mut i = 0;
-        for t in self.available_tiles {
-            if self.selected_tile_type == t {
-                draw_rectangle_lines(
-                    x - 3.0,
-                    y + margin as f32 - 3.0,
-                    sqr_size as f32 + 6.0,
-                    sqr_size as f32 + 6.0,
-                    6.0,
-                    WHITE,
-                );
-            }
-
-            draw_rectangle(
-                x,
-                y + margin as f32,
-                sqr_size as f32,
-                sqr_size as f32,
-                get_tile_color(&t),
-            );
-            let fontsize = sqr_size as f32;
-            draw_text(
-                format!("{:?}", i + 1),
-                x + fontsize / 4.0,
-                y + fontsize * 2.0 / 3.0 + margin as f32,
-                fontsize,
-                BLACK,
-            );
-            x = x + (sqr_size + gap) as f32;
-            i = i + 1;
-        }
-
-        let mouse = mouse_position();
-
-        let brush_size = (self.brush_size * TILE_SIZE) as f32;
-        draw_rectangle_lines(
-            mouse.0 - brush_size / 2.0,
-            mouse.1 - brush_size / 2.0,
-            brush_size,
-            brush_size,
-            3.0,
             WHITE,
         );
     }
 }
 
 impl Sandbox {
+    fn update_camera(&mut self) {
+        let mut camera = Camera2D::from_display_rect(Rect {
+            x: 0.0,
+            y: WORLD_HEIGHT as f32,
+            w: WORLD_WIDTH as f32,
+            h: -WORLD_HEIGHT as f32,
+        });
+        let display = self.get_display_rect();
+        camera.viewport = Some((
+            display.x as i32,
+            display.y as i32,
+            display.w as i32,
+            display.h as i32,
+        ));
+
+        self.camera = camera;
+    }
+
+    fn get_display_rect(&self) -> Rect {
+        let screen_size = screen_size();
+        let dest_size: (f32, f32);
+        let x: f32;
+        let y: f32;
+        if screen_size.0 > screen_size.1 {
+            dest_size = (screen_size.1 * ASPECT_RATIO, screen_size.1);
+            x = screen_size.0 / 2.0 - dest_size.0 / 2.0;
+            y = 0.0;
+        } else {
+            dest_size = (screen_size.0, screen_size.0 / ASPECT_RATIO);
+            x = 0.0;
+            y = screen_size.1 / 2.0 - dest_size.1 / 2.0;
+        }
+        Rect {
+            x,
+            y,
+            w: dest_size.0,
+            h: dest_size.1,
+        }
+    }
+
     #[inline]
-    fn check_tile(&mut self, x: &i32, y: &i32) {
+    fn mouse_to_world(&self) -> Vec2 {
+        let mouse = mouse_position();
+        self.camera.screen_to_world(vec2(mouse.0, mouse.1))
+    }
+
+    #[inline]
+    fn check_tile(&mut self, x: &i16, y: &i16) {
         let idx = self.pos_to_idx((*x, *y));
         let tile = self.tiles[idx];
         if tile == EMPTY {
@@ -230,29 +226,14 @@ impl Sandbox {
         }
     }
 
-    fn process_tile(&mut self, tile: u8, pos: (i32, i32)) -> bool {
-        let neighbor_indices = self.get_neighbor_indices(pos);
+    fn process_tile(&mut self, tile: u8, pos: (i16, i16)) -> bool {
+        let neighbors = self.get_neighbors_per_type(pos);
 
         // we take advantage of the way conditions are validated, the || (or) operator will not check any other option if the first one is true
         match tile {
-            SAND => self.try_move_down(pos) || self.try_move_down_sides(pos),
+            SAND => self.try_move(pos, (pos.0, pos.1 + 1)) || self.try_move_down_sides(pos),
             GUN_POWDER => {
-                let mut fire_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        FIRE => {
-                            fire_tiles = fire_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-                if fire_tiles > 0 && self.roll(0.6) {
+                if neighbors[FIRE as usize] > 0 && self.roll(0.6) {
                     if self.roll(0.6) {
                         self.set_tile(self.pos_to_idx(pos), FIRE);
                     } else {
@@ -261,137 +242,65 @@ impl Sandbox {
                     return true;
                 }
 
-                self.try_move_down(pos) || self.try_move_down_sides(pos)
+                self.try_move(pos, (pos.0, pos.1 + 1)) || self.try_move_down_sides(pos)
             }
             WATER => {
-                let mut fire_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        FIRE => {
-                            fire_tiles = fire_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if fire_tiles >= 4 {
+                if neighbors[FIRE as usize] >= 4 {
                     self.set_tile(self.pos_to_idx(pos), VAPOR);
                     return true;
+                } else if neighbors[EMPTY as usize] >= 3 && self.roll(0.0002) {
+                    self.set_tile(self.pos_to_idx(pos), VAPOR);
                 }
 
                 (self.roll(0.05) && self.try_move_sides(pos))
-                    || self.try_move_down(pos)
+                    || self.try_move(pos, (pos.0, pos.1 + 1))
                     || self.try_move_down_sides(pos)
                     || self.try_move_sides(pos)
             }
 
             SMOKE => {
-                let mut fire_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        FIRE => {
-                            fire_tiles = fire_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if fire_tiles >= 3 {
+                if neighbors[FIRE as usize] >= 2 && self.roll(0.6) {
                     self.set_tile(self.pos_to_idx(pos), FIRE);
 
                     return true;
                 }
 
-                (self.roll(0.25) && self.try_move_up_sides(pos))
-                    || self.try_move_up(pos)
-                    || self.try_move_sides(pos)
-                    || self.try_move_down(pos)
-            }
-            VAPOR => {
-                let mut water_tiles: i8 = 0;
-                let mut vapor_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        WATER => {
-                            water_tiles = water_tiles + 1;
-                        }
-                        VAPOR => {
-                            vapor_tiles = vapor_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if water_tiles >= 4 {
-                    self.set_tile(self.pos_to_idx(pos), WATER);
-                    return true;
-                } else if vapor_tiles >= 3 && self.roll(0.00001) {
-                    self.set_tile(self.pos_to_idx(pos), WATER);
-                    return true;
-                }
-
-                if self.roll(0.0001) {
+                if self.roll(0.0003) {
                     self.set_tile(self.pos_to_idx(pos), EMPTY);
                 }
 
                 (self.roll(0.25) && self.try_move_up_sides(pos))
-                    || self.try_move_up(pos)
+                    || self.try_move(pos, (pos.0, pos.1 - 1))
                     || self.try_move_sides(pos)
-                    || self.try_move_down(pos)
+                    || self.try_move(pos, (pos.0, pos.1 + 1))
+            }
+            VAPOR => {
+                if neighbors[WATER as usize] >= 4 {
+                    self.set_tile(self.pos_to_idx(pos), WATER);
+                    return true;
+                } else if neighbors[VAPOR as usize] >= 3 && self.roll(0.000001) {
+                    self.set_tile(self.pos_to_idx(pos), WATER);
+                    return true;
+                }
+
+                if self.roll(0.0003) {
+                    self.set_tile(self.pos_to_idx(pos), EMPTY);
+                }
+
+                (self.roll(0.25) && self.try_move_up_sides(pos))
+                    || self.try_move(pos, (pos.0, pos.1 - 1))
+                    || self.try_move_sides(pos)
+                    || self.try_move(pos, (pos.0, pos.1 + 1))
             }
             SNOW => {
-                let mut fire_tiles: i8 = 0;
-                let mut water_tiles: i8 = 0;
-                let mut vapor_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        FIRE => {
-                            fire_tiles = fire_tiles + 1;
-                        }
-                        WATER => {
-                            water_tiles = water_tiles + 1;
-                        }
-                        VAPOR => {
-                            vapor_tiles = vapor_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if fire_tiles >= 3 {
+                if neighbors[FIRE as usize] >= 1 {
                     self.set_tile(self.pos_to_idx(pos), WATER);
 
                     return true;
-                }
-                if water_tiles >= 3 && self.roll(0.01) {
+                } else if neighbors[WATER as usize] >= 3 && self.roll(0.01) {
                     self.set_tile(self.pos_to_idx(pos), WATER);
                     return true;
-                }
-                if vapor_tiles >= 3 && self.roll(0.3) {
+                } else if neighbors[VAPOR as usize] >= 2 && self.roll(0.3) {
                     self.set_tile(self.pos_to_idx(pos), WATER);
                     return true;
                 }
@@ -401,7 +310,7 @@ impl Sandbox {
 
                     return match rng {
                         0..50 => self.try_move_down_sides(pos),
-                        50..100 => self.try_move_down(pos),
+                        50..100 => self.try_move(pos, (pos.0, pos.1 + 1)),
                         _ => false,
                     };
                 }
@@ -409,30 +318,10 @@ impl Sandbox {
             }
 
             FIRE => {
-                let mut water_tiles: i8 = 0;
-                let mut gunpowder_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        WATER | SNOW => {
-                            water_tiles = water_tiles + 1;
-                        }
-                        GUN_POWDER => {
-                            gunpowder_tiles = gunpowder_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if water_tiles >= 4 {
+                if neighbors[WATER as usize] >= 4 {
                     self.set_tile(self.pos_to_idx(pos), VAPOR);
                     return true;
-                } else if gunpowder_tiles > 1 {
+                } else if neighbors[GUN_POWDER as usize] > 1 {
                     self.set_tile(self.pos_to_idx(pos), SMOKE);
                     return true;
                 }
@@ -445,35 +334,15 @@ impl Sandbox {
                 let rng = rand::gen_range(0, 100);
 
                 match rng {
-                    0..20 => self.try_move_down(pos),
+                    0..20 => self.try_move(pos, (pos.0, pos.1 + 1)),
                     20..40 => self.try_move_down_sides(pos),
                     40..60 => self.try_move_sides(pos),
                     60..80 => self.try_move_up_sides(pos),
-                    _ => self.try_move_up(pos),
+                    _ => self.try_move(pos, (pos.0, pos.1 - 1)),
                 }
             }
             WOOD => {
-                let mut fire_tiles: i8 = 0;
-                let mut water_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        FIRE => {
-                            fire_tiles = fire_tiles + 1;
-                        }
-                        WATER => {
-                            water_tiles = water_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if fire_tiles > water_tiles && self.roll(0.2) {
+                if neighbors[FIRE as usize] > neighbors[WATER as usize] && self.roll(0.2) {
                     if self.roll(0.7) {
                         self.set_tile(self.pos_to_idx(pos), BURNTWOOD);
                     } else {
@@ -484,27 +353,7 @@ impl Sandbox {
                 false
             }
             BURNTWOOD => {
-                let mut fire_tiles: i8 = 0;
-                let mut water_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        FIRE => {
-                            fire_tiles = fire_tiles + 1;
-                        }
-                        WATER => {
-                            water_tiles = water_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if fire_tiles - water_tiles > 1 {
+                if neighbors[FIRE as usize] - neighbors[WATER as usize] > 1 {
                     let rng = rand::gen_range(0, 100);
                     match rng {
                         0..20 => self.set_tile(self.pos_to_idx(pos), FIRE),
@@ -513,30 +362,11 @@ impl Sandbox {
                     }
                     return true;
                 }
-                self.try_move_down(pos) || (self.roll(0.05) && self.try_move_down_sides(pos))
+                self.try_move(pos, (pos.0, pos.1 + 1))
+                    || (self.roll(0.05) && self.try_move_down_sides(pos))
             }
             COAL => {
-                let mut fire_tiles: i8 = 0;
-                let mut water_tiles: i8 = 0;
-                let mut n_tile: u8;
-                for pos in neighbor_indices {
-                    if pos == -1 {
-                        continue;
-                    }
-                    let idx = pos as usize;
-                    n_tile = self.tiles[idx];
-                    match n_tile {
-                        FIRE => {
-                            fire_tiles = fire_tiles + 1;
-                        }
-                        WATER => {
-                            water_tiles = water_tiles + 1;
-                        }
-                        _ => {}
-                    }
-                }
-
-                if (fire_tiles - water_tiles) > 0 && self.roll(0.05) {
+                if (neighbors[FIRE as usize] - neighbors[WATER as usize]) > 0 && self.roll(0.05) {
                     if self.roll(0.4) {
                         self.set_tile(self.pos_to_idx(pos), FIRE);
                     } else {
@@ -544,91 +374,55 @@ impl Sandbox {
                     }
                     return true;
                 }
-                self.try_move_down(pos) || (self.roll(0.05) && self.try_move_down_sides(pos))
+                self.try_move(pos, (pos.0, pos.1 + 1))
+                    || (self.roll(0.05) && self.try_move_down_sides(pos))
             }
             _ => false,
         }
     }
 
-    // behaviours are quite simple for now, we will probably change this later
-    fn try_move_down(&mut self, from: (i32, i32)) -> bool {
-        let to = (from.0, from.1 + 1);
-
-        let down = self.is_empty(to);
-        if down {
-            self.move_tile(from, to)
-        }
-        down
-    }
-
-    fn try_move_down_sides(&mut self, from: (i32, i32)) -> bool {
-        let mut down_left =
-            self.is_empty((from.0 - 1, from.1 + 1)) && self.is_empty((from.0 - 1, from.1));
-        let mut down_right =
-            self.is_empty((from.0 + 1, from.1 + 1)) && self.is_empty((from.0 + 1, from.1));
-
-        if down_left && down_right {
-            down_right = rand::gen_range(0.0, 1.0) >= 0.5;
-            down_left = !down_right;
-        }
-
-        if down_right {
-            self.move_tile(from, (from.0 + 1, from.1 + 1));
-        } else if down_left {
-            self.move_tile(from, (from.0 - 1, from.1 + 1));
-        }
-
-        down_right || down_left
-    }
-
-    fn try_move_up(&mut self, from: (i32, i32)) -> bool {
-        let to = (from.0, from.1 - 1);
-        let up = self.is_empty(to);
-        if up {
+    fn try_move(&mut self, from: (i16, i16), to: (i16, i16)) -> bool {
+        let can = self.is_empty(to);
+        if can {
             self.move_tile(from, to);
         }
-        up
+        can
     }
 
-    fn try_move_up_sides(&mut self, from: (i32, i32)) -> bool {
-        let mut up_left =
-            self.is_empty((from.0 - 1, from.1 - 1)) && self.is_empty((from.0 - 1, from.1));
-        let mut up_right =
-            self.is_empty((from.0 + 1, from.1 - 1)) && self.is_empty((from.0 + 1, from.1));
+    #[inline]
+    fn try_move_down_sides(&mut self, from: (i16, i16)) -> bool {
+        let down_right = self.roll(0.5);
 
-        if up_left && up_right {
-            up_right = rand::gen_range(0.0, 1.0) >= 0.5;
-            up_left = !up_right;
+        if down_right {
+            self.is_empty((from.0 + 1, from.1)) && self.try_move(from, (from.0 + 1, from.1 + 1))
+        } else {
+            self.is_empty((from.0 - 1, from.1)) && self.try_move(from, (from.0 - 1, from.1 + 1))
         }
+    }
+
+    #[inline]
+    fn try_move_up_sides(&mut self, from: (i16, i16)) -> bool {
+        let up_right = self.roll(0.5);
 
         if up_right {
-            self.move_tile(from, (from.0 + 1, from.1 - 1));
-        } else if up_left {
-            self.move_tile(from, (from.0 - 1, from.1 - 1));
+            self.is_empty((from.0 + 1, from.1)) && self.try_move(from, (from.0 + 1, from.1 - 1))
+        } else {
+            self.is_empty((from.0 - 1, from.1)) && self.try_move(from, (from.0 - 1, from.1 - 1))
         }
-
-        up_right || up_left
     }
 
-    fn try_move_sides(&mut self, from: (i32, i32)) -> bool {
-        let mut left = self.is_empty((from.0 - 1, from.1));
-        let mut right = self.is_empty((from.0 + 1, from.1));
-
-        if left && right {
-            right = rand::gen_range(0.0, 1.0) >= 0.5;
-            left = !right;
-        }
+    #[inline]
+    fn try_move_sides(&mut self, from: (i16, i16)) -> bool {
+        let right = self.roll(0.5);
 
         if right {
-            self.move_tile(from, (from.0 + 1, from.1));
-        } else if left {
-            self.move_tile(from, (from.0 - 1, from.1));
+            self.try_move(from, (from.0 + 1, from.1))
+        } else {
+            self.try_move(from, (from.0 - 1, from.1))
         }
-
-        left || right
     }
 
-    fn move_tile(&mut self, from: (i32, i32), to: (i32, i32)) {
+    fn move_tile(&mut self, from: (i16, i16), to: (i16, i16)) {
         let from_idx = self.pos_to_idx(from);
         let to_idx = self.pos_to_idx(to);
         let tile = self.tiles[from_idx];
@@ -636,7 +430,8 @@ impl Sandbox {
         self.tiles[from_idx] = EMPTY;
     }
 
-    fn get_neighbor_indices(&self, from: (i32, i32)) -> [isize; 8] {
+    // the index is the type
+    fn get_neighbors_per_type(&self, from: (i16, i16)) -> [i8; TILE_TYPES] {
         let positions = [
             (-1, -1),
             (0, -1),
@@ -648,16 +443,24 @@ impl Sandbox {
             (1, 1),
         ];
 
-        let mut neighbors = [-1; 8];
+        let mut neighbors = [0 as i8; TILE_TYPES];
+
         let mut i: usize = 0;
+        let mut tile: u8;
         for pos in &positions {
             let n_pos = (from.0 + pos.0, from.1 + pos.1);
-            if !self.in_bounds(n_pos) || self.is_empty(n_pos) {
+
+            if !self.in_bounds(n_pos) {
                 continue;
             }
-            neighbors[i] = self.pos_to_idx(n_pos) as isize;
+
+            tile = self.tiles[self.pos_to_idx(n_pos)];
+
+            neighbors[tile as usize] = neighbors[tile as usize] + 1;
+
             i = i + 1;
         }
+
         neighbors
     }
 
@@ -667,19 +470,22 @@ impl Sandbox {
     }
 
     #[inline]
-    fn is_empty(&self, pos: (i32, i32)) -> bool {
+    fn is_empty(&self, pos: (i16, i16)) -> bool {
         let idx = self.pos_to_idx(pos);
         self.in_bounds(pos) && self.tiles[idx] == EMPTY && self.next_tiles[idx] == EMPTY
     }
 
     #[inline]
-    fn pos_to_idx(&self, pos: (i32, i32)) -> usize {
-        (pos.1 * self.world_size.0 + pos.0) as usize
+    fn pos_to_idx(&self, pos: (i16, i16)) -> usize {
+        (pos.1 as i32 * WORLD_WIDTH + pos.0 as i32) as usize
     }
 
     #[inline]
-    fn in_bounds(&self, pos: (i32, i32)) -> bool {
-        (pos.0 >= 0) && (pos.0 < self.world_size.0) && (pos.1 >= 0) && (pos.1 < self.world_size.1)
+    fn in_bounds(&self, pos: (i16, i16)) -> bool {
+        (pos.0 >= 0)
+            && (pos.0 < WORLD_WIDTH as i16)
+            && (pos.1 >= 0)
+            && (pos.1 < WORLD_HEIGHT as i16)
     }
 
     #[inline]
@@ -705,6 +511,7 @@ const COAL: u8 = 9;
 const FIRE: u8 = 10;
 const GUN_POWDER: u8 = 11;
 const LAVA: u8 = 12;
+const TILE_TYPES: usize = 13;
 
 pub fn get_tile_color(val: &u8) -> Color {
     match *val {
