@@ -289,6 +289,10 @@ impl GameLoop for TutorialGame {
         }
 
     }
+
+    fn _cleanup(&mut self) {
+        clear_background(WHITE);
+    }
 }
 
 
