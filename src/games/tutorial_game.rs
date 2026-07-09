@@ -15,7 +15,6 @@ const SCORE_FILE_NAME: &str = "high_score.dat";
  const VERTEX_SHADER: &str = include_str!(r"../../assets/shaders/quad_vertex.glsl");
 
 
-
 #[register_app("Tutorial Game")]
 #[derive(Default)]
 pub struct TutorialGame{
