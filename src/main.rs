@@ -1,13 +1,10 @@
 
-
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::RwLock; 
 
 
-
 use macroquad::math::Vec2;
-// For async.
 use macroquad:: prelude::*;
 // egui
 use egui_macroquad::*;
@@ -16,6 +13,7 @@ use egui_macroquad::*;
 use rust_game_dev_env::core::rendering::post_processing::{CameraMode, ScreenVisualEffect};
 use rust_game_dev_env::editor::inspector::settings_inspector::SettingsInspector;
 use rust_game_dev_env::editor::inspector::{DrawingBackend, GlobalEditor};
+
 // own crate imports
 use rust_game_dev_env as game_lib; 
 use game_lib::core::signal::Signal;
@@ -61,7 +59,7 @@ async fn main() {
     global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
     global_inspectors.write().unwrap().new_inspector::<SettingsInspector>();
 
-    global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
+    global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Macroquad);
 
     let app_registry = app_loader.borrow().app_registry.clone();
     
@@ -91,7 +89,8 @@ async fn main() {
         delta = delta.max(0.0).min(0.1);
 
         if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){
-            global_inspectors.write().unwrap().toggle_global_visibility()
+            global_inspectors.write().unwrap().toggle_global_visibility();
+            loop_app_ref.write().unwrap().toggle_debug_view();
         }
 
 
@@ -112,8 +111,6 @@ async fn main() {
 }
 
 fn on_close_application() {
-
-    println!("[Application] - Closing!");
     let _ = GLOB_SETTINGS.read()
         .unwrap()
         .save();

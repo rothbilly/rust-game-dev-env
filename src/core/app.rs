@@ -56,6 +56,7 @@ impl AppRegistry{
 #[derive(Default)]
 pub struct App
 {
+    is_in_debug_mode: bool,
     sub_apps: Vec<Rc<RefCell<dyn GameLoop>>>,
 }
 
@@ -64,6 +65,11 @@ impl App
     pub fn new() -> Self {
         Self::default()
     }
+
+    // ==========================================
+    //  Helper Methods
+    // ==========================================
+
 
     pub fn initialize_and_ready<T>() -> App
     where T:GameLoop + Default + 'static
@@ -122,6 +128,14 @@ impl App
         println!("[Main App] - total of sub app: {}", self.sub_apps.len());
     }
 
+    pub fn is_main_app(&self) -> bool{
+        self.sub_apps.len() != 0 
+    }
+
+    pub fn toggle_debug_view(&mut self){
+        self.is_in_debug_mode = !self.is_in_debug_mode
+    }
+
 
     // ==========================================
     //  App Module Built In Calls
@@ -146,13 +160,14 @@ impl App
             _app.process_input();
             _app.update(delta_time);
             _app.render();
+            if self.is_in_debug_mode{
+                _app._debug_draw();
+            }
         }
 
     }
 
-    pub fn is_main_app(&self) -> bool{
-        self.sub_apps.len() != 0 
-    }
+
 }
 
 
