@@ -1,33 +1,32 @@
 use crate::core::app::AppRegistration; // To register it in the App registry.
 use crate::core::game::GameLoop;
 use engine_macros::register_app;
-use macroquad::miniquad::window::screen_size;
 use macroquad::prelude::*;
+use macroquad::ui::{
+    Drag, Ui, hash, root_ui,
+    widgets::{self, Group},
+};
 
 pub const EMPTY_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 pub const SOFTBLUE_COLOR: Color = Color::new(0.66, 0.71, 0.89, 1.0);
 pub const SAND_COLOR: Color = Color::new(0.89, 0.84, 0.66, 1.0);
 pub const GUN_POWDER_COLOR: Color = Color::new(0.122, 0.125, 0.165, 1.0);
 
-/*
-    IMPORTANT: improve single thread performance before adding multithreading
-    TODO: add spatial partitioning and dirty rects
-    TODO: add UI back
-    maybe add brush patterns
-*/
-
 // Screen references
 // Snes NTSC 256 * 224 @60Hz PAL 256 * 240 @50Hz
 // GBA 240 * 160 3:2 @60Hz
-// maybe change this to be "Game size/res??"
-const WORLD_WIDTH: i32 = 256 * 2;
-const WORLD_HEIGHT: i32 = 240 * 2;
+const WORLD_WIDTH: i32 = 256;
+const WORLD_HEIGHT: i32 = 240;
 const ASPECT_RATIO: f32 = WORLD_WIDTH as f32 / WORLD_HEIGHT as f32;
 
+/*
+    IMPORTANT: improve single thread performance before adding multithreading
+    TODO: add spatial partitioning (chunks) and dirty rects
+    TODO: add UI back
+    maybe add brush patterns
+*/
 #[register_app("Sandbox")] // Custom Registration macro
 pub struct Sandbox {
-    selected_tile_type: u8,
-    available_tiles: [u8; 10],
     brush_size: i16,
     max_brush_size: i16,
     tiles: Vec<u8>,
@@ -37,15 +36,12 @@ pub struct Sandbox {
     world_texture: Texture2D,
     camera: Camera2D,
     draw_debug: bool,
+    inventory_data: Data,
 }
 
 impl Default for Sandbox {
     fn default() -> Self {
         Self {
-            selected_tile_type: SAND,
-            available_tiles: [
-                LAVA, SAND, WATER, FIRE, GUN_POWDER, WOOD, STEEL, VAPOR, SMOKE, SNOW,
-            ],
             brush_size: 4,
             max_brush_size: 64,
             tiles: Vec::<u8>::new(),
@@ -55,6 +51,7 @@ impl Default for Sandbox {
             world_texture: Texture2D::empty(),
             camera: Camera2D::default(),
             draw_debug: true,
+            inventory_data: Data::new(),
             base: Default::default(),
         }
     }
@@ -63,8 +60,8 @@ impl Default for Sandbox {
 impl GameLoop for Sandbox {
     fn _ready(&mut self) {
         let vec_size = (WORLD_WIDTH * WORLD_HEIGHT) as usize;
-        self.tiles = vec![SAND; vec_size];
-        self.next_tiles = vec![SAND; vec_size];
+        self.tiles = vec![EMPTY; vec_size];
+        self.next_tiles = vec![EMPTY; vec_size];
         self.world_image = Image::gen_image_color(WORLD_WIDTH as u16, WORLD_HEIGHT as u16, BLACK);
         self.world_texture = Texture2D::from_image(&self.world_image);
         self.world_texture.set_filter(FilterMode::Nearest);
@@ -75,22 +72,27 @@ impl GameLoop for Sandbox {
         for key in &pressed_keys {
             let key_value = *key as i32;
             let idx = key_value - KeyCode::Key0 as i32;
-            if idx >= 0 && idx <= 9 {
-                self.selected_tile_type = self.available_tiles[idx as usize];
+            if (1..=9).contains(&idx) {
+                self.inventory_data.selected = (idx - 1) as usize;
+            } else if idx == 0 {
+                self.inventory_data.selected = 9;
             }
+            if *key == KeyCode::Tab {
+                self.inventory_data.palette_visible = !self.inventory_data.palette_visible;
+            }
+        }
+
+        self.process_ui();
+
+        if self.inventory_data.item_dragging {
+            return;
         }
 
         let mouse_wheel = mouse_wheel();
 
-        self.brush_size = self.brush_size + (mouse_wheel.1.round() * 2.0) as i16;
+        self.brush_size += (mouse_wheel.1.round() * 2.0) as i16;
         self.brush_size = self.brush_size.clamp(1, self.max_brush_size);
 
-        let mouse = self.mouse_to_world();
-
-        let grid_x = mouse.x.floor() as i16;
-        let grid_y = mouse.y.floor() as i16;
-
-        let mut tile_type = self.selected_tile_type;
         let mouse_left = is_mouse_button_down(MouseButton::Left);
         let mouse_right = is_mouse_button_down(MouseButton::Right);
         if !mouse_left && !mouse_right {
@@ -98,29 +100,17 @@ impl GameLoop for Sandbox {
         }
 
         if mouse_right {
-            tile_type = EMPTY;
+            self.paint_tiles(EMPTY);
+            return;
         }
 
-        let brush_size = self.brush_size;
-
-        for y in 0..brush_size {
-            for x in 0..brush_size {
-                let tile_x = grid_x - (brush_size as i16 / 2) + x as i16;
-                let tile_y = grid_y - (brush_size as i16 / 2) + y as i16;
-
-                if !self.in_bounds((tile_x, tile_y)) {
-                    continue;
-                }
-
-                let idx = self.pos_to_idx((tile_x, tile_y));
-
-                self.tiles[idx] = tile_type;
-            }
+        if let Some(tile_type) = self.inventory_data.get_selected_tile() {
+            self.paint_tiles(tile_type);
         }
     }
 
     fn _update(&mut self, _delta: f32) {
-        if self.frame_counter % 2 == 0 {
+        if self.frame_counter.is_multiple_of(2) {
             for y in 0..WORLD_HEIGHT {
                 for x in (0..WORLD_WIDTH).rev() {
                     self.check_tile(&(x as i16), &(y as i16));
@@ -161,7 +151,7 @@ impl GameLoop for Sandbox {
             mouse.y - (brush_size / 2.0),
             brush_size,
             brush_size,
-            4.0,
+            2.0,
             WHITE,
         );
     }
@@ -187,7 +177,7 @@ impl Sandbox {
     }
 
     fn get_display_rect(&self) -> Rect {
-        let screen_size = screen_size();
+        let screen_size = (screen_width(), screen_height());
         let dest_size: (f32, f32);
         let x: f32;
         let y: f32;
@@ -205,6 +195,92 @@ impl Sandbox {
             y,
             w: dest_size.0,
             h: dest_size.1,
+        }
+    }
+
+    fn process_ui(&mut self) {
+        // draw ui
+
+        // hotbar
+
+        let slot_size = 56.0;
+        let hotbar_width = slot_size * 10.0 + 2.625 * 10.0;
+        let hotbar_height = slot_size + 20.0;
+        widgets::Window::new(
+            hash!(),
+            vec2(32.0, screen_height() - hotbar_height - 32.0),
+            vec2(hotbar_width, hotbar_height),
+        )
+        .label("")
+        .titlebar(true)
+        .ui(&mut root_ui(), |ui| {
+            self.inventory_data.hot_bar(ui);
+        });
+
+        // tile palette
+        //
+        let slot_size = 64.0;
+        let inv_width = slot_size * 2.0 + 8.0;
+        let inv_height = slot_size * 5.0 + 8.0;
+        if self.inventory_data.palette_visible {
+            widgets::Window::new(
+                hash!(),
+                vec2(32.0, screen_height() / 2.0),
+                vec2(inv_width, inv_height),
+            )
+            .label("Tile Palette")
+            .titlebar(true)
+            .ui(&mut root_ui(), |ui| {
+                self.inventory_data.tile_palette(ui);
+            });
+        }
+
+        match self.inventory_data.fit_command.take() {
+            Some(FittingCommand::Unfit { target_slot }) => {
+                self.inventory_data.set_item(target_slot, None)
+            }
+            Some(FittingCommand::Fit { target_slot, item }) => {
+                self.inventory_data.set_item(target_slot, Some(item));
+            }
+            Some(FittingCommand::Refit {
+                target_slot,
+                origin_slot,
+            }) => {
+                let mut origin_item: Option<u8> = None;
+                for i in 0..self.inventory_data.hot_bar.len() {
+                    if self.inventory_data.hot_bar[i].1.id == origin_slot {
+                        origin_item = Some(self.inventory_data.hot_bar[i].1.item.unwrap());
+                        break;
+                    }
+                }
+                self.inventory_data.set_item(target_slot, origin_item);
+                self.inventory_data.set_item(origin_slot, None);
+            }
+            None => {}
+        }
+    }
+
+    fn paint_tiles(&mut self, tile_type: u8) {
+        let mouse = self.mouse_to_world();
+
+        let grid_x = mouse.x.floor() as i16;
+        let grid_y = mouse.y.floor() as i16;
+
+        let brush_size = self.brush_size;
+
+        for y in 0..brush_size {
+            for x in 0..brush_size {
+                let tile_x = grid_x - (brush_size / 2) + x;
+                let tile_y = grid_y - (brush_size / 2) + y;
+
+                if !self.in_bounds((tile_x, tile_y)) {
+                    continue;
+                }
+
+                let idx = self.pos_to_idx((tile_x, tile_y));
+
+                self.tiles[idx] = tile_type;
+            }
         }
     }
 
@@ -245,11 +321,11 @@ impl Sandbox {
                 self.try_move(pos, (pos.0, pos.1 + 1)) || self.try_move_down_sides(pos)
             }
             WATER => {
-                if neighbors[FIRE as usize] >= 4 {
+                if (neighbors[EMPTY as usize] >= 3 && self.roll(0.001))
+                    || (neighbors[FIRE as usize] >= 2 && self.roll(0.1))
+                {
                     self.set_tile(self.pos_to_idx(pos), VAPOR);
                     return true;
-                } else if neighbors[EMPTY as usize] >= 3 && self.roll(0.0002) {
-                    self.set_tile(self.pos_to_idx(pos), VAPOR);
                 }
 
                 (self.roll(0.05) && self.try_move_sides(pos))
@@ -259,14 +335,14 @@ impl Sandbox {
             }
 
             SMOKE => {
-                if neighbors[FIRE as usize] >= 2 && self.roll(0.6) {
-                    self.set_tile(self.pos_to_idx(pos), FIRE);
-
+                if self.roll(0.0002) {
+                    self.set_tile(self.pos_to_idx(pos), EMPTY);
                     return true;
                 }
 
-                if self.roll(0.0003) {
-                    self.set_tile(self.pos_to_idx(pos), EMPTY);
+                if neighbors[FIRE as usize] >= 2 && self.roll(0.6) {
+                    self.set_tile(self.pos_to_idx(pos), FIRE);
+                    return true;
                 }
 
                 (self.roll(0.25) && self.try_move_up_sides(pos))
@@ -275,16 +351,16 @@ impl Sandbox {
                     || self.try_move(pos, (pos.0, pos.1 + 1))
             }
             VAPOR => {
-                if neighbors[WATER as usize] >= 4 {
-                    self.set_tile(self.pos_to_idx(pos), WATER);
-                    return true;
-                } else if neighbors[VAPOR as usize] >= 3 && self.roll(0.000001) {
-                    self.set_tile(self.pos_to_idx(pos), WATER);
+                if self.roll(0.0002) {
+                    self.set_tile(self.pos_to_idx(pos), EMPTY);
                     return true;
                 }
 
-                if self.roll(0.0003) {
-                    self.set_tile(self.pos_to_idx(pos), EMPTY);
+                if neighbors[WATER as usize] >= 4
+                    || (neighbors[VAPOR as usize] >= 3 && self.roll(0.000001))
+                {
+                    self.set_tile(self.pos_to_idx(pos), WATER);
+                    return true;
                 }
 
                 (self.roll(0.25) && self.try_move_up_sides(pos))
@@ -293,14 +369,10 @@ impl Sandbox {
                     || self.try_move(pos, (pos.0, pos.1 + 1))
             }
             SNOW => {
-                if neighbors[FIRE as usize] >= 1 {
-                    self.set_tile(self.pos_to_idx(pos), WATER);
-
-                    return true;
-                } else if neighbors[WATER as usize] >= 3 && self.roll(0.01) {
-                    self.set_tile(self.pos_to_idx(pos), WATER);
-                    return true;
-                } else if neighbors[VAPOR as usize] >= 2 && self.roll(0.3) {
+                if neighbors[FIRE as usize] >= 1
+                    || (neighbors[WATER as usize] >= 3 && self.roll(0.01))
+                    || (neighbors[VAPOR as usize] >= 2 && self.roll(0.3))
+                {
                     self.set_tile(self.pos_to_idx(pos), WATER);
                     return true;
                 }
@@ -318,10 +390,7 @@ impl Sandbox {
             }
 
             FIRE => {
-                if neighbors[WATER as usize] >= 4 {
-                    self.set_tile(self.pos_to_idx(pos), VAPOR);
-                    return true;
-                } else if neighbors[GUN_POWDER as usize] > 1 {
+                if neighbors[GUN_POWDER as usize] > 1 {
                     self.set_tile(self.pos_to_idx(pos), SMOKE);
                     return true;
                 }
@@ -344,7 +413,7 @@ impl Sandbox {
             WOOD => {
                 if neighbors[FIRE as usize] > neighbors[WATER as usize] && self.roll(0.2) {
                     if self.roll(0.7) {
-                        self.set_tile(self.pos_to_idx(pos), BURNTWOOD);
+                        self.set_tile(self.pos_to_idx(pos), BURNT_WOOD);
                     } else {
                         self.set_tile(self.pos_to_idx(pos), SMOKE);
                     }
@@ -352,7 +421,7 @@ impl Sandbox {
                 }
                 false
             }
-            BURNTWOOD => {
+            BURNT_WOOD => {
                 if neighbors[FIRE as usize] - neighbors[WATER as usize] > 1 {
                     let rng = rand::gen_range(0, 100);
                     match rng {
@@ -443,9 +512,8 @@ impl Sandbox {
             (1, 1),
         ];
 
-        let mut neighbors = [0 as i8; TILE_TYPES];
+        let mut neighbors = [0_i8; TILE_TYPES];
 
-        let mut i: usize = 0;
         let mut tile: u8;
         for pos in &positions {
             let n_pos = (from.0 + pos.0, from.1 + pos.1);
@@ -456,9 +524,7 @@ impl Sandbox {
 
             tile = self.tiles[self.pos_to_idx(n_pos)];
 
-            neighbors[tile as usize] = neighbors[tile as usize] + 1;
-
-            i = i + 1;
+            neighbors[tile as usize] += 1;
         }
 
         neighbors
@@ -491,10 +557,10 @@ impl Sandbox {
     #[inline]
     fn roll(&self, chance: f32) -> bool {
         assert!(
-            chance <= 1.0 && chance >= 0.0,
+            (0.0..=1.0).contains(&chance),
             "Chance for a roll must be equals or less than 1.0 and more than 0.0"
         );
-        return rand::gen_range(0.0, 1.0) < chance;
+        rand::gen_range(0.0, 1.0) < chance
     }
 }
 
@@ -506,7 +572,7 @@ const SMOKE: u8 = 4;
 const VAPOR: u8 = 5;
 const SNOW: u8 = 6;
 const WOOD: u8 = 7;
-const BURNTWOOD: u8 = 8;
+const BURNT_WOOD: u8 = 8;
 const COAL: u8 = 9;
 const FIRE: u8 = 10;
 const GUN_POWDER: u8 = 11;
@@ -523,11 +589,174 @@ pub fn get_tile_color(val: &u8) -> Color {
         VAPOR => LIGHTGRAY,
         SNOW => WHITE,
         WOOD => BROWN,
-        BURNTWOOD => DARKBROWN,
+        BURNT_WOOD => DARKBROWN,
         COAL => DARKGRAY,
         FIRE => ORANGE,
         GUN_POWDER => GUN_POWDER_COLOR,
         LAVA => RED,
         _ => MAGENTA,
+    }
+}
+
+pub struct Slot {
+    id: u64,
+    item: Option<u8>,
+}
+impl Slot {
+    fn new(id: u64) -> Slot {
+        Slot { id, item: None }
+    }
+
+    fn new_with(id: u64, item: u8) -> Slot {
+        Slot {
+            id,
+            item: Some(item),
+        }
+    }
+}
+
+enum FittingCommand {
+    Unfit { target_slot: u64 },
+    Fit { target_slot: u64, item: u8 },
+    Refit { target_slot: u64, origin_slot: u64 },
+}
+
+struct Data {
+    hot_bar: [(&'static str, Slot); 10],
+    tile_palette: Vec<u8>,
+    palette_visible: bool,
+    item_dragging: bool,
+    selected: usize,
+    fit_command: Option<FittingCommand>,
+    tile_image: Image,
+}
+
+impl Data {
+    pub fn new() -> Data {
+        Data {
+            hot_bar: {
+                [
+                    ("1", Slot::new_with(hash!(), SAND)),
+                    ("2", Slot::new_with(hash!(), WATER)),
+                    ("3", Slot::new_with(hash!(), FIRE)),
+                    ("4", Slot::new(hash!())),
+                    ("5", Slot::new(hash!())),
+                    ("6", Slot::new(hash!())),
+                    ("7", Slot::new(hash!())),
+                    ("8", Slot::new(hash!())),
+                    ("9", Slot::new(hash!())),
+                    ("0", Slot::new(hash!())),
+                ]
+            },
+            tile_palette: {
+                let mut vec = Vec::<u8>::with_capacity(TILE_TYPES - 1);
+                for i in 1..TILE_TYPES {
+                    vec.push(i as u8);
+                }
+                vec
+            },
+            palette_visible: true,
+            item_dragging: false,
+            selected: 0,
+            fit_command: None,
+            tile_image: Image::gen_image_color(1, 1, WHITE),
+        }
+    }
+
+    fn get_selected_tile(&self) -> Option<u8> {
+        self.hot_bar[self.selected].1.item
+    }
+
+    fn hot_bar(&mut self, ui: &mut Ui) {
+        let fit_command = &mut self.fit_command;
+        let item_dragging = &mut self.item_dragging;
+        let slot_size = 52.0;
+
+        for i in 0..self.hot_bar.len() {
+            let (label, slot) = &self.hot_bar[i];
+            let drag = Group::new(slot.id, vec2(slot_size + 4.0, slot_size + 4.0))
+                .draggable(slot.item.is_some())
+                .hoverable(*item_dragging)
+                .highlight(*item_dragging)
+                .ui(ui, |ui| {
+                    if let Some(ref item) = slot.item {
+                        self.tile_image.set_pixel(0, 0, get_tile_color(item));
+                        ui.texture(
+                            Texture2D::from_image(&self.tile_image),
+                            slot_size,
+                            slot_size,
+                        );
+                    } else {
+                        ui.label(vec2(24.0, 24.0), label);
+                    }
+                });
+
+            match drag {
+                Drag::Dropped(_, Some(id)) if slot.item.is_some() => {
+                    *fit_command = Some(FittingCommand::Refit {
+                        target_slot: (id),
+                        origin_slot: (slot.id),
+                    });
+                }
+                Drag::Dropped(_, None) if slot.item.is_some() => {
+                    *fit_command = Some(FittingCommand::Unfit {
+                        target_slot: (slot.id),
+                    });
+                }
+                Drag::Dropped(_, _) => unreachable!(),
+                Drag::Dragging(pos, id) => {
+                    //debug!("slots pos: {:?}, id: {:?}", pos, id);
+                    *item_dragging = true;
+                }
+                Drag::No => {}
+            }
+        }
+    }
+
+    fn tile_palette(&mut self, ui: &mut Ui) {
+        let item_dragging = &mut self.item_dragging;
+        let slot_size = 54.0;
+
+        for (n, item) in self.tile_palette.iter().enumerate() {
+            let drag = Group::new(
+                hash!("tile_palette", n),
+                vec2(slot_size + 4., slot_size + 4.),
+            )
+            .draggable(true)
+            .ui(ui, |ui| {
+                self.tile_image.set_pixel(0, 0, get_tile_color(item));
+                ui.texture(
+                    Texture2D::from_image(&self.tile_image),
+                    slot_size,
+                    slot_size,
+                );
+            });
+
+            match drag {
+                Drag::Dropped(_, Some(id)) => {
+                    self.fit_command = Some(FittingCommand::Fit {
+                        target_slot: (id),
+                        item: (*item),
+                    });
+                    *item_dragging = false;
+                }
+                Drag::Dropped(_, _) => {
+                    *item_dragging = false;
+                }
+                Drag::Dragging(pos, id) => {
+                    //debug!("tile palette pos: {:?}, id: {:?}", pos, id);
+                    *item_dragging = true;
+                }
+                _ => {}
+            }
+        }
+    }
+    fn set_item(&mut self, id: u64, item: Option<u8>) {
+        for i in 0..self.hot_bar.len() {
+            if self.hot_bar[i].1.id == id {
+                self.hot_bar[i].1.item = item;
+                break;
+            }
+        }
     }
 }
