@@ -39,7 +39,7 @@ impl GameLoop for SampleVirtualApp {
         clear_background(color::LIGHTGRAY);
 
         //draw_text(&format!("FPS: {}", get_fps()), 16., 24., 24., color::RED);
-        let intro_text = "Macro Engine";
+        let intro_text = "MacroQuack Engine";
         let tooltip = "press F3 or Alt to open the inspector";
 
         let center = get_text_center(intro_text, None, 32, 1.0, 0.);

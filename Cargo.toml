@@ -23,10 +23,6 @@ inventory = "0.3.24"
 engine_macros = {path = "engine_macros"}
 automod = "1.0.17"
 
-# frunk = { version = "0.4.4"}
-# frunk_core = { version = "0.4.4" }
-
-
 
 [profile.dev.package.'*']
 opt-level = 3
