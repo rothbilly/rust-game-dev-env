@@ -110,7 +110,10 @@ impl App
         } else{
             //Deref a sub app from the vec! and drop its pointer from te Rc.
             //if there a other pointer to the sub app, it keeps in memory until the last Rc is deref.
-            let _ = self.sub_apps.pop();
+            let removed_app = self.sub_apps.pop();
+            if let Some(app) = removed_app{
+                app.clone().borrow_mut()._cleanup();
+            }
             println!("[Main App] - App removed from the Sub app list")
         }
     }

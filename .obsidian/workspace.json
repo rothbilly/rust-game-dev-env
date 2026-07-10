@@ -105,7 +105,7 @@
                 "autoReveal": false
               },
               "icon": "lucide-folder-closed",
-              "title": "Explorador de archivos"
+              "title": "Files"
             }
           },
           {
@@ -165,7 +165,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de README"
+              "title": "Backlinks for README"
             }
           },
           {
@@ -239,7 +239,7 @@
               "type": "graph",
               "state": {},
               "icon": "lucide-git-fork",
-              "title": "Vista gráfica"
+              "title": "Graph view"
             }
           }
         ]
@@ -250,42 +250,44 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "switcher:Abrir selector rápido": false,
-      "graph:Abrir vista gráfica": false,
-      "canvas:Crear nuevo lienzo": false,
-      "daily-notes:Abrir la nota de hoy": false,
-      "templates:Insertar plantilla": false,
-      "command-palette:Abrir paleta de comandos": false,
-      "bases:Crear nueva base": false
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
     }
   },
-  "active": "913b99e2ea99a358",
+  "active": "f0040021d1a67532",
   "lastOpenFiles": [
+    "target/debug/incremental/rust_game_dev_env-0b20hlb8odohm/s-hk7y5dlfgp-0bt3mv3-5yxi3jchzm9xx30uu08mmbs34/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0b20hlb8odohm/s-hk7y5dlfgp-0bt3mv3-5yxi3jchzm9xx30uu08mmbs34/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0b20hlb8odohm/s-hk7y5dlfgp-0bt3mv3-5yxi3jchzm9xx30uu08mmbs34/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0b20hlb8odohm/s-hk7y5dlfgp-0bt3mv3-5yxi3jchzm9xx30uu08mmbs34",
+    "target/debug/incremental/rust_game_dev_env-0xr5fh13o0qe5/s-hk7y5dljh7-0nhbyik-6o9327mp7n1i02wazgbay3fth/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0xr5fh13o0qe5/s-hk7y5dljh7-0nhbyik-6o9327mp7n1i02wazgbay3fth/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0xr5fh13o0qe5/s-hk7y5dljh7-0nhbyik-6o9327mp7n1i02wazgbay3fth/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0xr5fh13o0qe5/s-hk7y5dljh7-0nhbyik-6o9327mp7n1i02wazgbay3fth",
+    "target/debug/incremental/rust_game_dev_env-0xr5fh13o0qe5/s-hk7y5dljh7-0nhbyik-working/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0xr5fh13o0qe5/s-hk7y5dljh7-0nhbyik-working/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0xr5fh13o0qe5/s-hk7y5dljh7-0nhbyik-working/dep-graph.part.bin",
+    "obsidian_docs/Notas de Jose.md",
+    "assets/sprites/laser-bolts.png",
+    "assets/sprites/ship.png",
+    "assets/sprites/explosion.png",
+    "assets/sprites/button_clicked_background.png",
+    "assets/sprites/enemy-small.png",
+    "assets/sprites/button_background.png",
+    "assets/sprites/enemy-medium.png",
+    "assets/sprites/enemy-big.png",
     "Notas de Jose.md",
     "README.md",
-    "target/debug/deps/rust_game_dev_env.pdb",
-    "target/debug/deps/rust_game_dev_env.exe",
-    "target/debug/deps/rustc7lnbYP/symbols.o",
-    "target/debug/deps/rustc7lnbYP/linker-arguments",
-    "target/debug/deps/rustc7lnbYP",
-    "target/debug/incremental/rust_game_dev_env-2jyl8rjuq18sy/s-hjps4aqls2-1o1ajq7-751g0j7mjzh5upno8nt2xwo0b/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-2jyl8rjuq18sy/s-hjps4aqls2-1o1ajq7-751g0j7mjzh5upno8nt2xwo0b/thin-lto-past-keys.bin",
-    "target/debug/incremental/rust_game_dev_env-2jyl8rjuq18sy/s-hjps4aqls2-1o1ajq7-751g0j7mjzh5upno8nt2xwo0b/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-2jyl8rjuq18sy/s-hjps4aqls2-1o1ajq7-751g0j7mjzh5upno8nt2xwo0b/f44vyg985gd08i1p3c6tcjo11.pre-lto.bc",
-    "target/debug/incremental/rust_game_dev_env-2jyl8rjuq18sy/s-hjps4aqls2-1o1ajq7-751g0j7mjzh5upno8nt2xwo0b/f44vyg985gd08i1p3c6tcjo11.o",
     "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
     "target/doc/static.files/rust-logo-9a9549ea.svg",
     "target/doc/static.files/favicon-32x32-eab170b8.png",
-    "target/doc/static.files/favicon-044be391.svg",
     "obsidian_docs/Bitacora del Nico.md",
     "obsidian_docs/Architecture.md",
-    "obsidian_docs/screenshots/macro_quack_engine.png",
-    "obsidian_docs/main_canvas.canvas",
-    "assets/textures/rb_placeholder_128.png",
-    "obsidian_docs/screenshots/arch_04.png",
-    "obsidian_docs/screenshots/arch_05.png",
-    "obsidian_docs/screenshots/main_02.png",
-    "obsidian_docs/screenshots/arch_03.png",
-    "obsidian_docs/screenshots/arch_02.png"
+    "obsidian_docs/main_canvas.canvas"
   ]
 }

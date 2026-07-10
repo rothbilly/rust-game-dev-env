@@ -104,7 +104,7 @@ async fn main() {
 
         if is_key_down(KeyCode::Escape) {
             on_close_application();
-            break;
+            std::process::exit(0);
         }
 
         next_frame().await;

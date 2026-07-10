@@ -1,5 +1,8 @@
 ![](obsidian_docs/screenshots/main_01.png)
 
+# Web Demo!
+
+https://rothbilly.github.io/rust-game-dev-env/
 # Proyecto Rust Macroquad
 
 En `Visual Studio Code` compilar con `Ctrl + Shift + B`, en terminal usar `cargo build` para compilar y `cargo run` para ejecutar.
@@ -99,10 +102,11 @@ macroquack, un motor sobre macroquad con un enfoque opinionado en juegos increme
 | Rust Guide Refernces     | https://rust-guide.com/en/documentation/collections/Slice         |
 ## Juego o proyectos de ejemplo
 
-| Nombre           | Link                                       |
-| ---------------- | ------------------------------------------ |
-| Laser Mazer Rust | https://github.com/tom-kaufman/laser-mazer |
-| Fish Fight       | https://github.com/fishfolk/jumpy          |
+| Nombre             | Link                                                       |
+| ------------------ | ---------------------------------------------------------- |
+| Laser Mazer Rust   | https://github.com/tom-kaufman/laser-mazer                 |
+| Fish Fight         | https://github.com/fishfolk/jumpy                          |
+| Rust WASM template | https://github.com/rsaarelm/rust-game-template/tree/master |
 
 ### Comandos importantes
 

@@ -26,8 +26,6 @@ automod = "1.0.17"
 # frunk = { version = "0.4.4"}
 # frunk_core = { version = "0.4.4" }
 
-[dev-dependencies]
-
 
 
 [profile.dev.package.'*']
