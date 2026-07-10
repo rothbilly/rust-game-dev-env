@@ -59,7 +59,7 @@ async fn main() {
     global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
     global_inspectors.write().unwrap().new_inspector::<SettingsInspector>();
 
-    global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Macroquad);
+    global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
 
     let app_registry = app_loader.borrow().app_registry.clone();
     

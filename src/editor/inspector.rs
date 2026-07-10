@@ -37,7 +37,6 @@ pub struct GlobalEditor{
 
 impl GlobalEditor{
 
-
     // create a new inspector and register it.
     pub fn new_inspector<T>(&mut self)
     where T: InspectorWindow + Default + 'static
