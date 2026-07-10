@@ -91,7 +91,8 @@ async fn main() {
         delta = delta.max(0.0).min(0.1);
 
         if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){
-            global_inspectors.write().unwrap().toggle_global_visibility()
+            global_inspectors.write().unwrap().toggle_global_visibility();
+            loop_app_ref.write().unwrap().toggle_debug_view();
         }
 
 

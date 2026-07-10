@@ -51,12 +51,13 @@ pub trait GameLoop : DerefMut<Target = Game>{
         self._render();
     }
 
-    // User methods (overrided by user)
+    // User methods (override by user)
     fn _ready(&mut self){}
     fn _process_input(&mut self){}
     fn _update(&mut self, _delta: f32){}
     fn _render(&self){}
-    fn _cleanup(&mut self){}
+    fn _debug_draw(&self){} // draw when inspector is active
+    fn _cleanup(&mut self){} // called when pop from the game list.
 }
 
 
