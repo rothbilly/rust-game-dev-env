@@ -2,11 +2,10 @@ use std::{cell::RefCell, rc::Rc, sync::RwLock};
 
 use macroquad::prelude::*;
 
-use crate::{core::{app::App, rendering::post_processing::ScreenVisualEffect, signal::Signal}, data::settings::GLOB_SETTINGS, editor::inspector::{DrawingBackend, GlobalEditor, app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
+use crate::{core::{app::AppList, rendering::post_processing::ScreenVisualEffect, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspector::{DrawingBackend, GlobalEditor, app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
 
 
-
-type AppRc = Rc<RwLock<App>>;
+type AppRc = Rc<RwLock<AppList>>;
 type EditorsRc = Rc<RwLock<GlobalEditor>>;
 
 pub struct Engine{
@@ -17,7 +16,7 @@ pub struct Engine{
 impl Engine {
     pub fn new() -> Engine{
         Engine{
-            app_list: Rc::new(RwLock::new(App::initialize_and_ready::<SampleVirtualApp>())),
+            app_list: Rc::new(RwLock::new(AppList::initialize_and_ready::<SampleVirtualApp>())),
             global_inspectors: Rc::new(RwLock::new(GlobalEditor::default()))
         }
     }
@@ -83,5 +82,27 @@ impl Engine {
             .save();
 
          std::process::exit(0);
+    }
+}
+
+
+// This struct is from Macroquad and it's used to set parameters of the window.
+pub fn app_config() -> Conf {
+    let mut settings_guard: std::sync::RwLockWriteGuard<'_, Settings> = GLOB_SETTINGS.write().unwrap();
+    let settings = settings_guard.load_toml();
+    
+    Conf {
+        window_title: "MacroQuack".to_owned(),
+        window_width: settings.window_w,
+        window_height: settings.window_h,
+        window_resizable: true,
+        fullscreen: settings.fullscreen,
+        platform: {
+            miniquad::conf::Platform {
+                swap_interval: Some(settings.swap_interval),
+                ..Default::default()
+            }
+        },
+        ..Default::default()
     }
 }
