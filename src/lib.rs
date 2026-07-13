@@ -24,6 +24,7 @@ pub mod data {
 }
 
 pub mod core {
+    pub mod engine;
     pub mod app;
     pub mod game;
     pub mod rendering {
