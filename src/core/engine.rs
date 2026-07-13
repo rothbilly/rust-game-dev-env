@@ -2,38 +2,38 @@ use std::{cell::RefCell, rc::Rc, sync::RwLock};
 
 use macroquad::prelude::*;
 
-use crate::{core::{app::AppList, rendering::post_processing::ScreenVisualEffect, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspector::{DrawingBackend, GlobalEditor, app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
+use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspector::{DrawingBackend, GlobalEditor, app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
 
 
-type AppRc = Rc<RwLock<AppList>>;
+type AppListRc = Rc<RwLock<AppList>>;
 type EditorsRc = Rc<RwLock<GlobalEditor>>;
 
 pub struct Engine{
-    app_list: AppRc,
+    app_list: AppListRc,
     global_inspectors: EditorsRc
 }
 
 impl Engine {
     pub fn new() -> Engine{
         Engine{
-            app_list: Rc::new(RwLock::new(AppList::initialize_and_ready::<SampleVirtualApp>())),
+
+            app_list: Rc::new(RwLock::new(AppList::default())),
+            app_registry: Rc::new(AppRegistry::new()),
             global_inspectors: Rc::new(RwLock::new(GlobalEditor::default()))
         }
     }
 
-
-    pub fn setup(&mut self){
+    pub fn setup(&mut self) -> &mut Self{
 
     let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
 
-    self.global_inspectors.write().unwrap().new_inspector::<EventInspector>();
     self.global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
+    self.global_inspectors.write().unwrap().new_inspector::<EventInspector>();
     self.global_inspectors.write().unwrap().new_inspector::<SettingsInspector>();
-
     self.global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
 
     let app_registry = app_loader.borrow().app_registry.clone();
-    
+
     
     let closure_app = self.app_list.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     // TODO!: move this to the editor or the app, and use dependency injection in the future to cleanup the main.
@@ -52,6 +52,8 @@ impl Engine {
 
     self.global_inspectors.read().unwrap()._editor_setup();
     //let crt = ScreenVisualEffect::create_from_sample(Vec2{x: screen_width()/2.0, y: screen_height()/2.0}, FilterMode::Nearest);
+
+    self
     }
 
     pub fn engine_loop(&self){
@@ -83,6 +85,18 @@ impl Engine {
 
          std::process::exit(0);
     }
+
+    pub fn with_starting_app(&mut self) -> &mut Self{
+        self.app_list.clone().write().unwrap().add_sub_app(.)
+        self
+    }
+
+    pub fn no_editor(&mut self) -> &mut Self{
+        self
+    }
+
+
+
 }
 
 

@@ -27,6 +27,7 @@ pub struct Settings {
     editor_renderer: DrawingBackend,
     pub fullscreen: bool,
     pub swap_interval: i32, //GPU hint, not reliable, debug only
+    pub starting_app: String
 }
 
 // This is akin to an empty constructor.
@@ -40,6 +41,7 @@ impl Default for Settings {
             editor_renderer: DrawingBackend::Macroquad,
             fullscreen: true,
             swap_interval: 1,
+            starting_app: "SampleVirtualApp".to_string()
         }
     }
 }
