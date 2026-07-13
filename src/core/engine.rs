@@ -6,10 +6,12 @@ use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings:
 
 
 type AppListRc = Rc<RwLock<AppList>>;
+type AppRegistryRc = Rc<RwLock<AppRegistry>>;
 type EditorsRc = Rc<RwLock<GlobalEditor>>;
 
 pub struct Engine{
     app_list: AppListRc,
+    app_registry:AppRegistryRc,
     global_inspectors: EditorsRc
 }
 
@@ -18,7 +20,7 @@ impl Engine {
         Engine{
 
             app_list: Rc::new(RwLock::new(AppList::default())),
-            app_registry: Rc::new(AppRegistry::new()),
+            app_registry: Rc::new(RwLock::new(AppRegistry::new())),
             global_inspectors: Rc::new(RwLock::new(GlobalEditor::default()))
         }
     }
