@@ -213,3 +213,12 @@ fn main() {
 | Linkme    | https://github.com/dtolnay/linkme    | #[distributed_slice]       |
 | inventory | https://github.com/dtolnay/inventory | inventory::collect!(Flag); |
 | ctor      |                                      |                            |
+
+# Semana 1 Julio
+
+Algunas idea de features para esta semana
+- Seleccionar juego por default en los settings para facilitar el profiling
+- permitir a los juegos dar un panic error pero dejar que el editor siga funcionando.
+- Intergrar un crate de profiling `Puffin` es buen candidato.
+- 
+- Mejorar el sistema de settings. para que tome las secciones en formato toml
