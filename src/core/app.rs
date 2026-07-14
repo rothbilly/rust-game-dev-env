@@ -5,7 +5,7 @@ use std::{cell::RefCell, fmt::Debug, rc::Rc};
 use macroquad::prelude::*;
 
 
-use crate::core::game::{GameLoop};
+use crate::core::game::{ GameLoop};
 use std::collections::HashMap;
 
 
@@ -46,6 +46,7 @@ impl AppRegistry{
     pub fn get(&self, tag: &str) -> Option<Rc<RefCell<dyn GameLoop>>> {
         self.registry.get(tag).map(|constructor| constructor())
     }
+
 }
 
 /// ==========================================
@@ -97,6 +98,16 @@ impl AppList
         self.append_new_sub_app(new_app);
         self
     }
+
+
+        pub fn new_app_as<T>(&mut self) -> &mut Self
+    where T:GameLoop + Default + 'static
+    {
+        let wrapper = Rc::new(RefCell::new(T::default()));
+        self.active_apps.push(wrapper);
+        self
+    }
+
 
     pub fn add_sub_app<T>(&mut self, new_app: T) -> &mut Self
     where T:GameLoop + Default + 'static

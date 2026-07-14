@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc, sync::RwLock};
+use std::{cell::RefCell, ops::Deref, rc::Rc, sync::RwLock};
 
 use macroquad::prelude::*;
 
@@ -89,7 +89,14 @@ impl Engine {
     }
 
     pub fn with_starting_app(&mut self) -> &mut Self{
-        self.app_list.clone().write().unwrap().add_sub_app(.)
+        let rc_binding = self.app_registry.clone();
+        let registry = rc_binding.read().unwrap(); 
+        let settings = GLOB_SETTINGS.read().unwrap();
+        if let Some(new_app) = registry.get(&settings.starting_app){
+            self.app_list.clone().write().unwrap().append_new_sub_app(new_app);
+        } else {
+            self.app_list.clone().write().unwrap().new_app_as::<SampleVirtualApp>();   
+        }
         self
     }
 
