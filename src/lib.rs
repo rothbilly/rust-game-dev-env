@@ -27,6 +27,7 @@ pub mod core {
     pub mod app;
     pub mod game;
     pub mod rendering {
+        pub mod vector_graphics;
         pub mod letterbox;
         pub mod post_processing;
         pub mod shader;
