@@ -27,6 +27,12 @@ pub struct AppRegistry {
     pub registry : HashMap<& 'static str, AppConstructor>,
 }
 
+impl Default for AppRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AppRegistry{
     pub fn new() -> Self{
         let mut r = Self { registry : HashMap::new() };
@@ -119,7 +125,6 @@ impl AppList
 
     pub fn remove_last_app(&mut self){
         if self.active_apps.is_empty(){
-            return
         } else{
             //Deref a sub app from the vec! and drop its pointer from te Rc.
             //if there a other pointer to the sub app, it keeps in memory until the last Rc is deref.
@@ -136,7 +141,7 @@ impl AppList
     }
 
     pub fn is_main_app(&self) -> bool{
-        self.active_apps.len() != 0 
+        !self.active_apps.is_empty() 
     }
 
     pub fn toggle_debug_view(&mut self){
@@ -159,7 +164,7 @@ impl AppList
 
     
     pub fn _runtime(&self , delta_time: f32){
-        if self.active_apps.len() == 0 {return}
+        if self.active_apps.is_empty() {return}
 
         for rc in self.active_apps.iter(){
             let _rc = rc.clone();

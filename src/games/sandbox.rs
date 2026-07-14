@@ -704,7 +704,7 @@ impl Data {
                     });
                 }
                 Drag::Dropped(_, _) => unreachable!(),
-                Drag::Dragging(pos, id) => {
+                Drag::Dragging(_pos, _id) => {
                     //debug!("slots pos: {:?}, id: {:?}", pos, id);
                     *item_dragging = true;
                 }
@@ -743,7 +743,7 @@ impl Data {
                 Drag::Dropped(_, _) => {
                     *item_dragging = false;
                 }
-                Drag::Dragging(pos, id) => {
+                Drag::Dragging(_pos, _id) => {
                     //debug!("tile palette pos: {:?}, id: {:?}", pos, id);
                     *item_dragging = true;
                 }

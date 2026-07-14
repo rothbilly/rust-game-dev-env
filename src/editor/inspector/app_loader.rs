@@ -63,7 +63,8 @@ impl Inspector for AppLoaderMenu {
 
     fn _draw_gui(&mut self) -> bool{
 
-        let window_status = Window::new(hash!(),
+        
+    Window::new(hash!(),
             vec2(screen_width() - PANEL_WIDTH - GLOB_MARGIN, GLOB_MARGIN),
             vec2(PANEL_WIDTH, self.panel_height +  PANEL_MARGIN * 2. ))
         .label(&self.window_name)
@@ -82,8 +83,7 @@ impl Inspector for AppLoaderMenu {
                         }
                     }
                 });
-    });
-    window_status
+    })
     }
 
     fn _draw_egui(&mut self, _egui_ctx: &Context) {

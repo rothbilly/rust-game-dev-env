@@ -77,11 +77,10 @@ impl Settings {
 
     /// Load settings from a custom TOML file path (accepts `String`, `&str`, or `&Path`).
     pub fn load_from_toml_path<P: AsRef<Path>>(path: P) -> Settings {
-        if let Ok(contents) = fs::read_to_string(path.as_ref()) {
-            if let Ok(setting) = toml::from_str::<Settings>(&contents) {
+        if let Ok(contents) = fs::read_to_string(path.as_ref())
+            && let Ok(setting) = toml::from_str::<Settings>(&contents) {
                 return setting;
             }
-        }
         Settings::default()
     }
 

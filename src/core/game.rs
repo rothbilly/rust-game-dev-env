@@ -1,5 +1,5 @@
 use macroquad::prelude::*;
-use std::ops::{Deref, DerefMut};
+use std::ops::DerefMut;
 use std::collections::HashMap;
 
 use crate::components::gameobject::*;
@@ -22,7 +22,7 @@ pub trait GameLoop : DerefMut<Target = Game>{
     }
     // Engine methods (called automatically)
     fn update(&mut self, delta : f32){
-        for (_id, game_object) in &mut self.game_objects {
+        for game_object in self.game_objects.values_mut() {
             game_object._update(delta);
         }
         self._update(delta);
@@ -34,15 +34,15 @@ pub trait GameLoop : DerefMut<Target = Game>{
         }
         clear_background(self.background_color);
 
-        for (_id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
-            if (matches!(game_object.layer(), RenderLayer::World)){
+        for game_object in self.game_objects.values() { // Making it an immutable reference prevents destroying!
+            if matches!(game_object.layer(), RenderLayer::World) {
                 game_object._draw();
             }
         } 
         set_default_camera();
 
-        for (_id, game_object) in &self.game_objects { // Making it an immutable reference prevents destroying!
-            if (matches!(game_object.layer(), RenderLayer::Screen)){
+        for game_object in self.game_objects.values() { // Making it an immutable reference prevents destroying!
+            if matches!(game_object.layer(), RenderLayer::Screen) {
                 game_object._draw();
             }
         } 

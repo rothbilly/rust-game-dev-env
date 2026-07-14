@@ -1,4 +1,4 @@
-use std::{cell::RefCell, ops::Deref, rc::Rc, sync::RwLock};
+use std::{cell::RefCell, rc::Rc, sync::RwLock};
 
 use macroquad::prelude::*;
 
@@ -13,6 +13,12 @@ pub struct Engine{
     app_list: AppListRc,
     app_registry:AppRegistryRc,
     global_inspectors: EditorsRc
+}
+
+impl Default for Engine {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Engine {

@@ -19,7 +19,8 @@ impl Default for EventInspector{
 
 impl Inspector for EventInspector {
     fn _draw_gui(&mut self) -> bool{
-        let window_status = Window::new(hash!(), vec2(GLOB_MARGIN, GLOB_MARGIN), vec2(PANEL_WIDTH, PANEL_HEIGHT))
+        
+    Window::new(hash!(), vec2(GLOB_MARGIN, GLOB_MARGIN), vec2(PANEL_WIDTH, PANEL_HEIGHT))
         .label("Event Menu")
         .movable(true)
         .close_button(true)
@@ -65,8 +66,7 @@ impl Inspector for EventInspector {
                     }
             });
 
-    });
-    window_status
+    })
     }
 }
 

@@ -2,7 +2,7 @@ use egui_macroquad::egui::{self, Align2};
 pub use engine_macros::IName;
 use engine_macros::IVisibility;
 
-use macroquad::{conf, math::clamp, miniquad::window::set_fullscreen};
+use macroquad::{math::clamp, miniquad::window::set_fullscreen};
 
 use crate::{
     data::settings::GLOB_SETTINGS,
@@ -100,13 +100,11 @@ impl Inspector for SettingsInspector {
                     }
                 });
 
-                if self.is_value_changed_flag {
-                    if ui.button("Save Settings").clicked() {
-                        if let Ok(_) = settings_lock.save() {
+                if self.is_value_changed_flag
+                    && ui.button("Save Settings").clicked()
+                        && let Ok(_) = settings_lock.save() {
                             self.is_value_changed_flag = false
                         }
-                    }
-                }
             });
     }
 }

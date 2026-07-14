@@ -6,7 +6,7 @@ use egui_macroquad::egui::RichText;
 
 
 use macroquad::ui::{hash, root_ui};
-use macroquad::{prelude::*, ui};
+use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::data::settings::{GLOB_SETTINGS};
@@ -134,11 +134,11 @@ impl GlobalEditor{
 
                         egui::TopBottomPanel::bottom(Id::new("MacroQuackBottom")).show(egui_ctx, |ui|{
                             egui::menu::bar(ui, |ui|{
-                                ui.label(RichText::new(&format!("frame time: {:.3} ms", get_frame_time()* 1000.0)).color(Color32::RED));
+                                ui.label(RichText::new(format!("frame time: {:.3} ms", get_frame_time()* 1000.0)).color(Color32::RED));
                                 ui.separator();
-                                ui.label(&format!("FPS: {}", get_fps()));
+                                ui.label(format!("FPS: {}", get_fps()));
                                 ui.separator();
-                                ui.label(&format!("Game Time: {:.2}", get_time()));
+                                ui.label(format!("Game Time: {:.2}", get_time()));
                                 
                             });
                         });
@@ -150,7 +150,7 @@ impl GlobalEditor{
                         // ==========================================
                         
                         for (_,inspector) in self.editor_windows.iter(){
-                            inspector.borrow_mut()._draw_egui(&egui_ctx);
+                            inspector.borrow_mut()._draw_egui(egui_ctx);
                         }
                     });
                     egui_macroquad::draw();
