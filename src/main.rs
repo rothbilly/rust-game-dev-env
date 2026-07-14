@@ -8,8 +8,9 @@ async fn main() {
 
     let mut engine = Engine::new();
     engine.setup()
-    .with_starting_app();
-
+    .with_starting_app()
+    //.with_no_editor();
+    ;
 
     loop { // Main loop
         engine.engine_loop();

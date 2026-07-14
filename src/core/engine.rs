@@ -100,7 +100,7 @@ impl Engine {
         self
     }
 
-    pub fn no_editor(&mut self) -> &mut Self{
+    pub fn with_no_editor(&mut self) -> &mut Self{
         self
     }
 
