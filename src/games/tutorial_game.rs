@@ -290,6 +290,23 @@ impl GameLoop for TutorialGame {
 
     }
 
+
+    fn _debug_draw(&self) {
+        match self.game_state {
+            GameState::Playing => {
+                draw_line(
+                    self.circle.x,
+                    self.circle.y,
+                    self.circle.x + self.dir.x * 20.,
+                    self.circle.y + self.dir.y * 20.,
+                    4.0,
+                    RED);
+            }
+            _ => {}
+        }
+    }
+
+
     fn _cleanup(&mut self) {
         clear_background(WHITE);
     }
@@ -340,4 +357,3 @@ enum GameState{
     Paused,
     GameOver
 }
-
