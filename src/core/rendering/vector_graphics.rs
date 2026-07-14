@@ -1,7 +1,8 @@
 use macroquad::{texture::{FilterMode, Texture2D}};
 
 
-use resvg::{tiny_skia, usvg::{self, Transform}};
+use resvg::{tiny_skia, usvg::{self, Size, Transform}};
+use serde::de::Unexpected::Option;
 
 
 const svg_sample_data: &str = r##"

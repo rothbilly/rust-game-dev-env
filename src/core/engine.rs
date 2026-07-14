@@ -107,6 +107,8 @@ impl Engine {
     }
 
     pub fn with_no_editor(&mut self) -> &mut Self{
+        let rc = self.global_inspectors.clone();
+        let mut gb = rc.write().unwrap();
         self
     }
 

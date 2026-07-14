@@ -80,6 +80,8 @@ impl GlobalEditor{
         }
     }
 
+
+
     pub fn _editor_runtime(&self) {
         if self.editor_visible.get()
         {
