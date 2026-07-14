@@ -1,11 +1,10 @@
-use macroquad::{prelude::ImageFormat, texture::{FilterMode, Texture2D}};
-
+use macroquad::{texture::{FilterMode, Texture2D}};
 
 
 use resvg::{tiny_skia, usvg::{self, Transform}};
 
 
-const svg_data: &str = r##"
+const svg_sample_data: &str = r##"
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400">
             <circle cx="50" cy="50" r="40" fill="#ff5555" />
             <rect x="30" y="30" width="40" height="40" fill="#55ff55" opacity="0.7"/>
@@ -22,9 +21,9 @@ pub enum SVGParseError {
 }
 
 
-pub fn svg_to_srgb_texture(svg_str: &str, filter_mode: FilterMode) -> Texture2D{
+pub fn svg_to_srgb_texture(svg_str: &str, filter_mode: FilterMode) -> Result<Texture2D, SVGParseError>{
     let opt = usvg::Options::default();
-    let tree = usvg::Tree::from_str(svg_data, &opt)
+    let tree = usvg::Tree::from_str(svg_str, &opt)
         .expect("Failed to parse SVG");    
 
     let size = tree.size();
@@ -33,6 +32,7 @@ pub fn svg_to_srgb_texture(svg_str: &str, filter_mode: FilterMode) -> Texture2D{
 
     let mut pixmap = tiny_skia::Pixmap::new(width, height)
         .expect("Failed to create pixmap");
+
 
     resvg::render(&tree, Transform::default(), &mut pixmap.as_mut());
 
@@ -44,5 +44,5 @@ pub fn svg_to_srgb_texture(svg_str: &str, filter_mode: FilterMode) -> Texture2D{
 
     svg_texture.set_filter(filter_mode);
 
-    svg_texture
+    Ok(svg_texture)
 }
