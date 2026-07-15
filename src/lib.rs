@@ -20,6 +20,10 @@ pub mod toolbox {
 pub mod data {
     pub mod serialization;
     pub mod settings;
+    pub mod generics{
+        pub mod double_buffer;
+        pub mod grid;
+    }
 }
 
 pub mod core {
