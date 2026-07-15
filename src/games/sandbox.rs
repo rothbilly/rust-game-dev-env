@@ -886,6 +886,7 @@ impl UIData {
                 Drag::Dropped(_, _) => unreachable!(),
                 Drag::Dragging(pos, id) => {
                     debug!("slots pos: {:?}, id: {:?}", pos, id);
+
                     *item_dragging = true;
                 }
                 Drag::No => {}
@@ -926,6 +927,7 @@ impl UIData {
                 }
                 Drag::Dragging(pos, id) => {
                     debug!("tile palette pos: {:?}, id: {:?}", pos, id);
+
                     *item_dragging = true;
                 }
                 _ => {}

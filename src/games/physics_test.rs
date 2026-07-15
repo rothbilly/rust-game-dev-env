@@ -1,6 +1,5 @@
 use engine_macros::register_app;
 use macroquad::prelude::*;
-use macroquad::color::colors;
 use crate::core::game::{GameLoop};
 use crate::core::app::AppRegistration; // To register it in the App registry.
 

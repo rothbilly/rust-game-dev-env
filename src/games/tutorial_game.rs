@@ -48,7 +48,7 @@ impl GameLoop for TutorialGame {
         rand::srand(miniquad::date::now() as u64);
     
         self.circle.size = 16.0;
-        self.circle.speed = MOVEMENT_SPEED.clone();
+        self.circle.speed = MOVEMENT_SPEED;
 
         // start_coroutine(async {
         //     wait_seconds(2.).await;
@@ -205,7 +205,7 @@ impl GameLoop for TutorialGame {
             material.set_uniform("iResolution", (screen_width(), screen_height()));
             material.set_uniform("direction_modifier", self.direction_modifier);
 
-            gl_use_material(&material);
+            gl_use_material(material);
             if let Some(rt) = &self.render_target{
                 draw_texture_ex(
                     &rt.texture,
@@ -290,6 +290,23 @@ impl GameLoop for TutorialGame {
 
     }
 
+
+    fn _debug_draw(&self) {
+        match self.game_state {
+            GameState::Playing => {
+                draw_line(
+                    self.circle.x,
+                    self.circle.y,
+                    self.circle.x + self.dir.x * 20.,
+                    self.circle.y + self.dir.y * 20.,
+                    4.0,
+                    RED);
+            }
+            _ => {}
+        }
+    }
+
+
     fn _cleanup(&mut self) {
         clear_background(WHITE);
     }
@@ -340,4 +357,3 @@ enum GameState{
     Paused,
     GameOver
 }
-

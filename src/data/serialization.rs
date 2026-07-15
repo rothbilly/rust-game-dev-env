@@ -16,7 +16,7 @@ pub trait ISerializableData: Serialize + Default {
         mode: SerializeMode,
         path: P,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let _data = match mode {
+        match mode {
             SerializeMode::JSON => self.save_as_json(path)?,
             SerializeMode::BIN => self.save_as_bin(path)?,
             SerializeMode::TOML => self.save_as_toml(path)?,
@@ -68,11 +68,10 @@ pub trait ISerializableData: Serialize + Default {
     where 
         T: for<'de> Deserialize<'de>
     {
-        if let Ok(bytes) = fs::read(_path){
-            if let Ok(des) = bincode::deserialize::<T>(&bytes){
+        if let Ok(bytes) = fs::read(_path)
+            && let Ok(des) = bincode::deserialize::<T>(&bytes){
                 return Ok(des)
             }
-        }
         Ok(T::default())
     }
 

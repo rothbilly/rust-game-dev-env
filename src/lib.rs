@@ -1,5 +1,4 @@
 // make macros public to all mods in this crate.
-pub(crate) use engine_macros::*;
 
 // ==========================================
 //  Engine mods
@@ -24,9 +23,11 @@ pub mod data {
 }
 
 pub mod core {
+    pub mod engine;
     pub mod app;
     pub mod game;
     pub mod rendering {
+        pub mod vector_graphics;
         pub mod letterbox;
         pub mod post_processing;
         pub mod shader;

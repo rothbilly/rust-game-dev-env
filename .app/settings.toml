@@ -1,7 +1,8 @@
 volume = 0.5
 window_h = 720
 window_w = 1280
-egui_render_scale = 0.9
+egui_render_scale = 0.8
 editor_renderer = "Macroquad"
 fullscreen = false
 swap_interval = 1
+starting_app = ""

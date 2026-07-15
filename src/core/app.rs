@@ -5,7 +5,7 @@ use std::{cell::RefCell, fmt::Debug, rc::Rc};
 use macroquad::prelude::*;
 
 
-use crate::core::game::{GameCamera, GameLoop};
+use crate::core::game::{ GameLoop};
 use std::collections::HashMap;
 
 
@@ -27,6 +27,12 @@ pub struct AppRegistry {
     pub registry : HashMap<& 'static str, AppConstructor>,
 }
 
+impl Default for AppRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AppRegistry{
     pub fn new() -> Self{
         let mut r = Self { registry : HashMap::new() };
@@ -46,47 +52,44 @@ impl AppRegistry{
     pub fn get(&self, tag: &str) -> Option<Rc<RefCell<dyn GameLoop>>> {
         self.registry.get(tag).map(|constructor| constructor())
     }
+
 }
 
-// ==========================================
-//  App Module
-// ==========================================
+/// ==========================================
+///  App List Module
+/// ==========================================
+/// The list of active apps currently running or loaded.
+/// for now it can be one already.
 
 
 #[derive(Default)]
-pub struct App
+pub struct AppList
 {
     is_in_debug_mode: bool,
-    sub_apps: Vec<Rc<RefCell<dyn GameLoop>>>,
+    active_apps: Vec<Rc<RefCell<dyn GameLoop>>>,
 }
 
-impl App
+impl AppList
 {
     pub fn new() -> Self {
         Self::default()
     }
 
-    // ==========================================
-    //  Helper Methods
-    // ==========================================
-
-
-    pub fn initialize_and_ready<T>() -> App
+    pub fn initialize_and_ready<T>() -> AppList
     where T:GameLoop + Default + 'static
     {
-        let mut app = App::default();
-        app.sub_apps.push(Rc::new(RefCell::new(T::default())));
+        let mut app = AppList::default();
+        app.active_apps.push(Rc::new(RefCell::new(T::default())));
         app._ready();
         app
     }
 
 
-
     pub fn append_new_sub_app(&mut self, shared_app : Rc<RefCell<dyn GameLoop>>) -> &mut Self{
 
-        self.sub_apps.push(shared_app); // We cannot create an RC RefCell because of conflict with <dyn GameLoop>
+        self.active_apps.push(shared_app); // We cannot create an RC RefCell because of conflict with <dyn GameLoop>
 
-        if let Some(new_app) = self.sub_apps.last_mut(){
+        if let Some(new_app) = self.active_apps.last_mut(){
             new_app.clone()
             .borrow_mut()
             .ready()
@@ -102,21 +105,30 @@ impl App
         self
     }
 
+
+        pub fn new_app_as<T>(&mut self) -> &mut Self
+    where T:GameLoop + Default + 'static
+    {
+        let wrapper = Rc::new(RefCell::new(T::default()));
+        self.active_apps.push(wrapper);
+        self
+    }
+
+
     pub fn add_sub_app<T>(&mut self, new_app: T) -> &mut Self
     where T:GameLoop + Default + 'static
     {
         let wrapper = Rc::new(RefCell::new(new_app));
-        self.sub_apps.push(wrapper);
+        self.active_apps.push(wrapper);
         self
     }
 
     pub fn remove_last_app(&mut self){
-        if self.sub_apps.is_empty(){
-            return
+        if self.active_apps.is_empty(){
         } else{
             //Deref a sub app from the vec! and drop its pointer from te Rc.
             //if there a other pointer to the sub app, it keeps in memory until the last Rc is deref.
-            let removed_app = self.sub_apps.pop();
+            let removed_app = self.active_apps.pop();
             if let Some(app) = removed_app{
                 app.clone().borrow_mut()._cleanup();
             }
@@ -125,11 +137,11 @@ impl App
     }
 
     pub fn get_total_apps(&self ){
-        println!("[Main App] - total of sub app: {}", self.sub_apps.len());
+        println!("[Main App] - total of sub app: {}", self.active_apps.len());
     }
 
     pub fn is_main_app(&self) -> bool{
-        self.sub_apps.len() != 0 
+        !self.active_apps.is_empty() 
     }
 
     pub fn toggle_debug_view(&mut self){
@@ -142,7 +154,7 @@ impl App
     // ==========================================
 
     pub fn _ready(&self) -> &Self{
-        for app in self.sub_apps.iter(){
+        for app in self.active_apps.iter(){
             app.clone()
             .borrow_mut()
             .ready();
@@ -152,9 +164,9 @@ impl App
 
     
     pub fn _runtime(&self , delta_time: f32){
-        if self.sub_apps.len() == 0 {return}
+        if self.active_apps.is_empty() {return}
 
-        for rc in self.sub_apps.iter(){
+        for rc in self.active_apps.iter(){
             let _rc = rc.clone();
             let mut _app = _rc.borrow_mut();
             _app.process_input();
@@ -171,9 +183,9 @@ impl App
 }
 
 
-impl Debug for App {
+impl Debug for AppList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("App").field("sub_apps", &self.sub_apps.len()).finish()
+        f.debug_struct("App").field("sub_apps", &self.active_apps.len()).finish()
     }
 }
 
