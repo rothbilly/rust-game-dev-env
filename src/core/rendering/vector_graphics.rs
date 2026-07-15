@@ -34,7 +34,6 @@ pub fn svg_to_srgb_texture(svg_str: &str, filter_mode: FilterMode) -> Result<Tex
     let mut pixmap = tiny_skia::Pixmap::new(width, height)
         .expect("Failed to create pixmap");
 
-
     resvg::render(&tree, Transform::default(), &mut pixmap.as_mut());
 
 
