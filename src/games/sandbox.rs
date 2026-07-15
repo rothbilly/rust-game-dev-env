@@ -687,7 +687,7 @@ const GUN_POWDER: u8 = 12;
 const LAVA: u8 = 13;
 const TILE_TYPES: usize = 14;
 
-const TILES_VERTEX_SHADER: &'static str = r#"
+const TILES_VERTEX_SHADER: &str = r#"
     #version 130
     in vec3 position;
     in vec2 texcoord;
@@ -702,7 +702,7 @@ const TILES_VERTEX_SHADER: &'static str = r#"
     }
 "#;
 
-const TILES_FRAGMENT_SHADER: &'static str = r#"
+const TILES_FRAGMENT_SHADER: &str = r#"
   #version 130
 
   #define ATLAS_SIZE 16u
