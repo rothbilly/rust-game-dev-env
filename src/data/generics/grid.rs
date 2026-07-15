@@ -74,11 +74,15 @@ mod tests{
     #[test]
     pub fn grid_index_testing(){
         let rect_size: usize = 10;
-        let mut grid_1 = VecGrid::<u8>::new_from_size(10, 10);
+    
+        let mut grid_1 = VecGrid::<u8>::new_from_size(rect_size, rect_size);
+        let mut counter: usize = 0;
+        for item in grid_1.items.iter_mut(){
+            *item = counter.clone() as u8;
+            counter +=1;
+        }
+        println!("grid {:?}", &grid_1);
         
-
-        
-
     }
 
 
