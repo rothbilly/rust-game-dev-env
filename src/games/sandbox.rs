@@ -11,7 +11,7 @@ use macroquad::ui::{
 // Snes NTSC 256 * 224 @60Hz PAL 256 * 240 @50Hz
 // GBA 240 * 160 3:2 @60Hz
 const WORLD_WIDTH: i32 = 256;
-const WORLD_HEIGHT: i32 = 240;
+const WORLD_HEIGHT: i32 = 256;
 const ASPECT_RATIO: f32 = WORLD_WIDTH as f32 / WORLD_HEIGHT as f32;
 const ATLAS_TEXTURES_SIZE: i32 = 1;
 
