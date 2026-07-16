@@ -2,7 +2,10 @@ use std::{cell::RefCell, rc::Rc, sync::RwLock};
 
 use macroquad::prelude::*;
 
-use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspector::{DrawingBackend, GlobalEditor, app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
+use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
+
+use crate::editor::inspector::DrawingBackend;
+use crate::editor::main_editor::GlobalEditor;
 
 
 type AppListRc = Rc<RwLock<AppList>>;

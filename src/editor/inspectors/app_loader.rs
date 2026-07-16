@@ -3,10 +3,11 @@
 use std::rc::Rc;
 
 use egui_macroquad::egui;
+use egui_macroquad::egui::Context;
 use engine_macros::IVisibility;
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
-use crate::{core::signal::*, editor::{constants::*, inspector::*}};
+use crate::{core::signal::*, editor::{constants::*, inspector::{Inspector, InspectorWindow}, main_editor::*}};
 pub use engine_macros::IName;
 use crate::core::app::AppRegistry;
 
@@ -107,10 +108,12 @@ impl Inspector for AppLoaderMenu {
 
 impl InspectorWindow for AppLoaderMenu {}
 
-impl Hash for AppLoaderMenu{
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.is_visible.hash(state);
-        self.get_struct_name().hash(state);
-    }
-}
+
+
+// impl Hash for AppLoaderMenu{
+//     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+//         self.is_visible.hash(state);
+//         self.get_struct_name().hash(state);
+//     }
+// }
 

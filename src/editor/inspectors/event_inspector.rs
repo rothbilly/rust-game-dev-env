@@ -2,7 +2,7 @@
 use engine_macros::IName;
 use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
 use macroquad::prelude::*;
-use crate::editor::{constants::*, inspector::*};
+use crate::editor::{constants::*, inspector::{IVisibility, Inspector, InspectorWindow}};
 
 
 #[derive(IName)]
