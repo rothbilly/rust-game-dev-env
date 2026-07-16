@@ -36,6 +36,14 @@ pub struct Sandbox {
     inventory: UIData,
     camera: Camera2D,
     render_data: RenderData,
+    game_state: GameState,
+}
+
+#[derive(Default, PartialEq, Eq)]
+enum GameState {
+    #[default]
+    Paused,
+    Running,
 }
 
 impl Default for Sandbox {
@@ -51,6 +59,7 @@ impl Default for Sandbox {
             render_data: RenderData::default(),
             camera: Camera2D::default(),
             base: Default::default(),
+            game_state: GameState::Running,
         }
     }
 }
@@ -126,8 +135,18 @@ impl GameLoop for Sandbox {
             } else if idx == 0 {
                 self.inventory.selected = 9;
             }
-            if *key == KeyCode::Tab {
-                self.inventory.palette_visible = !self.inventory.palette_visible;
+            match key {
+                KeyCode::Space => {
+                    if self.game_state == GameState::Paused {
+                        self.game_state = GameState::Running
+                    } else {
+                        self.game_state = GameState::Paused
+                    }
+                }
+                KeyCode::Tab => {
+                    self.inventory.palette_visible = !self.inventory.palette_visible;
+                }
+                _ => {}
             }
         }
 
@@ -159,23 +178,27 @@ impl GameLoop for Sandbox {
     }
 
     fn _update(&mut self, _delta: f32) {
-        if self.frame_counter.is_multiple_of(2) {
-            for y in 0..WORLD_HEIGHT {
-                for x in (0..WORLD_WIDTH).rev() {
-                    self.check_tile(&(x as i16), &(y as i16));
+        match self.game_state {
+            GameState::Running => {
+                if self.frame_counter.is_multiple_of(2) {
+                    for y in 0..WORLD_HEIGHT {
+                        for x in (0..WORLD_WIDTH).rev() {
+                            self.check_tile(&(x as i16), &(y as i16));
+                        }
+                    }
+                } else {
+                    for y in 0..WORLD_HEIGHT {
+                        for x in 0..WORLD_WIDTH {
+                            self.check_tile(&(x as i16), &(y as i16));
+                        }
+                    }
                 }
+
+                std::mem::swap(&mut self.next_tiles, &mut self.tiles);
+                self.next_tiles.fill_with(|| EMPTY);
             }
-        } else {
-            for y in 0..WORLD_HEIGHT {
-                for x in 0..WORLD_WIDTH {
-                    self.check_tile(&(x as i16), &(y as i16));
-                }
-            }
+            _ => {}
         }
-
-        std::mem::swap(&mut self.next_tiles, &mut self.tiles);
-        self.next_tiles.fill_with(|| EMPTY);
-
         // I wish i could pack this further but macroquad shader io is very limited :/
         // Maybe should use raw miniquad??
         //
