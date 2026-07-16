@@ -57,7 +57,9 @@ pub trait GameLoop : DerefMut<Target = Game>{
     fn _update(&mut self, _delta: f32){}
     fn _render(&self){}
     fn _debug_draw(&self){} // draw when inspector is active
-    fn _cleanup(&mut self){} // called when pop from the game list.
+    fn _cleanup(&mut self){
+         clear_background(BLACK);
+    } // called when pop from the game list.
 }
 
 
