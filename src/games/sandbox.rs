@@ -10,21 +10,23 @@ use macroquad::ui::{
 // Screen references
 // Snes NTSC 256 * 224 @60Hz PAL 256 * 240 @50Hz
 // GBA 240 * 160 3:2 @60Hz
+
+// WORLD SIZE has to be square in order to avoid uv streching
 const WORLD_WIDTH: i32 = 512;
 const WORLD_HEIGHT: i32 = 512;
 const ASPECT_RATIO: f32 = WORLD_WIDTH as f32 / WORLD_HEIGHT as f32;
-const ATLAS_TEXTURES_SIZE: i32 = 1;
+const ATLAS_TEXTURES_SIZE: i32 = 64;
+const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
 
 /*
-    IMPORTANT: improve single thread performance before adding multithreading
-    TODO: load a f texture
-    TODO: save & load tiles to/from disk (maybe bitmap? png? or just binary?)
-    TODO: implement Command/Action Design pattern to enable Undo/Redo
-    TODO: maybe add brush patterns
-    TODO: fix shader uv scale? // set to a square grid for now
-    TODO: add spatial partitioning (chunks)
-    TODO: decouple dirty tiles from tiles to refresh ( gotta back to single buffer? T_T )
-    TODO: maybe add multithreading??
+   IMPORTANT: improve single thread performance before adding multithreading
+   TODO: save & load tiles to/from disk (maybe bitmap? png? or just binary?)
+   TODO: implement Command/Action Design pattern to enable Undo/Redo
+   TODO: maybe add brush patterns
+   TODO: improve "compressed" data layout ??
+   TODO: add spatial partitioning (chunks)
+   TODO: decouple dirty tiles from tiles to refresh ( gotta back to single buffer? T_T )
+   TODO: maybe add multithreading??
 **/
 
 #[register_app("Sandbox")] // Custom Registration macro
@@ -77,7 +79,7 @@ impl GameLoop for Sandbox {
                 },
                 MaterialParams {
                     uniforms: vec![
-                        UniformDesc::new("atlas_textures_size", UniformType::Float2),
+                        UniformDesc::new("atlas_textures_size", UniformType::Int2),
                         UniformDesc::new("grid_size", UniformType::Float2),
                     ],
                     textures: vec!["atlas_texture".to_owned(), "tiles".to_owned()],
@@ -87,41 +89,19 @@ impl GameLoop for Sandbox {
             .unwrap(),
         );
 
+        let img = Image::from_file_with_format(ATLAS_BYTES, Some(ImageFormat::Png)).unwrap();
+
         if let Some(mat) = &self.render_data.world_material {
-            // Hardcoded image until I figure out how to load one from disk(¡¿Futures + threads??!!)
-
-            let mut img = Image::gen_image_color(
-                16 * ATLAS_TEXTURES_SIZE as u16,
-                16 * ATLAS_TEXTURES_SIZE as u16,
-                Color {
-                    r: 0.0,
-                    g: 0.0,
-                    b: 0.0,
-                    a: 0.0,
-                },
-            );
-
-            img.set_pixel(Tile::Steel as u32, 0, Color::from_hex(0x4a5462));
-            img.set_pixel(Tile::Sand as u32, 0, Color::from_hex(0xfef3c0));
-            img.set_pixel(Tile::Water as u32, 0, Color::from_hex(0x249fde));
-            img.set_pixel(Tile::Smoke as u32, 0, Color::from_hex(0x141013));
-            img.set_pixel(Tile::Vapor as u32, 0, Color::from_hex(0xdae0ea));
-            img.set_pixel(Tile::Snow as u32, 0, Color::from_hex(0xFFFFFF));
-            img.set_pixel(Tile::Wood as u32, 0, Color::from_hex(0x71413b));
-            img.set_pixel(Tile::BurntWood as u32, 0, Color::from_hex(0x221c1a));
-            img.set_pixel(Tile::Leaf as u32, 0, Color::from_hex(0x14a02e));
-            img.set_pixel(Tile::Coal as u32, 0, Color::from_hex(0x242234));
-            img.set_pixel(Tile::Fire as u32, 0, Color::from_hex(0xfa6a0a));
-            img.set_pixel(Tile::GunPowder as u32, 0, Color::from_hex(0x333941));
-            img.set_pixel(Tile::Lava as u32, 0, Color::from_hex(0xb4202a));
-
             self.inventory.tiles_atlas = Some(img.clone());
             self.inventory.init_textures();
             self.render_data.tiles_atlas = Texture2D::from_image(&img);
             self.render_data.tiles_atlas.set_filter(FilterMode::Nearest);
             self.render_data.tiles = Texture2D::from_image(&self.render_data.tiles_image);
             self.render_data.tiles.set_filter(FilterMode::Nearest);
-            mat.set_uniform("atlas_textures_size", vec2(1.0, 1.0));
+            mat.set_uniform(
+                "atlas_textures_size",
+                ivec2(ATLAS_TEXTURES_SIZE, ATLAS_TEXTURES_SIZE),
+            );
             mat.set_uniform("grid_size", vec2(WORLD_WIDTH as f32, WORLD_HEIGHT as f32));
             mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
             mat.set_texture("tiles", self.render_data.tiles.clone());
@@ -769,11 +749,11 @@ enum Tile {
     GunPowder,
     Wood,
     BurntWood,
+    Coal,
     Leaf,
     Vapor,
     Smoke,
     Snow,
-    Coal,
     Size,
 }
 
@@ -821,7 +801,7 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 
   in vec2 uv;
 
-  uniform vec2 atlas_textures_size;
+  uniform ivec2 atlas_textures_size;
   uniform vec2 grid_size;
   uniform sampler2D atlas_texture;
   uniform sampler2D tiles;
@@ -846,9 +826,13 @@ const TILES_FRAGMENT_SHADER: &str = r#"
     uint tile = unpack_tile(uv);
     //vec2 atlas_texel = 1.0/textureSize(atlas_texture, 0);
     //vec2 atlas_coords = atlas_texel * atlas_textures_size * vec2(uint(tile % ATLAS_SIZE), uint(tile / ATLAS_SIZE));
-    ivec2 atlas_coords = ivec2(atlas_textures_size) * ivec2(tile % ATLAS_SIZE, tile / ATLAS_SIZE);
+    ivec2 atlas_coords = atlas_textures_size * ivec2(tile % ATLAS_SIZE, tile / ATLAS_SIZE);
+    ivec2 offset = ivec2(grid_size * uv);
+    offset.x = offset.x % atlas_textures_size.x;
+    offset.y = offset.y % atlas_textures_size.y;
+
     //out_color = texture2D(atlas_texture, atlas_coords);
-    out_color = texelFetch(atlas_texture, atlas_coords, 0);
+    out_color = texelFetch(atlas_texture, atlas_coords + offset, 0);
     fragColor = out_color;
   }
 
