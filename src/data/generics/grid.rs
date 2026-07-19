@@ -11,6 +11,7 @@ struct VecGrid<T: Clone>{
 
 impl<T> VecGrid<T>
 where T: Clone + Default
+
 {
     pub fn new() -> VecGrid<T>{
         VecGrid{

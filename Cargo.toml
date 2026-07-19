@@ -31,6 +31,7 @@ opt-level = 3
 
 [profile.dev]
 opt-level = 1
+debug = true
 
 
 [profile.release]
