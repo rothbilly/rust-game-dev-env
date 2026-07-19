@@ -2,10 +2,9 @@ use macroquad::{texture::{FilterMode, Texture2D}};
 
 
 use resvg::{tiny_skia, usvg::{self, Size, Transform}};
-use serde::de::Unexpected::Option;
 
 
-const svg_sample_data: &str = r##"
+const SVG_SAMPLE_DATA: &str = r##"
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400">
             <circle cx="50" cy="50" r="40" fill="#ff5555" />
             <rect x="30" y="30" width="40" height="40" fill="#55ff55" opacity="0.7"/>
