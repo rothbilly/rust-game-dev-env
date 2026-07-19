@@ -17,6 +17,7 @@ const WORLD_HEIGHT: i32 = 512;
 const ASPECT_RATIO: f32 = WORLD_WIDTH as f32 / WORLD_HEIGHT as f32;
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
+const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background1.png");
 
 /*
    IMPORTANT: improve single thread performance before adding multithreading
@@ -82,22 +83,28 @@ impl GameLoop for Sandbox {
                         UniformDesc::new("atlas_textures_size", UniformType::Int2),
                         UniformDesc::new("grid_size", UniformType::Float2),
                     ],
-                    textures: vec!["atlas_texture".to_owned(), "tiles".to_owned()],
+                    textures: vec![
+                        "atlas_texture".to_owned(),
+                        "tiles".to_owned(),
+                        "background".to_owned(),
+                    ],
                     ..Default::default()
                 },
             )
             .unwrap(),
         );
 
-        let img = Image::from_file_with_format(ATLAS_BYTES, Some(ImageFormat::Png)).unwrap();
+        let atlas_img = Image::from_file_with_format(ATLAS_BYTES, Some(ImageFormat::Png)).unwrap();
+        self.inventory.tiles_atlas = Some(atlas_img.clone());
+        self.inventory.init_textures();
 
         if let Some(mat) = &self.render_data.world_material {
-            self.inventory.tiles_atlas = Some(img.clone());
-            self.inventory.init_textures();
-            self.render_data.tiles_atlas = Texture2D::from_image(&img);
+            self.render_data.tiles_atlas = Texture2D::from_image(&atlas_img);
             self.render_data.tiles_atlas.set_filter(FilterMode::Nearest);
             self.render_data.tiles = Texture2D::from_image(&self.render_data.tiles_image);
             self.render_data.tiles.set_filter(FilterMode::Nearest);
+            self.render_data.background =
+                Texture2D::from_file_with_format(BACKGROUND_BYTES, Some(ImageFormat::Png));
             mat.set_uniform(
                 "atlas_textures_size",
                 ivec2(ATLAS_TEXTURES_SIZE, ATLAS_TEXTURES_SIZE),
@@ -105,6 +112,7 @@ impl GameLoop for Sandbox {
             mat.set_uniform("grid_size", vec2(WORLD_WIDTH as f32, WORLD_HEIGHT as f32));
             mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
             mat.set_texture("tiles", self.render_data.tiles.clone());
+            mat.set_texture("background", self.render_data.background.clone());
         }
     }
 
@@ -266,6 +274,7 @@ impl GameLoop for Sandbox {
 
     fn _render(&self) {
         set_camera(&self.camera);
+
         if let Some(mat) = &self.render_data.world_material {
             gl_use_material(mat);
             draw_rectangle(0.0, 0.0, WORLD_WIDTH as f32, WORLD_WIDTH as f32, WHITE);
@@ -805,6 +814,7 @@ const TILES_FRAGMENT_SHADER: &str = r#"
   uniform vec2 grid_size;
   uniform sampler2D atlas_texture;
   uniform sampler2D tiles;
+  uniform sampler2D background;
 
   out vec4 fragColor;
 
@@ -813,7 +823,6 @@ const TILES_FRAGMENT_SHADER: &str = r#"
   }
 
   uint unpack_tile(vec2 uv){
-    //vec2 tile_texel = 1.0/textureSize(tiles, 0);
     ivec2 grid_pos = ivec2(grid_size * uv);
     uint grid_idx = uint(grid_pos.y * grid_size.x + grid_pos.x);
     grid_pos.x /= 4;
@@ -823,16 +832,17 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 
   void main(){
     vec4 out_color;
+    vec4 background = texture2D(background, uv);
+
     uint tile = unpack_tile(uv);
-    //vec2 atlas_texel = 1.0/textureSize(atlas_texture, 0);
-    //vec2 atlas_coords = atlas_texel * atlas_textures_size * vec2(uint(tile % ATLAS_SIZE), uint(tile / ATLAS_SIZE));
     ivec2 atlas_coords = atlas_textures_size * ivec2(tile % ATLAS_SIZE, tile / ATLAS_SIZE);
     ivec2 offset = ivec2(grid_size * uv);
     offset.x = offset.x % atlas_textures_size.x;
     offset.y = offset.y % atlas_textures_size.y;
 
-    //out_color = texture2D(atlas_texture, atlas_coords);
     out_color = texelFetch(atlas_texture, atlas_coords + offset, 0);
+
+    out_color = mix(out_color, background, background.a - out_color.a);
     fragColor = out_color;
   }
 
@@ -890,6 +900,7 @@ pub struct RenderData {
     tiles_atlas: Texture2D,
     tiles_image: Image,
     tiles: Texture2D,
+    background: Texture2D,
 }
 
 impl Default for RenderData {
@@ -897,8 +908,9 @@ impl Default for RenderData {
         Self {
             tiles_image: Image::gen_image_color(WORLD_WIDTH as u16 / 4, WORLD_HEIGHT as u16, BLACK),
             tiles: Texture2D::empty(),
-            world_material: None,
             tiles_atlas: Texture2D::empty(),
+            world_material: None,
+            background: Texture2D::empty(),
         }
     }
 }
