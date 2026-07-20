@@ -34,8 +34,8 @@ const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/bac
 pub struct Sandbox {
     brush_size: i16,
     max_brush_size: i16,
-    tiles: Vec<Tile>,
-    next_tiles: Vec<Tile>,
+    tiles: Vec<u8>,
+    next_tiles: Vec<u8>,
     frame_counter: u64,
     inventory: UIData,
     camera: Camera2D,
@@ -58,8 +58,8 @@ impl Default for Sandbox {
             game_state: GameState::Running,
             brush_size: 4,
             max_brush_size: 48,
-            tiles: vec![Tile::Empty; vec_size],
-            next_tiles: vec![Tile::Empty; vec_size],
+            tiles: vec![Tile::Empty as u8; vec_size],
+            next_tiles: vec![Tile::Empty as u8; vec_size],
             frame_counter: 0,
             inventory: UIData::new(),
             render_data: RenderData::default(),
@@ -101,7 +101,11 @@ impl GameLoop for Sandbox {
         if let Some(mat) = &self.render_data.world_material {
             self.render_data.tiles_atlas = Texture2D::from_image(&atlas_img);
             self.render_data.tiles_atlas.set_filter(FilterMode::Nearest);
-            self.render_data.tiles = Texture2D::from_image(&self.render_data.tiles_image);
+            self.render_data.tiles = Texture2D::from_rgba8(
+                WORLD_WIDTH as u16 / 4,
+                WORLD_HEIGHT as u16,
+                &self.next_tiles,
+            );
             self.render_data.tiles.set_filter(FilterMode::Nearest);
             self.render_data.background =
                 Texture2D::from_file_with_format(BACKGROUND_BYTES, Some(ImageFormat::Png));
@@ -195,46 +199,20 @@ impl GameLoop for Sandbox {
                 }
 
                 std::mem::swap(&mut self.next_tiles, &mut self.tiles);
-                self.next_tiles.fill_with(|| Tile::Empty);
+                self.next_tiles.fill_with(|| Tile::Empty as u8);
             }
             _ => {}
         }
 
-        // I wish i could pack this further but macroquad shader io is very limited :/
-        // Maybe should use raw miniquad??
-        //
         if let Some(material) = &self.render_data.world_material {
-            let size = self.tiles.len();
-            let tiles = &self.tiles;
-            let mut i: u32 = 0;
-            let img = &mut self.render_data.tiles_image;
-
-            while i < size as u32 {
-                let (x, y) = (
-                    (i / 4) % (WORLD_WIDTH as u32 / 4),
-                    (i) / (WORLD_WIDTH as u32),
-                );
-                {
-                    let i = i as usize;
-                    img.set_pixel(
-                        x,
-                        y,
-                        Color::from_rgba(
-                            tiles[i] as u8,
-                            tiles[i + 1] as u8,
-                            tiles[i + 2] as u8,
-                            tiles[i + 3] as u8,
-                        ),
-                    );
-                }
-                i += 4;
-            }
-
-            self.render_data.tiles.update(&self.render_data.tiles_image);
+            self.render_data.tiles.update_from_bytes(
+                WORLD_WIDTH as u32 / 4,
+                WORLD_HEIGHT as u32,
+                &self.tiles,
+            );
             material.set_texture("tiles", self.render_data.tiles.clone());
         }
 
-        self.frame_counter = (self.frame_counter + 1) % 60;
         self.update_camera();
 
         // draw ui
@@ -270,6 +248,8 @@ impl GameLoop for Sandbox {
                 self.inventory.tile_palette(ui);
             });
         }
+
+        self.frame_counter = (self.frame_counter + 1) % 60;
     }
 
     fn _render(&self) {
@@ -423,12 +403,12 @@ impl Sandbox {
     #[inline]
     fn check_tile(&mut self, x: &i16, y: &i16) {
         let idx = self.pos_to_idx((*x, *y));
-        let tile = self.tiles[idx];
+        let tile: Tile = self.tiles[idx].into();
         if tile == Tile::Empty {
             return;
         }
         if !self.process_tile(tile, (*x, *y)) {
-            self.next_tiles[idx] = tile;
+            self.next_tiles[idx] = tile as u8;
             self.dirty_area.mark_dirty((*x, *y));
         }
     }
@@ -658,7 +638,7 @@ impl Sandbox {
 
     fn move_tile(&mut self, from: (i16, i16), to: (i16, i16)) {
         let from_idx = self.pos_to_idx(from);
-        let tile = self.tiles[from_idx];
+        let tile = Tile::from(self.tiles[from_idx]);
         self.set_tile(to, tile, false);
         self.set_tile(from, Tile::Empty, false);
     }
@@ -678,7 +658,7 @@ impl Sandbox {
 
         let mut neighbors = [0_i8; Tile::Size as usize];
 
-        let mut tile: Tile;
+        let mut tile: u8;
         for pos in &positions {
             let n_pos = (from.0 + pos.0, from.1 + pos.1);
 
@@ -711,16 +691,18 @@ impl Sandbox {
     #[inline]
     fn set_tile_by_idx(&mut self, idx: usize, tile_type: Tile, back: bool) {
         if back {
-            self.tiles[idx] = tile_type;
+            self.tiles[idx] = tile_type as u8;
             return;
         }
-        self.next_tiles[idx] = tile_type;
+        self.next_tiles[idx] = tile_type as u8;
     }
 
     #[inline]
     fn is_empty(&self, pos: (i16, i16)) -> bool {
         let idx = self.pos_to_idx(pos);
-        self.in_bounds(pos) && self.tiles[idx] == Tile::Empty && self.next_tiles[idx] == Tile::Empty
+        self.in_bounds(pos)
+            && self.tiles[idx] == (Tile::Empty as u8)
+            && self.next_tiles[idx] == (Tile::Empty as u8)
     }
 
     #[inline]
@@ -778,11 +760,11 @@ impl From<u8> for Tile {
             6 => Tile::GunPowder,
             7 => Tile::Wood,
             8 => Tile::BurntWood,
-            9 => Tile::Leaf,
-            10 => Tile::Vapor,
-            11 => Tile::Smoke,
-            12 => Tile::Snow,
-            13 => Tile::Coal,
+            9 => Tile::Coal,
+            10 => Tile::Leaf,
+            11 => Tile::Vapor,
+            12 => Tile::Smoke,
+            13 => Tile::Snow,
             _ => Tile::Empty,
         }
     }
@@ -839,13 +821,10 @@ const TILES_FRAGMENT_SHADER: &str = r#"
     ivec2 offset = ivec2(grid_size * uv);
     offset.x = offset.x % atlas_textures_size.x;
     offset.y = offset.y % atlas_textures_size.y;
-
     out_color = texelFetch(atlas_texture, atlas_coords + offset, 0);
-
     out_color = mix(out_color, background, background.a - out_color.a);
     fragColor = out_color;
   }
-
 "#;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -898,7 +877,6 @@ impl Default for DirtyRect {
 pub struct RenderData {
     world_material: Option<Material>,
     tiles_atlas: Texture2D,
-    tiles_image: Image,
     tiles: Texture2D,
     background: Texture2D,
 }
@@ -906,7 +884,6 @@ pub struct RenderData {
 impl Default for RenderData {
     fn default() -> Self {
         Self {
-            tiles_image: Image::gen_image_color(WORLD_WIDTH as u16 / 4, WORLD_HEIGHT as u16, BLACK),
             tiles: Texture2D::empty(),
             tiles_atlas: Texture2D::empty(),
             world_material: None,
