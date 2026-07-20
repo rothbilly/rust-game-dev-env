@@ -230,5 +230,6 @@ Features ideas
 	- draw calls
 	- uso de memoria de cada juego
 - extender funciones de dibujado
-- Serializar la configuracion de las ventanas de editor
+- Serializar la configuracion de las ventanas de editor en .app/editor_cache.json
 - Inspector de assets: texturas, shaders,meshes 
+- exit dialog on esc, double esc to exit and save

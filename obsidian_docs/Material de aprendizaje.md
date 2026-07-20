@@ -19,11 +19,14 @@ Articulos y tutoriales de rust
 | Fish Fight         | https://github.com/fishfolk/jumpy                          |
 | Rust WASM template | https://github.com/rsaarelm/rust-game-template/tree/master |
 
-## Articulos de Gamedev
+## Articulos  y material de Gamedev
 
-| Title                    | Link                                                              |
-| ------------------------ | ----------------------------------------------------------------- |
-| Game dev Article         | https://loglog.games/blog/leaving-rust-gamedev/#positives-of-rust |
+| Title                                                                                        | Link                                                                                      |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Game dev Article                                                                             | https://loglog.games/blog/leaving-rust-gamedev/#positives-of-rust                         |
+| Exploring the Tech and Design of Noita                                                       | https://www.youtube.com/watch?v=prXuyMCgbTc                                               |
+| Nolla Games: Making of Noita – The Pixel-Based Physics Roguelite - Games Now! lecture series | https://www.youtube.com/live/Mr3E_voEG8Y                                                  |
+| information dealing with all things voxels                                                   | [https://voxel.wiki/](https://voxel.wiki/ "https://voxel.wiki/<br>(https://voxel.wiki/)") |
 
 ## Crates interesantes
 

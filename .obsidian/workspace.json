@@ -39,6 +39,30 @@
             "state": {
               "type": "markdown",
               "state": {
+                "file": "obsidian_docs/Bitacora del Nico.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Bitacora del Nico"
+            }
+          },
+          {
+            "id": "0861e7159271f3fb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
                 "file": "obsidian_docs/Material de aprendizaje.md",
                 "mode": "source",
                 "source": false,
@@ -58,7 +82,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -211,9 +235,11 @@
           {
             "id": "d6579da56929a02f",
             "type": "leaf",
+            "pinned": true,
             "state": {
               "type": "graph",
               "state": {},
+              "pinned": true,
               "icon": "lucide-git-fork",
               "title": "Graph view"
             }
@@ -235,24 +261,24 @@
       "bases:Create new base": false
     }
   },
-  "active": "8d84f68580d46312",
+  "active": "0861e7159271f3fb",
   "lastOpenFiles": [
-    "target/debug/rust-game-dev-env.d",
-    "target/debug/librust_game_dev_env.d",
-    "target/debug/rust_game_dev_env.pdb",
-    "target/debug/rust-game-dev-env.exe",
-    "target/debug/deps/rust_game_dev_env.pdb",
-    "target/debug/deps/rust_game_dev_env.exe",
-    "target/debug/deps/rustcerNWvc/symbols.o",
-    "target/debug/deps/rustcerNWvc/linker-arguments",
-    "target/debug/deps/rustcerNWvc",
-    "target/debug/deps/rust_game_dev_env.bddm3d3djfsjcjoo27dyjx4bc.0c169h0.rcgu.o",
-    "target/debug/deps/rust_game_dev_env.9drftexz32pwlci9qhxqkkksr.0c169h0.rcgu.o",
-    "README.md",
+    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0",
+    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg/dep-graph.bin",
+    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg",
+    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-working/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-working/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-working/dep-graph.part.bin",
+    "obsidian_docs/Bitacora del Nico.md",
     "obsidian_docs/Material de aprendizaje.md",
+    "README.md",
     "obsidian_docs/main_canvas.canvas",
     "obsidian_docs/Notas de Jose.md",
-    "obsidian_docs/Bitacora del Nico.md",
     "assets/sprites/sandbox/background1.png",
     "assets/sprites/sandbox/tile_atlas.png",
     "assets/sprites/laser-bolts.png",

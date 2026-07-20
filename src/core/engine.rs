@@ -1,5 +1,6 @@
 use std::{cell::RefCell, rc::Rc, sync::RwLock};
 
+use egui_macroquad::egui::{self};
 use macroquad::prelude::*;
 
 use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
@@ -11,6 +12,7 @@ use crate::editor::main_editor::GlobalEditor;
 type AppListRc = Rc<RwLock<AppList>>;
 type AppRegistryRc = Rc<RwLock<AppRegistry>>;
 type EditorsRc = Rc<RwLock<GlobalEditor>>;
+
 
 pub struct Engine{
     app_list: AppListRc,
