@@ -1,8 +1,8 @@
-use macroquack::core::app::AppRegistration; // To register it in the App registry.
-use engine_macros::register_app;
+
+
+use macroquack::prelude::*;
 use macroquack::core::game::{GameLoop};
-use macroquad::prelude::*;
-use macroquack::core::game;
+use macroquack::core::app::AppRegistration; // To register it in the App registry.
 
 /// Use this game as a template for new games
 

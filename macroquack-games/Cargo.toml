@@ -7,6 +7,6 @@ edition = "2024"
 macroquack = {path = "../macroquack"}
 automod = "1.0.17"
 
-macroquad = {workspace = true}
-inventory = {workspace = true}
-engine_macros = {workspace = true}
+
+[profile.dev.package.'*']
+opt-level = 3

@@ -4,7 +4,13 @@
 //  Engine mods
 // ==========================================
 
-pub use engine_macros;
+
+pub mod prelude{
+    pub use engine_macros::register_app;
+    pub use macroquad;
+    pub use inventory;
+    pub use macroquad::prelude::*;
+}
 
 pub mod editor {
     pub mod main_editor;

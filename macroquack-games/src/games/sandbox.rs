@@ -1,6 +1,7 @@
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
 use macroquack::core::game::GameLoop;
-use macroquack::engine_macros::register_app;
+use macroquack::prelude::*;
+
 use macroquad::prelude::*;
 use macroquad::ui::{
     Drag, Ui, hash, root_ui,

@@ -1,4 +1,4 @@
-use macroquack::engine_macros::register_app;
+use macroquack::prelude::*;
 use macroquad::{input, prelude::*};
 use macroquad::color::colors;
 

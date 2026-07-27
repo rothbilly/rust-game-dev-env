@@ -1,5 +1,6 @@
 
-use macroquad:: prelude::*;
+use macroquack::prelude::*;
+
 use macroquack::core::engine::{Engine, app_config};
 
 

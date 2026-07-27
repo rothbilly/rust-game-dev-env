@@ -1,5 +1,5 @@
 
-use macroquack::engine_macros::register_app;
+use macroquack::prelude::*;
 use std::fs;
 
 use macroquad::prelude::*;
