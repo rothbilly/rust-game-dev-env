@@ -115,7 +115,7 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
         #mutated_item
 
         impl std::ops::Deref for #item_identifier {
-            type Target = crate::core::game::Game;
+            type Target = macroquack::core::game::Game;
             fn deref(&self) -> &Self::Target {
                 &self.base
             }

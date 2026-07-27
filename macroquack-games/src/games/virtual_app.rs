@@ -1,10 +1,12 @@
 
 use std::fs;
 
+use macroquack::core::rendering::vector_graphics::svg_to_srgb_texture;
 use macroquad::{color, prelude::*};
 use macroquack::engine_macros::*;
 use macroquack::core::game::{GameLoop, IPausable};
 use macroquack::core::app::AppRegistration;
+
 
 #[register_app("Sample Virtual App")]
 #[derive(Default)]
