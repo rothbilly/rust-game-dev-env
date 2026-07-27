@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc, sync::RwLock};
 use egui_macroquad::egui::{self};
 use macroquad::prelude::*;
 
-use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
+use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, settings_inspector::SettingsInspector}};
 
 use crate::editor::inspector::DrawingBackend;
 use crate::editor::main_editor::GlobalEditor;
@@ -106,7 +106,7 @@ impl Engine {
         if let Some(new_app) = registry.get(&settings.starting_app){
             self.app_list.clone().write().unwrap().append_new_sub_app(new_app);
         } else {
-            self.app_list.clone().write().unwrap().new_app_as::<SampleVirtualApp>();   
+            
         }
         self
     }

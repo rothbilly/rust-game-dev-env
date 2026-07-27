@@ -4,6 +4,8 @@
 //  Engine mods
 // ==========================================
 
+pub use engine_macros;
+
 pub mod editor {
     pub mod main_editor;
     pub mod constants;
@@ -55,10 +57,4 @@ pub mod components {
 //  Games mods - in the future in its own crate maybe
 // ==========================================
 
-pub mod games {
-    // pub mod breakout;
-    // pub mod macrowareexe;
-    // ...
-    automod::dir!(pub "src/games");
-    
-}
+

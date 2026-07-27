@@ -1,12 +1,11 @@
-use engine_macros::register_app;
+use macroquack::engine_macros::register_app;
 use macroquad::{input, prelude::*};
 use macroquad::color::colors;
 
-use egui_macroquad::*;
 
-use crate::core::game::{GameLoop};
-use crate::core::app::AppRegistration;
-use crate::components::gameobject::*;
+use macroquack::core::game::{GameLoop};
+use macroquack::core::app::AppRegistration;
+use macroquack::components::gameobject::*;
 
 #[register_app("Macroware.Exe")]
 #[derive(Default)]

@@ -655,6 +655,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "953f07c43838f8e6f9758cab68bf5bed85465e7587ebe0b823f1bcd81978ad3a"
 
 [[package]]
+name = "macroquack"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "egui-macroquad",
+ "engine_macros",
+ "hecs",
+ "inventory",
+ "macroquad",
+ "num-bigint",
+ "puffin",
+ "quad-rand",
+ "quad-url",
+ "resvg",
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
+name = "macroquack-games"
+version = "0.1.0"
+dependencies = [
+ "automod",
+ "inventory",
+ "macroquack",
+ "macroquad",
+]
+
+[[package]]
 name = "macroquad"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1074,27 +1104,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1964b10c76125c36f8afe190065a4bf9a87bf324842c05701330bba9f1cacbb"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "rust-game-dev-env"
-version = "0.1.1"
-dependencies = [
- "automod",
- "bincode",
- "egui-macroquad",
- "engine_macros",
- "hecs",
- "inventory",
- "macroquad",
- "num-bigint",
- "puffin",
- "quad-rand",
- "quad-url",
- "resvg",
- "serde",
- "serde_json",
- "toml",
 ]
 
 [[package]]
