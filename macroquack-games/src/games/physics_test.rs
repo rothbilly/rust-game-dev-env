@@ -1,7 +1,7 @@
-use engine_macros::register_app;
+use macroquack::engine_macros::register_app;
 use macroquad::prelude::*;
-use crate::core::game::{GameLoop};
-use crate::core::app::AppRegistration; // To register it in the App registry.
+use macroquack::core::game::{GameLoop};
+use macroquack::core::app::AppRegistration; // To register it in the App registry.
 
 
 #[register_app("PhysicsTest")] // Custom Registration macro

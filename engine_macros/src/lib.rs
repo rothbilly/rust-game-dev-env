@@ -102,7 +102,7 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             if let syn::Fields::Named(ref mut fields) = item_struct.fields {
                 fields.named.push(syn::parse_quote! {
-                    pub base: crate::core::game::Game
+                    pub base: macroquack::core::game::Game
                 });
             }
             quote! { #item_struct }

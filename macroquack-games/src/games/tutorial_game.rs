@@ -1,18 +1,18 @@
 
-use engine_macros::register_app;
+use macroquack::engine_macros::register_app;
 use std::fs;
 
 use macroquad::prelude::*;
-use crate::core::game::{GameLoop};
-use crate::core::app::AppRegistration; // To register it in the App registry.
-use crate::core::math::wrapf;
+use macroquack::core::game::{GameLoop};
+use macroquack::core::app::AppRegistration; // To register it in the App registry.
+use macroquack::core::math::wrapf;
 
 const MOVEMENT_SPEED: f32 = 200.0;
 const SCORE_PATH: &str = ".app/storage/tutorial_game/";
 const SCORE_FILE_NAME: &str = "high_score.dat";
 
- const FRAGMENT_SHADER: &str = include_str!(r"../../assets/shaders/starfield_shader.glsl");
- const VERTEX_SHADER: &str = include_str!(r"../../assets/shaders/quad_vertex.glsl");
+ const FRAGMENT_SHADER: &str = include_str!(r"../../../assets/shaders/starfield_shader.glsl");
+ const VERTEX_SHADER: &str = include_str!(r"../../../assets/shaders/quad_vertex.glsl");
 
 
 #[register_app("Tutorial Game")]

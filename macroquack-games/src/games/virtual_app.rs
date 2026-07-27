@@ -2,10 +2,9 @@
 use std::fs;
 
 use macroquad::{color, prelude::*};
-use engine_macros::*;
-use crate::core::game::{GameLoop, IPausable};
-use crate::core::app::AppRegistration;
-use crate::core::rendering::vector_graphics::svg_to_srgb_texture;
+use macroquack::engine_macros::*;
+use macroquack::core::game::{GameLoop, IPausable};
+use macroquack::core::app::AppRegistration;
 
 #[register_app("Sample Virtual App")]
 #[derive(Default)]

@@ -6,3 +6,4 @@ resolver = "2"
 [workspace.dependencies]
 macroquad = {version = "0.4.15", default-features = false}
 inventory = "0.3.24"
+engine_macros = {path = "engine_macros"}

@@ -9,3 +9,4 @@ automod = "1.0.17"
 
 macroquad = {workspace = true}
 inventory = {workspace = true}
+engine_macros = {workspace = true}

@@ -679,6 +679,7 @@ name = "macroquack-games"
 version = "0.1.0"
 dependencies = [
  "automod",
+ "engine_macros",
  "inventory",
  "macroquack",
  "macroquad",

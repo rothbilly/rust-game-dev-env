@@ -1,6 +1,6 @@
-use crate::core::app::AppRegistration; // To register it in the App registry.
-use crate::core::game::GameLoop;
-use engine_macros::register_app;
+use macroquack::core::app::AppRegistration; // To register it in the App registry.
+use macroquack::core::game::GameLoop;
+use macroquack::engine_macros::register_app;
 use macroquad::prelude::*;
 use macroquad::ui::{
     Drag, Ui, hash, root_ui,
@@ -11,8 +11,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 const ATLAS_TEXTURES_SIZE: i32 = 64;
-const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
-const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background1.png");
+const ATLAS_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/tile_atlas.png");
+const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/background1.png");
 const WORLD_CHUNKS: i32 = 8;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
 const SCREEN_WIDTH: i32 = 256;
