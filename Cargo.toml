@@ -1,9 +1,10 @@
 [package]
 name = "rust-game-dev-env"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 
 [dependencies]
+
 macroquad = {version = "0.4.15", default-features = false}
 quad-rand = {version = "0.2.3"}
 quad-url = "0.1.2"
@@ -19,6 +20,9 @@ num-bigint = "0.5.1"
 
 puffin = {version = "0.20.0", default-features = false }
 resvg = {version = "0.47.0", default-features = false}
+hecs = {version = "0.11.0", default-features = false}
+
+
 
 inventory = "0.3.24"
 automod = "1.0.17"
