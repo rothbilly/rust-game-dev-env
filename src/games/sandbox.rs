@@ -6,18 +6,18 @@ use macroquad::ui::{
     Drag, Ui, hash, root_ui,
     widgets::{self, Group},
 };
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::rc::Rc;
 
-// Screen references
-// Snes NTSC 256 * 224 @60Hz PAL 256 * 240 @50Hz
-// GBA 240 * 160 3:2 @60Hz
-
-// WORLD SIZE has to be square in order to avoid uv streching
-const WORLD_WIDTH: i32 = 512;
-const WORLD_HEIGHT: i32 = 512;
-const ASPECT_RATIO: f32 = WORLD_WIDTH as f32 / WORLD_HEIGHT as f32;
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
 const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background1.png");
+const WORLD_CHUNKS: i32 = 8;
+const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
+const SCREEN_WIDTH: i32 = 256;
+const SCREEN_HEIGHT: i32 = 256;
+const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 
 /*
    IMPORTANT: improve single thread performance before adding multithreading
@@ -32,19 +32,23 @@ const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/bac
 
 #[register_app("Sandbox")] // Custom Registration macro
 pub struct Sandbox {
-    brush_size: i16,
-    max_brush_size: i16,
-    tiles: Vec<u8>,
-    next_tiles: Vec<u8>,
+    game_state: GameState,
+    brush_size: i32,
+    max_brush_size: i32,
     frame_counter: u64,
     inventory: UIData,
+    // move all this to a camera controller struct??
     camera: Camera2D,
+    camera_position: Vec2,
+    camera_direction: Vec2,
+    camera_velocity: Vec2,
+    camera_speed: f32,
+    camera_linear_damping: f32,
+    chunks: Vec<Rc<RefCell<Chunk>>>,
     render_data: RenderData,
-    game_state: GameState,
-    dirty_area: DirtyRect,
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq)]
 enum GameState {
     #[default]
     Paused,
@@ -53,71 +57,94 @@ enum GameState {
 
 impl Default for Sandbox {
     fn default() -> Self {
-        let vec_size = (WORLD_WIDTH * WORLD_HEIGHT) as usize;
         Self {
             game_state: GameState::Running,
             brush_size: 4,
-            max_brush_size: 48,
-            tiles: vec![Tile::Empty as u8; vec_size],
-            next_tiles: vec![Tile::Empty as u8; vec_size],
+            max_brush_size: 64,
             frame_counter: 0,
             inventory: UIData::new(),
-            render_data: RenderData::default(),
+            // move all this to a camera controller struct??
             camera: Camera2D::default(),
+            camera_position: vec2(0.0, 0.0),
+            camera_direction: vec2(0.0, 0.0),
+            camera_velocity: vec2(0.0, 0.0),
+            camera_speed: 1000.0,
+            camera_linear_damping: 5.0,
+            chunks: {
+                let mut c: Vec<Rc<RefCell<Chunk>>> =
+                    Vec::with_capacity((WORLD_CHUNKS * WORLD_CHUNKS) as usize);
+                for _ in 0..c.capacity() {
+                    c.push(Rc::new(RefCell::new(Chunk::new().to_owned())));
+                }
+                c
+            },
+            render_data: RenderData::new(),
             base: Default::default(),
-            dirty_area: DirtyRect::default(),
         }
     }
 }
 
 impl GameLoop for Sandbox {
     fn _ready(&mut self) {
-        self.render_data.world_material = Some(
-            load_material(
-                ShaderSource::Glsl {
-                    vertex: TILES_VERTEX_SHADER,
-                    fragment: TILES_FRAGMENT_SHADER,
-                },
-                MaterialParams {
-                    uniforms: vec![
-                        UniformDesc::new("atlas_textures_size", UniformType::Int2),
-                        UniformDesc::new("grid_size", UniformType::Float2),
-                    ],
-                    textures: vec![
-                        "atlas_texture".to_owned(),
-                        "tiles".to_owned(),
-                        "background".to_owned(),
-                    ],
-                    ..Default::default()
-                },
-            )
-            .unwrap(),
-        );
+        {
+            let positions: [IVec2; 8] = [
+                ivec2(-1, -1),
+                ivec2(0, -1),
+                ivec2(1, -1),
+                ivec2(-1, 0),
+                ivec2(1, 0),
+                ivec2(-1, 1),
+                ivec2(0, 1),
+                ivec2(1, 1),
+            ];
+
+            for y in 0..WORLD_CHUNKS {
+                for x in 0..WORLD_CHUNKS {
+                    let mut neighbors = Vec::new();
+                    let chunk_key = ivec2(x, y);
+                    for pos in positions {
+                        let n_key = chunk_key + pos;
+                        if n_key.x >= 0
+                            && n_key.x < WORLD_CHUNKS
+                            && n_key.y >= 0
+                            && n_key.y < WORLD_CHUNKS
+                        {
+                            neighbors
+                                .push((pos, self.chunks[chunk_idx_at_chunk_pos(n_key)].clone()));
+                        }
+                    }
+                    let chunk_idx = chunk_idx_at_chunk_pos(chunk_key);
+                    self.chunks[chunk_idx].borrow_mut().map_position = chunk_key;
+                    self.chunks[chunk_idx].borrow_mut().init_maps(neighbors);
+                }
+            }
+        }
+
+        for i in 0..self.chunks.len() {
+            println!(
+                "Chunk({:?}) neighbors: {:?}",
+                i,
+                self.chunks[i].borrow().neighbors.keys()
+            );
+        }
 
         let atlas_img = Image::from_file_with_format(ATLAS_BYTES, Some(ImageFormat::Png)).unwrap();
         self.inventory.tiles_atlas = Some(atlas_img.clone());
         self.inventory.init_textures();
+        self.render_data.tiles_atlas = Texture2D::from_image(&atlas_img);
+        self.render_data.tiles_atlas.set_filter(FilterMode::Nearest);
 
-        if let Some(mat) = &self.render_data.world_material {
-            self.render_data.tiles_atlas = Texture2D::from_image(&atlas_img);
-            self.render_data.tiles_atlas.set_filter(FilterMode::Nearest);
-            self.render_data.tiles = Texture2D::from_rgba8(
-                WORLD_WIDTH as u16 / 4,
-                WORLD_HEIGHT as u16,
-                &self.next_tiles,
-            );
-            self.render_data.tiles.set_filter(FilterMode::Nearest);
-            self.render_data.background =
-                Texture2D::from_file_with_format(BACKGROUND_BYTES, Some(ImageFormat::Png));
-            mat.set_uniform(
-                "atlas_textures_size",
-                ivec2(ATLAS_TEXTURES_SIZE, ATLAS_TEXTURES_SIZE),
-            );
-            mat.set_uniform("grid_size", vec2(WORLD_WIDTH as f32, WORLD_HEIGHT as f32));
-            mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
-            mat.set_texture("tiles", self.render_data.tiles.clone());
-            mat.set_texture("background", self.render_data.background.clone());
-        }
+        //
+        self.render_data.background =
+            Texture2D::from_file_with_format(BACKGROUND_BYTES, Some(ImageFormat::Png));
+
+        let mat = &self.render_data.chunk_material;
+        mat.set_uniform("atlas_textures_size", ATLAS_TEXTURES_SIZE);
+        mat.set_uniform("grid_size", Chunk::SIZE);
+        mat.set_uniform("_debug", 1);
+        mat.set_uniform("texture_scale", 8.0_f32);
+        mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
+        mat.set_texture("background", self.render_data.background.clone());
     }
 
     fn _process_input(&mut self) {
@@ -130,6 +157,7 @@ impl GameLoop for Sandbox {
             } else if idx == 0 {
                 self.inventory.selected = 9;
             }
+
             match key {
                 KeyCode::Space => {
                     if self.game_state == GameState::Paused {
@@ -140,6 +168,33 @@ impl GameLoop for Sandbox {
                 }
                 KeyCode::Tab => {
                     self.inventory.palette_visible = !self.inventory.palette_visible;
+                }
+
+                KeyCode::LeftAlt => {
+                    self.render_data._debug = !self.render_data._debug;
+                    self.render_data
+                        .chunk_material
+                        .set_uniform("_debug", self.render_data._debug as i32);
+                }
+                _ => {}
+            }
+        }
+
+        let held_keys = get_keys_down();
+
+        for key in &held_keys {
+            match key {
+                KeyCode::W | KeyCode::Up => {
+                    self.camera_direction.y = -1.0;
+                }
+                KeyCode::A | KeyCode::Left => {
+                    self.camera_direction.x = -1.0;
+                }
+                KeyCode::S | KeyCode::Down => {
+                    self.camera_direction.y = 1.0;
+                }
+                KeyCode::D | KeyCode::Right => {
+                    self.camera_direction.x = 1.0;
                 }
                 _ => {}
             }
@@ -153,7 +208,7 @@ impl GameLoop for Sandbox {
 
         let mouse_wheel = mouse_wheel();
 
-        self.brush_size += (mouse_wheel.1.round() * 2.0) as i16;
+        self.brush_size += (mouse_wheel.1.round() * 2.0) as i32;
         self.brush_size = self.brush_size.clamp(1, self.max_brush_size);
 
         let mouse_left = is_mouse_button_down(MouseButton::Left);
@@ -173,47 +228,12 @@ impl GameLoop for Sandbox {
     }
 
     fn _update(&mut self, _delta: f32) {
-        match self.game_state {
-            GameState::Running => 'update: {
-                if self.dirty_area.is_empty() {
-                    break 'update;
-                }
-
-                let start = (self.dirty_area.x, self.dirty_area.y);
-                let end = (self.dirty_area.x2, self.dirty_area.y2);
-
-                self.dirty_area = DirtyRect::default();
-
-                if self.frame_counter.is_multiple_of(2) {
-                    for y in start.1..end.1 {
-                        for x in (start.0..end.0).rev() {
-                            self.check_tile(&x, &y);
-                        }
-                    }
-                } else {
-                    for y in start.1..end.1 {
-                        for x in start.0..end.0 {
-                            self.check_tile(&x, &y);
-                        }
-                    }
-                }
-
-                std::mem::swap(&mut self.next_tiles, &mut self.tiles);
-                self.next_tiles.fill_with(|| Tile::Empty as u8);
-            }
-            _ => {}
+        if self.game_state == GameState::Running {
+            self.simulate_chunks(ivec2(0, 0));
+            self.simulate_chunks(ivec2(1, 0));
+            self.simulate_chunks(ivec2(0, 1));
+            self.simulate_chunks(ivec2(1, 1));
         }
-
-        if let Some(material) = &self.render_data.world_material {
-            self.render_data.tiles.update_from_bytes(
-                WORLD_WIDTH as u32 / 4,
-                WORLD_HEIGHT as u32,
-                &self.tiles,
-            );
-            material.set_texture("tiles", self.render_data.tiles.clone());
-        }
-
-        self.update_camera();
 
         // draw ui
         // hotbar
@@ -249,26 +269,54 @@ impl GameLoop for Sandbox {
             });
         }
 
+        self.update_camera(_delta);
         self.frame_counter = (self.frame_counter + 1) % 60;
     }
 
     fn _render(&self) {
         set_camera(&self.camera);
 
-        if let Some(mat) = &self.render_data.world_material {
+        unsafe {
+            let mut gl = get_internal_gl();
+            let mut chunk_idx: usize;
+            let mat = &self.render_data.chunk_material;
             gl_use_material(mat);
-            draw_rectangle(0.0, 0.0, WORLD_WIDTH as f32, WORLD_WIDTH as f32, WHITE);
-            gl_use_default_material();
-        }
+            for y in 0..WORLD_CHUNKS {
+                for x in 0..WORLD_CHUNKS {
+                    chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x: x, y: y });
 
-        let mut mouse = self.mouse_to_world();
-        mouse.x = mouse.x.floor();
-        mouse.y = mouse.y.floor();
+                    let x = x * Chunk::SIZE;
+                    let y = y * Chunk::SIZE;
+
+                    let tiles = &self.chunks[chunk_idx].borrow().tiles;
+
+                    self.render_data.chunk_texture.update_from_bytes(
+                        (Chunk::SIZE / 4) as u32,
+                        Chunk::SIZE as u32,
+                        tiles,
+                    );
+
+                    mat.set_texture("tiles", self.render_data.chunk_texture.clone());
+                    draw_rectangle(
+                        x as f32,
+                        y as f32,
+                        Chunk::SIZE as f32,
+                        Chunk::SIZE as f32,
+                        WHITE,
+                    );
+                    gl.flush();
+                }
+            }
+        }
+        gl_use_default_material();
         let brush_size = self.brush_size as f32;
+        let mut mouse = self.mouse_to_world();
+        mouse.x -= (brush_size / 2.0);
+        mouse.y -= (brush_size / 2.0);
 
         draw_rectangle_lines(
-            mouse.x - (brush_size / 2.0),
-            mouse.y - (brush_size / 2.0),
+            mouse.x.floor(),
+            mouse.y.floor(),
             brush_size,
             brush_size,
             2.0,
@@ -277,38 +325,105 @@ impl GameLoop for Sandbox {
     }
 
     fn _debug_draw(&self) {
-        let area = &self.dirty_area;
-
-        if !area.is_empty() {
-            let size = (area.x2 - area.x, area.y2 - area.y);
-            draw_rectangle_lines(
-                area.x as f32,
-                area.y as f32,
-                size.0 as f32,
-                size.1 as f32,
-                5.0,
-                RED,
-            );
+        let mut chunk_idx: usize;
+        for y in 0..WORLD_CHUNKS {
+            for x in 0..WORLD_CHUNKS {
+                chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x, y });
+                let chunk = &self.chunks[chunk_idx].borrow();
+                let area = chunk.dirty_area;
+                let world_pos = ((x * Chunk::SIZE), (y * Chunk::SIZE));
+                if area.is_empty() {
+                    continue;
+                }
+                let size = (area.x2 - area.x, area.y2 - area.y);
+                draw_rectangle_lines(
+                    (world_pos.0 + area.x) as f32,
+                    (world_pos.1 + area.y) as f32,
+                    size.0 as f32,
+                    size.1 as f32,
+                    2.0,
+                    RED,
+                );
+            }
         }
 
-        draw_text(format!("{:?}", area), 32.0, 32.0, 12.0, WHITE);
+        set_default_camera();
         draw_text(
             format!("Mouse: {:?}", mouse_position()),
-            32.0,
-            48.0,
-            12.0,
+            64.0,
+            64.0,
+            24.0,
             WHITE,
         );
+        draw_text(
+            format!(
+                "Mouse_world: {:?}",
+                self.camera.screen_to_world(mouse_position().into())
+            ),
+            64.0,
+            96.0,
+            24.0,
+            WHITE,
+        );
+        draw_text(
+            format!("Camera_world: {:?}", self.camera_position),
+            64.0,
+            112.0,
+            24.0,
+            WHITE,
+        );
+        draw_text(format!("{:?}", self.game_state), 64.0, 80.0, 24.0, WHITE);
     }
 }
 
 impl Sandbox {
-    fn update_camera(&mut self) {
+    fn simulate_chunks(&mut self, start: IVec2) {
+        let mut y = start.y;
+        let mut x = start.x;
+
+        while y < WORLD_CHUNKS {
+            while x < WORLD_CHUNKS {
+                let mut chunk = self.chunks[chunk_idx_at_chunk_pos(ivec2(x, y))].borrow_mut();
+
+                if chunk.dirty_area.is_empty() {
+                    chunk.process_queues();
+                    x += 2;
+                    continue;
+                }
+
+                let area = chunk.dirty_area;
+                chunk.dirty_area.reset();
+
+                for y in area.y..area.y2 {
+                    for x in area.x..area.x2 {
+                        let pos = ivec2(x, y);
+                        if !in_chunk_bounds(pos) {
+                            continue;
+                        }
+                        if chunk.process_tile(pos) {
+                            chunk.notify_neighbors(pos);
+                        }
+                    }
+                }
+                chunk.process_queues();
+                x += 2;
+            }
+            y += 2;
+            x = start.x;
+        }
+    }
+
+    fn update_camera(&mut self, delta: f32) {
+        self.camera_velocity += (self.camera_speed * delta * delta) * self.camera_direction;
+        self.camera_velocity *= 1.0 - (self.camera_linear_damping * delta);
+        self.camera_position += self.camera_velocity;
+        self.camera_direction = vec2(0.0, 0.0);
+
         let mut camera = Camera2D::from_display_rect(Rect {
-            x: 0.0,
-            y: WORLD_HEIGHT as f32,
-            w: WORLD_WIDTH as f32,
-            h: -WORLD_HEIGHT as f32,
+            x: self.camera_position.x,
+            y: self.camera_position.y + SCREEN_HEIGHT as f32,
+            w: SCREEN_WIDTH as f32,
+            h: -SCREEN_HEIGHT as f32,
         });
         let display = self.get_display_rect();
         camera.viewport = Some((
@@ -376,22 +491,30 @@ impl Sandbox {
         let mouse = self.mouse_to_world();
         let mouse = vec2(mouse.x.floor(), mouse.y.floor());
 
-        let grid_x = mouse.x as i16;
-        let grid_y = mouse.y as i16;
+        let grid_x = mouse.x as i32;
+        let grid_y = mouse.y as i32;
 
         let brush_size = self.brush_size;
 
         for y in 0..brush_size {
             for x in 0..brush_size {
-                let tile_x = grid_x - (brush_size / 2) + x;
-                let tile_y = grid_y - (brush_size / 2) + y;
+                let x = grid_x - (brush_size / 2) + x;
+                let y = grid_y - (brush_size / 2) + y;
 
-                if !self.in_bounds((tile_x, tile_y)) {
+                if !in_world_bounds(ivec2(x, y)) {
                     continue;
                 }
-                self.set_tile((tile_x, tile_y), tile_type, true);
+                self.set_tile(ivec2(x, y), tile_type);
             }
         }
+    }
+
+    fn set_tile(&mut self, pos: IVec2, tile: Tile) {
+        let chunk_idx = chunk_idx_at_chunk_pos(chunk_pos_at_world(pos));
+        let mut chunk = self.chunks[chunk_idx].borrow_mut();
+        let tile_idx = chunk.pos_to_idx(world_to_chunk_local(pos));
+        chunk.set_tile(tile_idx, tile);
+        chunk.notify_neighbors(world_to_chunk_local(pos));
     }
 
     #[inline]
@@ -399,275 +522,433 @@ impl Sandbox {
         let mouse = mouse_position();
         self.camera.screen_to_world(vec2(mouse.0, mouse.1))
     }
+}
 
-    #[inline]
-    fn check_tile(&mut self, x: &i16, y: &i16) {
-        let idx = self.pos_to_idx((*x, *y));
-        let tile: Tile = self.tiles[idx].into();
-        if tile == Tile::Empty {
-            return;
-        }
-        if !self.process_tile(tile, (*x, *y)) {
-            self.next_tiles[idx] = tile as u8;
-            self.dirty_area.mark_dirty((*x, *y));
+#[inline]
+fn world_to_chunk_local(pos: IVec2) -> IVec2 {
+    IVec2 {
+        x: pos.x % Chunk::SIZE,
+        y: pos.y % Chunk::SIZE,
+    }
+}
+
+#[inline]
+fn chunk_idx_at_chunk_pos(pos: IVec2) -> usize {
+    (pos.y * WORLD_CHUNKS + pos.x) as usize
+}
+
+#[inline]
+fn chunk_pos_at_world(pos: IVec2) -> IVec2 {
+    ivec2(pos.x / Chunk::SIZE, pos.y / Chunk::SIZE)
+}
+
+#[inline]
+fn chunk_idx_at_world(world_pos: Vec2) -> usize {
+    ((world_pos.y.floor() as i32 / Chunk::SIZE * WORLD_CHUNKS)
+        + (world_pos.x.floor() as i32 / Chunk::SIZE)) as usize
+}
+
+#[inline]
+fn in_world_bounds(pos: IVec2) -> bool {
+    pos.x >= 0 && pos.x < WORLD_SIZE && pos.y >= 0 && pos.y < WORLD_SIZE
+}
+
+#[inline]
+fn in_chunk_bounds(pos: IVec2) -> bool {
+    (pos.x >= 0) && (pos.x < Chunk::SIZE) && (pos.y >= 0) && (pos.y < Chunk::SIZE)
+}
+
+#[inline]
+fn roll(chance: f32) -> bool {
+    assert!(
+        (0.0..=100.0).contains(&chance),
+        "Chance for a roll must be equals or less than 100.0 and more than 0.0"
+    );
+    rand::gen_range(0.0, 100.0) <= chance
+}
+
+fn pick_random<T: Copy>(options: &[T]) -> T {
+    let idx = rand::gen_range(0, options.len());
+    options[idx]
+}
+
+#[derive(Clone, Debug)]
+struct Chunk {
+    // position inside sandbox's chunks collection
+    map_position: IVec2,
+    dirty_area: DirtyRect,
+    neighbors: HashMap<IVec2, Rc<RefCell<Chunk>>>,
+    tiles: Vec<u8>,
+
+    // moves inside the chunk are queued immediately
+    move_queue: Vec<(usize, usize)>,
+    // moves received from a neighboring chunk are performed first
+    receiving_moves: Vec<((IVec2, usize), usize)>,
+
+    // tmp buffer
+    filled_moves: Vec<usize>,
+}
+
+impl Chunk {
+    const SIZE: i32 = 64;
+    const SIZE_SQR: i32 = Chunk::SIZE * Chunk::SIZE;
+
+    fn new() -> Self {
+        Chunk {
+            map_position: IVec2 { x: 0, y: 0 },
+            tiles: vec![Tile::Empty as u8; (Chunk::SIZE * Chunk::SIZE) as usize],
+            move_queue: Vec::with_capacity((Chunk::SIZE * Chunk::SIZE) as usize),
+            dirty_area: DirtyRect::default(),
+            neighbors: HashMap::with_capacity(8),
+            // at most a full square of tiles can get into each chunk
+            receiving_moves: Vec::with_capacity(Chunk::SIZE as usize * 4),
+            filled_moves: Vec::with_capacity(Chunk::SIZE as usize * 4),
         }
     }
 
-    fn process_tile(&mut self, tile: Tile, pos: (i16, i16)) -> bool {
+    fn init_maps(&mut self, neighbors: Vec<(IVec2, Rc<RefCell<Chunk>>)>) {
+        for neighbor in neighbors {
+            _ = self.neighbors.insert(neighbor.0, neighbor.1.clone());
+        }
+    }
+
+    fn process_queues(&mut self) {
+        self.receiving_moves.sort_unstable_by_key(|a| a.1);
+        let size = self.receiving_moves.len();
+        let mut prev: usize = 0;
+        for i in 0..size {
+            if i + 1 == size || self.receiving_moves[i + 1].1 != self.receiving_moves[i].1 {
+                let rng: usize = rand::gen_range(prev, i + 1);
+                let ((chunk_key, src), dst) = self.receiving_moves[rng];
+                if let Some(chunk) = self.neighbors.get(&chunk_key) {
+                    let src_tile: Tile = chunk.borrow().tiles[src].into();
+                    chunk.borrow_mut().set_tile(src, self.tiles[dst].into());
+                    self.set_tile(dst, src_tile);
+                    prev = i + 1;
+                    self.filled_moves.push(dst);
+                }
+            }
+        }
+
+        // dont care about original order
+        self.move_queue.sort_unstable();
+        //remove filled dst
+
+        let size = self.move_queue.len();
+        prev = 0;
+        for i in 0..size {
+            if i + 1 == size || self.move_queue[i + 1].0 != self.move_queue[i].0 {
+                let rng: usize = rand::gen_range(prev, i + 1);
+                let (dst, src) = self.move_queue[rng];
+                if self.filled_moves.contains(&dst) {
+                    for k in prev..i + 1 {
+                        self.dirty_area
+                            .mark_dirty(self.idx_to_pos(self.move_queue[k].1));
+                    }
+                    prev = i + 1;
+                    continue;
+                }
+
+                let src_tile: Tile = self.tiles[src].into();
+                self.set_tile(src, self.tiles[dst].into());
+                self.set_tile(dst, src_tile);
+                prev = i + 1;
+            }
+        }
+
+        self.receiving_moves.clear();
+        self.move_queue.clear();
+        self.filled_moves.clear();
+    }
+
+    // T_T
+    fn notify_neighbors(&mut self, tile_pos: IVec2) {
+        if tile_pos.x == 0 && tile_pos.y == 0 {
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(-1, -1)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(Chunk::SIZE - 1, Chunk::SIZE - 1));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(-1, 0)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(Chunk::SIZE - 1, 0));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(0, -1)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(0, Chunk::SIZE - 1));
+            }
+        } else if tile_pos.x == (Chunk::SIZE - 1) && tile_pos.y == 0 {
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(1, -1)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(0, Chunk::SIZE - 1));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(1, 0)) {
+                n_chunk.borrow_mut().dirty_area.mark_dirty(ivec2(0, 0));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(0, -1)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(Chunk::SIZE - 1, Chunk::SIZE - 1));
+            }
+        } else if tile_pos.x == 0 && tile_pos.y == (Chunk::SIZE - 1) {
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(-1, 1)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(Chunk::SIZE - 1, 0));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(-1, 0)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(Chunk::SIZE - 1, Chunk::SIZE - 1));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(0, 1)) {
+                n_chunk.borrow_mut().dirty_area.mark_dirty(ivec2(0, 0));
+            }
+        } else if tile_pos.x == (Chunk::SIZE - 1) && tile_pos.y == (Chunk::SIZE - 1) {
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(1, 1)) {
+                n_chunk.borrow_mut().dirty_area.mark_dirty(ivec2(0, 0));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(1, 0)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(0, Chunk::SIZE - 1));
+            }
+            if let Some(n_chunk) = self.neighbors.get(&ivec2(0, 1)) {
+                n_chunk
+                    .borrow_mut()
+                    .dirty_area
+                    .mark_dirty(ivec2(Chunk::SIZE - 1, 0));
+            }
+        } else if tile_pos.x == 0
+            && let Some(n_chunk) = self.neighbors.get(&ivec2(-1, 0))
+        {
+            n_chunk
+                .borrow_mut()
+                .dirty_area
+                .mark_dirty(ivec2(Chunk::SIZE - 1, tile_pos.y));
+        } else if tile_pos.x == (Chunk::SIZE - 1)
+            && let Some(n_chunk) = self.neighbors.get(&ivec2(1, 0))
+        {
+            n_chunk
+                .borrow_mut()
+                .dirty_area
+                .mark_dirty(ivec2(0, tile_pos.y));
+        } else if tile_pos.y == 0
+            && let Some(n_chunk) = self.neighbors.get(&ivec2(0, -1))
+        {
+            n_chunk
+                .borrow_mut()
+                .dirty_area
+                .mark_dirty(ivec2(tile_pos.x, Chunk::SIZE - 1));
+        } else if tile_pos.y == (Chunk::SIZE - 1)
+            && let Some(n_chunk) = self.neighbors.get(&ivec2(0, 1))
+        {
+            n_chunk
+                .borrow_mut()
+                .dirty_area
+                .mark_dirty(ivec2(tile_pos.x, 0));
+        }
+    }
+
+    #[inline]
+    fn process_tile(&mut self, pos: IVec2) -> bool {
         let neighbors = self.get_neighbors_per_type(pos);
-
-        // we take advantage of the way conditions are validated, the || (or) operator will not check any other option if the first one is true
+        let tile: Tile = self.tiles[self.pos_to_idx(pos)].into();
         match tile {
-            Tile::Sand => self.try_move(pos, (pos.0, pos.1 + 1)) || self.try_move_down_sides(pos),
-            Tile::GunPowder => {
-                if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
-                    && self.roll(0.6)
-                {
-                    if self.roll(0.6) {
-                        self.set_tile(pos, Tile::Fire, false);
-                    } else {
-                        self.set_tile(pos, Tile::Smoke, false);
-                    }
-                    return true;
-                }
-
-                self.try_move(pos, (pos.0, pos.1 + 1)) || self.try_move_down_sides(pos)
-            }
-            Tile::Water => {
-                if (neighbors[Tile::Empty as usize] >= 3 && self.roll(0.001))
-                    || ((neighbors[Tile::Fire as usize] >= 2 || neighbors[Tile::Lava as usize] > 0)
-                        && self.roll(0.1))
-                {
-                    self.set_tile(pos, Tile::Vapor, false);
-                    return true;
-                }
-
-                (self.roll(0.05) && self.try_move_sides(pos))
-                    || self.try_move(pos, (pos.0, pos.1 + 1))
-                    || self.try_move_down_sides(pos)
-                    || self.try_move_sides(pos)
-            }
-
-            Tile::Smoke => {
-                if self.roll(0.0002) {
-                    self.set_tile(pos, Tile::Empty, false);
-                    return true;
-                }
-
-                if (neighbors[Tile::Fire as usize] >= 2 || neighbors[Tile::Lava as usize] > 0)
-                    && self.roll(0.6)
-                {
-                    self.set_tile(pos, Tile::Fire, false);
-                    return true;
-                }
-
-                (self.roll(0.25) && self.try_move_up_sides(pos))
-                    || self.try_move(pos, (pos.0, pos.1 - 1))
-                    || self.try_move_sides(pos)
-                    || self.try_move(pos, (pos.0, pos.1 + 1))
-            }
-            Tile::Vapor => {
-                if self.roll(0.0002) {
-                    self.set_tile(pos, Tile::Empty, false);
-                    return true;
-                }
-
-                if neighbors[Tile::Water as usize] >= 4
-                    || (neighbors[Tile::Vapor as usize] >= 3 && self.roll(0.000001))
-                {
-                    self.set_tile(pos, Tile::Water, false);
-                    return true;
-                }
-
-                (self.roll(0.25) && self.try_move_up_sides(pos))
-                    || self.try_move(pos, (pos.0, pos.1 - 1))
-                    || self.try_move_sides(pos)
-                    || self.try_move(pos, (pos.0, pos.1 + 1))
-            }
-            Tile::Snow => {
-                if neighbors[Tile::Fire as usize] > 1
-                    || neighbors[Tile::Lava as usize] > 0
-                    || (neighbors[Tile::Water as usize] >= 3 && self.roll(0.01))
-                    || (neighbors[Tile::Vapor as usize] >= 2 && self.roll(0.3))
-                {
-                    self.set_tile(pos, Tile::Water, false);
-                    return true;
-                }
-
-                if self.roll(0.10) {
-                    let rng = rand::gen_range(0, 100);
-
-                    return match rng {
-                        0..50 => self.try_move_down_sides(pos),
-                        50..100 => self.try_move(pos, (pos.0, pos.1 + 1)),
-                        _ => false,
-                    };
-                }
-                false
-            }
-
-            Tile::Fire => {
-                if neighbors[Tile::GunPowder as usize] > 1 {
-                    self.set_tile(pos, Tile::Smoke, false);
-                    return true;
-                }
-
-                if self.roll(0.02) {
-                    self.set_tile(pos, Tile::Empty, false);
-                    return true;
-                }
-
-                let rng = rand::gen_range(0, 100);
-
-                match rng {
-                    0..20 => self.try_move(pos, (pos.0, pos.1 + 1)),
-                    20..40 => self.try_move_down_sides(pos),
-                    40..60 => self.try_move_sides(pos),
-                    60..80 => self.try_move_up_sides(pos),
-                    _ => self.try_move(pos, (pos.0, pos.1 - 1)),
-                }
-            }
-            Tile::Wood => {
-                if (neighbors[Tile::Fire as usize] + neighbors[Tile::Lava as usize])
-                    > neighbors[Tile::Water as usize]
-                    && self.roll(0.2)
-                {
-                    if self.roll(0.7) {
-                        self.set_tile(pos, Tile::BurntWood, false);
-                    } else {
-                        self.set_tile(pos, Tile::Smoke, false);
-                    }
-                    return true;
-                }
-                false
-            }
-            Tile::BurntWood => {
-                if (neighbors[Tile::Fire as usize] + neighbors[Tile::Lava as usize])
-                    - neighbors[Tile::Water as usize]
-                    > 1
-                {
-                    let rng = rand::gen_range(0, 100);
-                    match rng {
-                        0..20 => self.set_tile(pos, Tile::Fire, false),
-                        20..40 => self.set_tile(pos, Tile::Smoke, false),
-                        _ => self.set_tile(pos, Tile::Coal, false),
-                    }
-                    return true;
-                }
-                self.try_move(pos, (pos.0, pos.1 + 1))
-                    || (self.roll(0.05) && self.try_move_down_sides(pos))
-            }
-            Tile::Leaf => {
-                if neighbors[Tile::Fire as usize] > 1 || neighbors[Tile::Lava as usize] > 0 {
-                    self.set_tile(pos, Tile::Fire, false);
-                    return true;
-                }
-
-                if (neighbors[Tile::Leaf as usize] + neighbors[Tile::Wood as usize] > 0)
-                    && self.roll(0.99)
-                {
-                    return false;
-                }
-
-                self.roll(0.1) && (self.try_move_down_sides(pos) || self.try_move_sides(pos))
-            }
-            Tile::Coal => {
-                if ((neighbors[Tile::Fire as usize] + neighbors[Tile::Lava as usize])
-                    - neighbors[Tile::Water as usize])
-                    > 0
-                    && self.roll(0.05)
-                {
-                    if self.roll(0.4) {
-                        self.set_tile(pos, Tile::Fire, false);
-                    } else {
-                        self.set_tile(pos, Tile::Smoke, false);
-                    }
-                    return true;
-                }
-                self.try_move(pos, (pos.0, pos.1 + 1))
-                    || (self.roll(0.05) && self.try_move_down_sides(pos))
-            }
-            Tile::Lava => {
-                self.roll(0.2)
-                    && (self.try_move(pos, (pos.0, pos.1 + 1)) || self.try_move_down_sides(pos))
-            }
+            Tile::Sand => self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos),
             _ => false,
         }
     }
 
-    fn try_move(&mut self, from: (i16, i16), to: (i16, i16)) -> bool {
-        let can = self.is_empty(to);
-        if can {
-            self.move_tile(from, to);
+    fn set_tile(&mut self, idx: usize, tile: Tile) {
+        self.tiles[idx] = tile as u8;
+        self.dirty_area
+            .mark_dirty(ivec2(idx as i32 % Chunk::SIZE, idx as i32 / Chunk::SIZE));
+    }
+
+    fn try_move(&mut self, tile: &Tile, pos: IVec2, dir: IVec2) -> bool {
+        let from_idx = self.pos_to_idx(pos);
+        let to = pos + dir;
+        let to_tile: Tile;
+        if !in_chunk_bounds(to) {
+            if !in_world_bounds(self.local_to_world_pos(to)) {
+                return false;
+            }
+
+            let (n_key, to_idx) = self.calculate_neighbor_info(pos, dir);
+            if let Some(chunk) = self.neighbors.get(&n_key) {
+                to_tile = chunk.borrow().tiles[to_idx].into();
+
+                if to_tile != Tile::Empty {
+                    return false;
+                }
+
+                chunk
+                    .borrow_mut()
+                    .receiving_moves
+                    .push(((-n_key, from_idx), to_idx));
+                return true;
+            }
+            return false;
         }
-        can
+
+        let to_idx: usize = self.pos_to_idx(to);
+        to_tile = self.tiles[to_idx].into();
+
+        if to_tile != Tile::Empty {
+            return false;
+        }
+
+        self.move_queue.push((to_idx, from_idx));
+
+        true
     }
 
     #[inline]
-    fn try_move_down_sides(&mut self, from: (i16, i16)) -> bool {
-        let down_right = self.roll(0.5);
-
-        if down_right {
-            self.is_empty((from.0 + 1, from.1)) && self.try_move(from, (from.0 + 1, from.1 + 1))
-        } else {
-            self.is_empty((from.0 - 1, from.1)) && self.try_move(from, (from.0 - 1, from.1 + 1))
-        }
+    fn try_move_down(&mut self, tile: &Tile, pos: IVec2) -> bool {
+        self.try_move(tile, pos, ivec2(0, 1))
     }
 
     #[inline]
-    fn try_move_up_sides(&mut self, from: (i16, i16)) -> bool {
-        let up_right = self.roll(0.5);
-
-        if up_right {
-            self.is_empty((from.0 + 1, from.1)) && self.try_move(from, (from.0 + 1, from.1 - 1))
-        } else {
-            self.is_empty((from.0 - 1, from.1)) && self.try_move(from, (from.0 - 1, from.1 - 1))
-        }
+    fn try_move_up(&mut self, tile: &Tile, pos: IVec2) -> bool {
+        self.try_move(tile, pos, ivec2(0, -1))
     }
 
-    #[inline]
-    fn try_move_sides(&mut self, from: (i16, i16)) -> bool {
-        let right = self.roll(0.5);
-
-        if right {
-            self.try_move(from, (from.0 + 1, from.1))
-        } else {
-            self.try_move(from, (from.0 - 1, from.1))
+    fn try_move_down_sides(&mut self, tile: &Tile, pos: IVec2) -> bool {
+        let options = [ivec2(1, 1), ivec2(-1, 1)];
+        let idx = rand::gen_range(0, 2);
+        if !self.try_move(tile, pos, options[idx as usize]) {
+            return self.try_move(tile, pos, options[(idx - 1_i32).unsigned_abs() as usize]);
         }
+
+        true
     }
 
-    fn move_tile(&mut self, from: (i16, i16), to: (i16, i16)) {
-        let from_idx = self.pos_to_idx(from);
-        let tile = Tile::from(self.tiles[from_idx]);
-        self.set_tile(to, tile, false);
-        self.set_tile(from, Tile::Empty, false);
+    // T_T
+    fn calculate_neighbor_info(&self, pos: IVec2, dir: IVec2) -> (IVec2, usize) {
+        let n_key: IVec2;
+        let idx: usize;
+
+        // top left
+        if pos.x == 0 && pos.y == 0 {
+            if dir.x == -1 && dir.y == -1 {
+                n_key = dir;
+                idx = ((Chunk::SIZE_SQR) - 1) as usize;
+            } else if dir.y == -1 {
+                n_key = ivec2(0, -1);
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
+            } else {
+                n_key = ivec2(-1, 0);
+                idx = (Chunk::SIZE - 1) as usize;
+            }
+        }
+        // top right
+        else if pos.x == Chunk::SIZE - 1 && pos.y == 0 {
+            if dir.x == 1 && dir.y == -1 {
+                n_key = dir;
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
+            } else if dir.y == -1 {
+                n_key = ivec2(0, -1);
+                idx = ((Chunk::SIZE_SQR) - 1) as usize;
+            } else {
+                n_key = ivec2(1, 0);
+                idx = 0_usize;
+            }
+        }
+        // bottom left
+        else if pos.x == 0 && pos.y == Chunk::SIZE - 1 {
+            if dir.x == -1 && dir.y == 1 {
+                n_key = dir;
+                idx = (Chunk::SIZE - 1) as usize;
+            } else if dir.y == 1 {
+                n_key = ivec2(0, 1);
+                idx = 0_usize;
+            } else {
+                n_key = ivec2(-1, 0);
+                idx = (Chunk::SIZE_SQR - 1) as usize;
+            }
+        }
+        // bottom right
+        else if pos.x == (Chunk::SIZE - 1) && pos.y == (Chunk::SIZE - 1) {
+            if dir.x == 1 && dir.y == 1 {
+                n_key = dir;
+                idx = 0_usize;
+            } else if dir.y == 1 {
+                n_key = ivec2(0, 1);
+                idx = (Chunk::SIZE - 1) as usize;
+            } else {
+                n_key = ivec2(1, 0);
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
+            }
+        }
+        // middle left
+        else if pos.x == 0 {
+            n_key = ivec2(-1, 0);
+            idx = self.pos_to_idx(ivec2(Chunk::SIZE - 1, pos.y + dir.y));
+        }
+        // middle right
+        else if pos.x == Chunk::SIZE - 1 {
+            n_key = ivec2(1, 0);
+            idx = self.pos_to_idx(ivec2(0, pos.y + dir.y));
+        }
+        // middle top
+        else if pos.y == 0 {
+            n_key = ivec2(0, -1);
+            idx = self.pos_to_idx(ivec2(pos.x + dir.x, Chunk::SIZE - 1));
+        }
+        // middle bottom
+        else if pos.y == Chunk::SIZE - 1 {
+            n_key = ivec2(0, 1);
+            idx = self.pos_to_idx(ivec2(pos.x + dir.x, 0));
+        }
+        // MONKA
+        else {
+            panic!("Imposible at calculate_neighbor_info");
+        }
+
+        (n_key, idx)
     }
 
     // the index is the type
-    fn get_neighbors_per_type(&self, from: (i16, i16)) -> [i8; Tile::Size as usize] {
-        let positions = [
-            (-1, -1),
-            (0, -1),
-            (1, -1),
-            (-1, 0),
-            (1, 0),
-            (-1, 1),
-            (0, 1),
-            (1, 1),
+    // probably bad idea in the long run, but works fine for now
+    fn get_neighbors_per_type(&self, from: IVec2) -> [i8; Tile::Size as usize] {
+        let positions: [IVec2; 8] = [
+            ivec2(-1, -1),
+            ivec2(0, -1),
+            ivec2(1, -1),
+            ivec2(-1, 0),
+            ivec2(1, 0),
+            ivec2(-1, 1),
+            ivec2(0, 1),
+            ivec2(1, 1),
         ];
 
         let mut neighbors = [0_i8; Tile::Size as usize];
 
         let mut tile: u8;
         for pos in &positions {
-            let n_pos = (from.0 + pos.0, from.1 + pos.1);
+            let n_pos = from + *pos;
 
-            if !self.in_bounds(n_pos) {
+            if !in_chunk_bounds(n_pos) {
+                if !in_world_bounds(self.local_to_world_pos(n_pos)) {
+                    continue;
+                }
+                tile = self.get_neighbor_chunk_tile_at(from, *pos);
+                neighbors[tile as usize] += 1;
                 continue;
             }
-
             tile = self.tiles[self.pos_to_idx(n_pos)];
-
             neighbors[tile as usize] += 1;
         }
 
@@ -675,63 +956,40 @@ impl Sandbox {
     }
 
     #[inline]
-    fn set_tile(&mut self, pos: (i16, i16), tile_type: Tile, back: bool) {
-        let idx: usize = self.pos_to_idx(pos);
-        self.set_tile_by_idx(idx, tile_type, back);
-        let mark_dirty = match tile_type {
-            Tile::Empty => false,
-            _ => true,
-        };
-
-        if mark_dirty {
-            self.dirty_area.mark_dirty(pos);
-        }
-    }
-
-    #[inline]
-    fn set_tile_by_idx(&mut self, idx: usize, tile_type: Tile, back: bool) {
-        if back {
-            self.tiles[idx] = tile_type as u8;
-            return;
-        }
-        self.next_tiles[idx] = tile_type as u8;
-    }
-
-    #[inline]
-    fn is_empty(&self, pos: (i16, i16)) -> bool {
+    fn is_empty(&self, pos: IVec2) -> bool {
         let idx = self.pos_to_idx(pos);
-        self.in_bounds(pos)
-            && self.tiles[idx] == (Tile::Empty as u8)
-            && self.next_tiles[idx] == (Tile::Empty as u8)
+        in_chunk_bounds(pos) && self.tiles[idx] == (Tile::Empty as u8)
     }
 
     #[inline]
-    fn pos_to_idx(&self, pos: (i16, i16)) -> usize {
-        (pos.1 as i32 * WORLD_WIDTH + pos.0 as i32) as usize
+    fn pos_to_idx(&self, pos: IVec2) -> usize {
+        (pos.y * Chunk::SIZE + pos.x) as usize
     }
 
     #[inline]
-    fn in_bounds(&self, pos: (i16, i16)) -> bool {
-        (pos.0 >= 0)
-            && (pos.0 < WORLD_WIDTH as i16)
-            && (pos.1 >= 0)
-            && (pos.1 < WORLD_HEIGHT as i16)
+    fn idx_to_pos(&self, idx: usize) -> IVec2 {
+        ivec2(idx as i32 % Chunk::SIZE, (idx as i32) * (1 / Chunk::SIZE))
     }
 
-    #[inline]
-    fn roll(&self, chance: f32) -> bool {
-        assert!(
-            (0.0..=1.0).contains(&chance),
-            "Chance for a roll must be equals or less than 1.0 and more than 0.0"
-        );
-        rand::gen_range(0.0, 1.0) < chance
+    fn local_to_world_pos(&self, pos: IVec2) -> IVec2 {
+        self.map_position * Chunk::SIZE + pos
+    }
+
+    // this function gets called per tile
+    // this feels wasteful but idk better
+    fn get_neighbor_chunk_tile_at(&self, from: IVec2, dir: IVec2) -> u8 {
+        let (n_key, idx) = self.calculate_neighbor_info(from, dir);
+        if let Some(chunk) = self.neighbors.get(&n_key) {
+            return chunk.borrow().tiles[idx];
+        }
+        0
     }
 }
 
 #[repr(u8)]
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug)]
 enum Tile {
-    Empty = 0,
+    Empty,
     Sand,
     Water,
     Steel,
@@ -742,10 +1000,27 @@ enum Tile {
     BurntWood,
     Coal,
     Leaf,
-    Vapor,
+    Steam,
     Smoke,
     Snow,
     Size,
+}
+
+impl Tile {
+    fn get_density(&self) -> f32 {
+        match self {
+            Tile::Empty => 0.0,
+            Tile::Steam => 0.6,
+            Tile::Smoke => 0.85,
+            Tile::Leaf => 0.95,
+            Tile::Water => 1.0,
+            Tile::Sand => 1.6,
+            Tile::GunPowder => 1.2,
+            Tile::Wood => 0.77,
+
+            _ => 1.0,
+        }
+    }
 }
 
 // TODO: Move this into a macro
@@ -762,7 +1037,7 @@ impl From<u8> for Tile {
             8 => Tile::BurntWood,
             9 => Tile::Coal,
             10 => Tile::Leaf,
-            11 => Tile::Vapor,
+            11 => Tile::Steam,
             12 => Tile::Smoke,
             13 => Tile::Snow,
             _ => Tile::Empty,
@@ -775,12 +1050,14 @@ const TILES_VERTEX_SHADER: &str = r#"
     in vec3 position;
     in vec2 texcoord;
     out vec2 uv;
+    out vec2 uv_screen;
     uniform mat4 Model;
     uniform mat4 Projection;
 
     void main(){
         vec4 res = Projection * Model * vec4(position, 1);
         uv = texcoord;
+        uv_screen = res.xy / 2.0 + vec2(0.5, 0.5);
         gl_Position = res;
     }
 "#;
@@ -791,9 +1068,12 @@ const TILES_FRAGMENT_SHADER: &str = r#"
   #define ATLAS_SIZE 16u
 
   in vec2 uv;
+  in vec2 uv_screen;
 
-  uniform ivec2 atlas_textures_size;
-  uniform vec2 grid_size;
+  uniform int _debug;
+  uniform int atlas_textures_size;
+  uniform int grid_size;
+  uniform float texture_scale;
   uniform sampler2D atlas_texture;
   uniform sampler2D tiles;
   uniform sampler2D background;
@@ -806,7 +1086,7 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 
   uint unpack_tile(vec2 uv){
     ivec2 grid_pos = ivec2(grid_size * uv);
-    uint grid_idx = uint(grid_pos.y * grid_size.x + grid_pos.x);
+    uint grid_idx = uint(grid_pos.y * grid_size + grid_pos.x);
     grid_pos.x /= 4;
     vec4 data = texelFetch(tiles, grid_pos, 0);
     return uint(floor(data[grid_idx%4u] * 255.0));
@@ -814,80 +1094,135 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 
   void main(){
     vec4 out_color;
-    vec4 background = texture2D(background, uv);
 
     uint tile = unpack_tile(uv);
     ivec2 atlas_coords = atlas_textures_size * ivec2(tile % ATLAS_SIZE, tile / ATLAS_SIZE);
-    ivec2 offset = ivec2(grid_size * uv);
-    offset.x = offset.x % atlas_textures_size.x;
-    offset.y = offset.y % atlas_textures_size.y;
+    ivec2 offset = ivec2((uv_screen * grid_size * texture_scale));
+    offset.x = offset.x % atlas_textures_size;
+    offset.y = offset.y % atlas_textures_size;
     out_color = texelFetch(atlas_texture, atlas_coords + offset, 0);
-    out_color = mix(out_color, background, background.a - out_color.a);
+    vec4 bg_color;
+    if (_debug > 0){
+        vec2 uv_bg;
+        uv_bg = vec2(uv * grid_size * 2.0);
+        uv_bg.x = floor(uv_bg.x / grid_size);
+        uv_bg.y = floor(uv_bg.y / grid_size);
+        if ( int(uv_bg.x + uv_bg.y) % 2 == 0){
+            bg_color = vec4(0.7);
+        }else{
+            bg_color = vec4(vec3(0.2),1.0);
+        }
+    }
+    else{
+        vec2 uv_bg;
+        uv_bg = uv_screen;
+        uv_bg.y = 1.0 - uv_bg.y;
+        bg_color = texture2D(background, uv_bg);
+    }
+
+    out_color = mix(out_color, bg_color, bg_color.a - out_color.a);
+
     fragColor = out_color;
   }
 "#;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct DirtyRect {
-    x: i16,
-    y: i16,
-    x2: i16,
-    y2: i16,
+    x: i32,
+    y: i32,
+    x2: i32,
+    y2: i32,
 }
 
 impl DirtyRect {
-    fn mark_dirty(&mut self, pos: (i16, i16)) {
+    const RANGE: i32 = 3;
+
+    fn mark_dirty(&mut self, pos: IVec2) {
+        let range = DirtyRect::RANGE;
         if self.is_empty() {
-            self.x = pos.0;
-            self.x2 = pos.0 + 1;
-            self.y = pos.1;
-            self.y2 = pos.1 + 1;
+            self.x = pos.x - range;
+            self.x2 = pos.x + range + 1;
+            self.y = pos.y - range;
+            self.y2 = pos.y + range + 1;
             return;
         }
 
-        if pos.0 < self.x {
-            self.x = pos.0;
-        } else if pos.0 >= self.x2 {
-            self.x2 = pos.0 + 1;
+        if pos.x < self.x + range {
+            self.x = pos.x - range;
+        } else if self.x2 - range <= pos.x {
+            self.x2 = pos.x + range + 1;
         }
 
-        if pos.1 < self.y {
-            self.y = pos.1;
-        } else if pos.1 >= self.y2 {
-            self.y2 = pos.1 + 1;
+        if pos.y < self.y + range {
+            self.y = pos.y - range;
+        } else if self.y2 - range <= pos.y {
+            self.y2 = pos.y + range + 1;
         }
     }
 
     fn is_empty(&self) -> bool {
         *self == DirtyRect::default()
     }
+
+    fn reset(&mut self) {
+        *self = DirtyRect::default();
+    }
 }
 
 impl Default for DirtyRect {
     fn default() -> Self {
         Self {
-            x: i16::MAX,
-            y: i16::MAX,
-            x2: i16::MIN,
-            y2: i16::MIN,
+            x: i32::MAX,
+            y: i32::MAX,
+            x2: i32::MIN,
+            y2: i32::MIN,
         }
     }
 }
 
 pub struct RenderData {
-    world_material: Option<Material>,
+    chunk_material: Material,
+    chunk_texture: Texture2D,
     tiles_atlas: Texture2D,
-    tiles: Texture2D,
     background: Texture2D,
+    _debug: bool,
 }
 
-impl Default for RenderData {
-    fn default() -> Self {
+impl RenderData {
+    fn new() -> Self {
+        let mat = load_material(
+            ShaderSource::Glsl {
+                vertex: TILES_VERTEX_SHADER,
+                fragment: TILES_FRAGMENT_SHADER,
+            },
+            MaterialParams {
+                uniforms: vec![
+                    UniformDesc::new("_debug", UniformType::Int1),
+                    UniformDesc::new("atlas_textures_size", UniformType::Int1),
+                    UniformDesc::new("grid_size", UniformType::Int1),
+                    UniformDesc::new("texture_scale", UniformType::Float1),
+                ],
+                textures: vec![
+                    "tiles".to_owned(),
+                    "atlas_texture".to_owned(),
+                    "background".to_owned(),
+                ],
+                ..Default::default()
+            },
+        )
+        .expect("COULD NOT CREATE CHUNK MATERIAL");
+        let tex = Texture2D::from_rgba8(
+            Chunk::SIZE as u16 / 4,
+            Chunk::SIZE as u16,
+            &vec![0; (Chunk::SIZE * Chunk::SIZE) as usize],
+        );
+
         Self {
-            tiles: Texture2D::empty(),
+            chunk_material: mat,
+            chunk_texture: tex,
             tiles_atlas: Texture2D::empty(),
-            world_material: None,
             background: Texture2D::empty(),
+            _debug: true,
         }
     }
 }
@@ -1073,11 +1408,5 @@ impl UIData {
                 break;
             }
         }
-    }
-}
-
-impl Default for UIData {
-    fn default() -> Self {
-        Self::new()
     }
 }
