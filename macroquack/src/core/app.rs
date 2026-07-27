@@ -23,6 +23,7 @@ pub struct AppRegistration {
 
 inventory::collect!(AppRegistration);
 
+#[derive(Debug)]
 pub struct AppRegistry {
     pub registry : HashMap<& 'static str, AppConstructor>,
 }

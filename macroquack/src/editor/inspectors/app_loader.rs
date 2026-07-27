@@ -35,10 +35,6 @@ impl AppLoaderMenu {
             ..Default::default()}
     }
 
-
-    pub fn try_load_game(&mut self, _option: i32){
-        self.on_click_signal.emit(&Signal::IntCallback(_option));
-    }
 }
 
 
@@ -93,6 +89,7 @@ impl Inspector for AppLoaderMenu {
         .open( &mut self.is_visible)
         .show(_egui_ctx, |ui|{
             ui.label("Select a app:");
+            debug!("{:?}",&self.app_registry);
             for (tag,_) in self.app_registry.registry.iter(){
                 if ui.button(*tag).clicked(){
                     self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
