@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc, sync::RwLock};
 use egui_macroquad::egui::{self};
 use macroquad::prelude::*;
 
-use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, event_inspector::EventInspector, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
+use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
 
 use crate::editor::inspector::DrawingBackend;
 use crate::editor::main_editor::GlobalEditor;
@@ -41,7 +41,7 @@ impl Engine {
     let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
 
     self.global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
-    self.global_inspectors.write().unwrap().new_inspector::<EventInspector>();
+    //self.global_inspectors.write().unwrap().new_inspector::<EventInspector>();
     self.global_inspectors.write().unwrap().new_inspector::<SettingsInspector>();
     self.global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
 

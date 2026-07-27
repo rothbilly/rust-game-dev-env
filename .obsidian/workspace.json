@@ -80,9 +80,33 @@
               "icon": "lucide-file",
               "title": "Material de aprendizaje"
             }
+          },
+          {
+            "id": "228dae3b96d916bf",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "obsidian_docs/Material de aprendizaje.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Material de aprendizaje"
+            }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -148,6 +172,7 @@
       {
         "id": "2f98abb281832a1b",
         "type": "tabs",
+        "dimension": 67.82945736434108,
         "children": [
           {
             "id": "373b9e157063cd16",
@@ -155,7 +180,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "obsidian_docs/Material de aprendizaje.md",
+                "file": "obsidian_docs/Bitacora del Nico.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -165,7 +190,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Material de aprendizaje"
+              "title": "Backlinks for Bitacora del Nico"
             }
           },
           {
@@ -231,6 +256,7 @@
       {
         "id": "8cc536b769ebf448",
         "type": "tabs",
+        "dimension": 32.17054263565892,
         "children": [
           {
             "id": "d6579da56929a02f",
@@ -261,22 +287,21 @@
       "bases:Create new base": false
     }
   },
-  "active": "0861e7159271f3fb",
+  "active": "8d84f68580d46312",
   "lastOpenFiles": [
-    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-1acoa8pi1om3p/s-hkkwurir8n-1xwwbpj-ek3zn1a06z7b7ug8nzs91aut0",
-    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-6lta7px5ton0togh9a238bcvg",
-    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-working/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-working/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0q7zxuzhgmmsb/s-hkkwuriunw-1ozp9y0-working/dep-graph.part.bin",
-    "obsidian_docs/Bitacora del Nico.md",
     "obsidian_docs/Material de aprendizaje.md",
+    "target/debug/deps/rustcNhq4M7/symbols.o",
+    "target/debug/deps/rustcNhq4M7/linker-arguments",
+    "target/debug/deps/rustcNhq4M7",
+    "target/debug/incremental/rust_game_dev_env-221uw1pkd22ci/s-hkkz28au92-147pgw9-55tu2gghuokwu155ksi88jbq1/query-cache.bin",
+    "target/debug/incremental/rust_game_dev_env-221uw1pkd22ci/s-hkkz28au92-147pgw9-55tu2gghuokwu155ksi88jbq1/dl9r1rtdzyxcy5fom541v0iyg.pre-lto.bc",
+    "target/debug/incremental/rust_game_dev_env-221uw1pkd22ci/s-hkkz28au92-147pgw9-55tu2gghuokwu155ksi88jbq1/thin-lto-past-keys.bin",
+    "target/debug/incremental/rust_game_dev_env-221uw1pkd22ci/s-hkkz28au92-147pgw9-55tu2gghuokwu155ksi88jbq1/work-products.bin",
+    "target/debug/incremental/rust_game_dev_env-221uw1pkd22ci/s-hkkz28au92-147pgw9-55tu2gghuokwu155ksi88jbq1/dl9r1rtdzyxcy5fom541v0iyg.o",
+    "target/debug/incremental/rust_game_dev_env-221uw1pkd22ci/s-hkkz28au92-147pgw9-55tu2gghuokwu155ksi88jbq1/dbnhfeup0qgqmrhu7ylexewua.pre-lto.bc",
+    "target/debug/incremental/rust_game_dev_env-221uw1pkd22ci/s-hkkz28au92-147pgw9-55tu2gghuokwu155ksi88jbq1/dep-graph.bin",
     "README.md",
+    "obsidian_docs/Bitacora del Nico.md",
     "obsidian_docs/main_canvas.canvas",
     "obsidian_docs/Notas de Jose.md",
     "assets/sprites/sandbox/background1.png",
