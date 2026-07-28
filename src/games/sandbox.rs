@@ -20,13 +20,12 @@ const SCREEN_HEIGHT: i32 = 256;
 const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 
 /*
-   IMPORTANT: improve single thread performance before adding multithreading
+   TODO: remove seams between chunks
+   TODO: re implement tile behaviours
    TODO: save & load tiles to/from disk (maybe bitmap? png? or just binary?)
    TODO: implement Command/Action Design pattern to enable Undo/Redo
    TODO: maybe add brush patterns
-   TODO: improve "compressed" data layout ??
-   TODO: add spatial partitioning (chunks)
-   TODO: decouple dirty tiles from tiles to refresh ( gotta back to single buffer? T_T )
+   IMPORTANT: improve single thread performance before adding multithreading
    TODO: maybe add multithreading??
 **/
 
@@ -37,13 +36,7 @@ pub struct Sandbox {
     max_brush_size: i32,
     frame_counter: u64,
     inventory: UIData,
-    // move all this to a camera controller struct??
-    camera: Camera2D,
-    camera_position: Vec2,
-    camera_direction: Vec2,
-    camera_velocity: Vec2,
-    camera_speed: f32,
-    camera_linear_damping: f32,
+    camera: CameraController,
     chunks: Vec<Rc<RefCell<Chunk>>>,
     render_data: RenderData,
 }
@@ -63,13 +56,7 @@ impl Default for Sandbox {
             max_brush_size: 64,
             frame_counter: 0,
             inventory: UIData::new(),
-            // move all this to a camera controller struct??
-            camera: Camera2D::default(),
-            camera_position: vec2(0.0, 0.0),
-            camera_direction: vec2(0.0, 0.0),
-            camera_velocity: vec2(0.0, 0.0),
-            camera_speed: 1000.0,
-            camera_linear_damping: 5.0,
+            camera: CameraController::default(),
             chunks: {
                 let mut c: Vec<Rc<RefCell<Chunk>>> =
                     Vec::with_capacity((WORLD_CHUNKS * WORLD_CHUNKS) as usize);
@@ -142,13 +129,14 @@ impl GameLoop for Sandbox {
         mat.set_uniform("atlas_textures_size", ATLAS_TEXTURES_SIZE);
         mat.set_uniform("grid_size", Chunk::SIZE);
         mat.set_uniform("_debug", 1);
-        mat.set_uniform("texture_scale", 8.0_f32);
+        mat.set_uniform("texture_scale", 256.0_f32);
         mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
         mat.set_texture("background", self.render_data.background.clone());
     }
 
     fn _process_input(&mut self) {
         let pressed_keys = get_keys_pressed();
+        let mouse_wheel = mouse_wheel();
         for key in &pressed_keys {
             let key_value = *key as i32;
             let idx = key_value - KeyCode::Key0 as i32;
@@ -176,29 +164,37 @@ impl GameLoop for Sandbox {
                         .chunk_material
                         .set_uniform("_debug", self.render_data._debug as i32);
                 }
+                KeyCode::LeftControl if is_mouse_button_down(MouseButton::Middle) => {
+                    self.camera.reset_zoom();
+                }
                 _ => {}
             }
         }
 
         let held_keys = get_keys_down();
 
+        let mut cam_dir = vec2(0.0, 0.0);
         for key in &held_keys {
             match key {
                 KeyCode::W | KeyCode::Up => {
-                    self.camera_direction.y = -1.0;
+                    cam_dir.y = -1.0;
                 }
                 KeyCode::A | KeyCode::Left => {
-                    self.camera_direction.x = -1.0;
+                    cam_dir.x = -1.0;
                 }
                 KeyCode::S | KeyCode::Down => {
-                    self.camera_direction.y = 1.0;
+                    cam_dir.y = 1.0;
                 }
                 KeyCode::D | KeyCode::Right => {
-                    self.camera_direction.x = 1.0;
+                    cam_dir.x = 1.0;
+                }
+                KeyCode::LeftControl => {
+                    self.camera.zoom_dir = mouse_wheel.1;
                 }
                 _ => {}
             }
         }
+        self.camera.direction = cam_dir;
 
         self.process_ui();
 
@@ -206,10 +202,10 @@ impl GameLoop for Sandbox {
             return;
         }
 
-        let mouse_wheel = mouse_wheel();
-
-        self.brush_size += (mouse_wheel.1.round() * 2.0) as i32;
-        self.brush_size = self.brush_size.clamp(1, self.max_brush_size);
+        if !held_keys.contains(&KeyCode::LeftControl) {
+            self.brush_size += (mouse_wheel.1.round() * 2.0) as i32;
+            self.brush_size = self.brush_size.clamp(1, self.max_brush_size);
+        }
 
         let mouse_left = is_mouse_button_down(MouseButton::Left);
         let mouse_right = is_mouse_button_down(MouseButton::Right);
@@ -228,6 +224,7 @@ impl GameLoop for Sandbox {
     }
 
     fn _update(&mut self, _delta: f32) {
+        self.camera.update(_delta);
         if self.game_state == GameState::Running {
             self.simulate_chunks(ivec2(0, 0));
             self.simulate_chunks(ivec2(1, 0));
@@ -269,12 +266,11 @@ impl GameLoop for Sandbox {
             });
         }
 
-        self.update_camera(_delta);
         self.frame_counter = (self.frame_counter + 1) % 60;
     }
 
     fn _render(&self) {
-        set_camera(&self.camera);
+        set_camera(self.camera.get());
 
         unsafe {
             let mut gl = get_internal_gl();
@@ -311,12 +307,12 @@ impl GameLoop for Sandbox {
         gl_use_default_material();
         let brush_size = self.brush_size as f32;
         let mut mouse = self.mouse_to_world();
-        mouse.x -= (brush_size / 2.0);
-        mouse.y -= (brush_size / 2.0);
+        mouse.x -= brush_size / 2.0;
+        mouse.y -= brush_size / 2.0;
 
         draw_rectangle_lines(
-            mouse.x.floor(),
-            mouse.y.floor(),
+            mouse.x.round(),
+            mouse.y.round(),
             brush_size,
             brush_size,
             2.0,
@@ -348,31 +344,37 @@ impl GameLoop for Sandbox {
         }
 
         set_default_camera();
+        let mouse_pos = mouse_position();
+        let mouse_world_pos = self.camera.screen_to_world(mouse_pos.into());
         draw_text(
-            format!("Mouse: {:?}", mouse_position()),
+            format!("Mouse: ({:.2}, {:.2})", mouse_pos.0, mouse_pos.1),
             64.0,
             64.0,
             24.0,
             WHITE,
         );
+        draw_text(format!("{:?}", self.game_state), 64.0, 80.0, 24.0, WHITE);
         draw_text(
-            format!(
-                "Mouse_world: {:?}",
-                self.camera.screen_to_world(mouse_position().into())
-            ),
+            format!("Mouse_world: {:.2}", mouse_world_pos),
             64.0,
             96.0,
             24.0,
             WHITE,
         );
         draw_text(
-            format!("Camera_world: {:?}", self.camera_position),
+            format!("Camera_world: {:.2}", self.camera.position),
             64.0,
             112.0,
             24.0,
             WHITE,
         );
-        draw_text(format!("{:?}", self.game_state), 64.0, 80.0, 24.0, WHITE);
+        draw_text(
+            format!("Camera zoom: {:.2}", self.camera.zoom),
+            64.0,
+            128.0,
+            24.0,
+            WHITE,
+        );
     }
 }
 
@@ -410,51 +412,6 @@ impl Sandbox {
             }
             y += 2;
             x = start.x;
-        }
-    }
-
-    fn update_camera(&mut self, delta: f32) {
-        self.camera_velocity += (self.camera_speed * delta * delta) * self.camera_direction;
-        self.camera_velocity *= 1.0 - (self.camera_linear_damping * delta);
-        self.camera_position += self.camera_velocity;
-        self.camera_direction = vec2(0.0, 0.0);
-
-        let mut camera = Camera2D::from_display_rect(Rect {
-            x: self.camera_position.x,
-            y: self.camera_position.y + SCREEN_HEIGHT as f32,
-            w: SCREEN_WIDTH as f32,
-            h: -SCREEN_HEIGHT as f32,
-        });
-        let display = self.get_display_rect();
-        camera.viewport = Some((
-            display.x as i32,
-            display.y as i32,
-            display.w as i32,
-            display.h as i32,
-        ));
-
-        self.camera = camera;
-    }
-
-    fn get_display_rect(&self) -> Rect {
-        let screen_size = (screen_width(), screen_height());
-        let dest_size: (f32, f32);
-        let x: f32;
-        let y: f32;
-        if screen_size.0 > screen_size.1 {
-            dest_size = (screen_size.1 * ASPECT_RATIO, screen_size.1);
-            x = screen_size.0 / 2.0 - dest_size.0 / 2.0;
-            y = 0.0;
-        } else {
-            dest_size = (screen_size.0, screen_size.0 / ASPECT_RATIO);
-            x = 0.0;
-            y = screen_size.1 / 2.0 - dest_size.1 / 2.0;
-        }
-        Rect {
-            x,
-            y,
-            w: dest_size.0,
-            h: dest_size.1,
         }
     }
 
@@ -567,9 +524,26 @@ fn roll(chance: f32) -> bool {
     rand::gen_range(0.0, 100.0) <= chance
 }
 
-fn pick_random<T: Copy>(options: &[T]) -> T {
-    let idx = rand::gen_range(0, options.len());
-    options[idx]
+fn get_display_rect() -> Rect {
+    let screen_size = (screen_width(), screen_height());
+    let dest_size: (f32, f32);
+    let x: f32;
+    let y: f32;
+    if screen_size.0 > screen_size.1 {
+        dest_size = (screen_size.1 * ASPECT_RATIO, screen_size.1);
+        x = screen_size.0 / 2.0 - dest_size.0 / 2.0;
+        y = 0.0;
+    } else {
+        dest_size = (screen_size.0, screen_size.0 / ASPECT_RATIO);
+        x = 0.0;
+        y = screen_size.1 / 2.0 - dest_size.1 / 2.0;
+    }
+    Rect {
+        x,
+        y,
+        w: dest_size.0,
+        h: dest_size.1,
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -590,7 +564,7 @@ struct Chunk {
 }
 
 impl Chunk {
-    const SIZE: i32 = 64;
+    const SIZE: i32 = 32;
     const SIZE_SQR: i32 = Chunk::SIZE * Chunk::SIZE;
 
     fn new() -> Self {
@@ -767,14 +741,34 @@ impl Chunk {
         let tile: Tile = self.tiles[self.pos_to_idx(pos)].into();
         match tile {
             Tile::Sand => self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos),
+            Tile::Water => {
+                (roll(22.5) && self.try_move_down_sides(&tile, pos))
+                    || self.try_move_down(&tile, pos)
+                    || self.try_move_down_sides(&tile, pos)
+                    || self.try_move_sides(&tile, pos)
+            }
+            Tile::GunPowder => {
+                self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos)
+            }
+            Tile::Lava => {
+                let will_try_move = roll(25.0);
+                if !will_try_move {
+                    self.dirty_area.mark_dirty(pos);
+                    return false;
+                }
+                will_try_move
+                    && (self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos))
+            }
             _ => false,
         }
     }
 
     fn set_tile(&mut self, idx: usize, tile: Tile) {
         self.tiles[idx] = tile as u8;
-        self.dirty_area
-            .mark_dirty(ivec2(idx as i32 % Chunk::SIZE, idx as i32 / Chunk::SIZE));
+        self.dirty_area.mark_dirty(ivec2(
+            (idx as i32) % Chunk::SIZE,
+            (idx as i32) / Chunk::SIZE,
+        ));
     }
 
     fn try_move(&mut self, tile: &Tile, pos: IVec2, dir: IVec2) -> bool {
@@ -835,6 +829,23 @@ impl Chunk {
         true
     }
 
+    fn try_move_up_sides(&mut self, tile: &Tile, pos: IVec2) -> bool {
+        let options = [ivec2(1, -1), ivec2(-1, -1)];
+        let idx = rand::gen_range(0, 2);
+        if !self.try_move(tile, pos, options[idx as usize]) {
+            return self.try_move(tile, pos, options[(idx - 1_i32).unsigned_abs() as usize]);
+        }
+        true
+    }
+
+    fn try_move_sides(&mut self, tile: &Tile, pos: IVec2) -> bool {
+        let options = [ivec2(1, 0), ivec2(-1, 0)];
+        let idx = rand::gen_range(0, 2);
+        if !self.try_move(tile, pos, options[idx as usize]) {
+            return self.try_move(tile, pos, options[(idx - 1_i32).unsigned_abs() as usize]);
+        }
+        true
+    }
     // T_T
     fn calculate_neighbor_info(&self, pos: IVec2, dir: IVec2) -> (IVec2, usize) {
         let n_key: IVec2;
@@ -953,12 +964,6 @@ impl Chunk {
         }
 
         neighbors
-    }
-
-    #[inline]
-    fn is_empty(&self, pos: IVec2) -> bool {
-        let idx = self.pos_to_idx(pos);
-        in_chunk_bounds(pos) && self.tiles[idx] == (Tile::Empty as u8)
     }
 
     #[inline]
@@ -1097,7 +1102,7 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 
     uint tile = unpack_tile(uv);
     ivec2 atlas_coords = atlas_textures_size * ivec2(tile % ATLAS_SIZE, tile / ATLAS_SIZE);
-    ivec2 offset = ivec2((uv_screen * grid_size * texture_scale));
+    ivec2 offset = ivec2((uv_screen * texture_scale));
     offset.x = offset.x % atlas_textures_size;
     offset.y = offset.y % atlas_textures_size;
     out_color = texelFetch(atlas_texture, atlas_coords + offset, 0);
@@ -1126,6 +1131,88 @@ const TILES_FRAGMENT_SHADER: &str = r#"
   }
 "#;
 
+#[derive(Debug)]
+struct CameraController {
+    speed: f32,
+    linear_damping: f32,
+    zoom: f32,
+    zoom_dir: f32,
+    zoom_velocity: f32,
+    zoom_speed: f32,
+    zoom_damping: f32,
+    _camera: Camera2D,
+    position: Vec2,
+    velocity: Vec2,
+    direction: Vec2,
+}
+
+impl Default for CameraController {
+    fn default() -> Self {
+        Self {
+            speed: 1000.0,
+            linear_damping: 5.0,
+            zoom: 1.0,
+            zoom_dir: 0.0,
+            zoom_velocity: 0.0,
+            zoom_speed: 1000.0,
+            zoom_damping: 15.0,
+            _camera: Camera2D::default(),
+            position: vec2(0.0, 0.0),
+            direction: vec2(0.0, 0.0),
+            velocity: vec2(0.0, 0.0),
+        }
+    }
+}
+
+impl CameraController {
+    fn get(&self) -> &Camera2D {
+        &self._camera
+    }
+
+    fn update(&mut self, delta: f32) {
+        self.velocity += (self.speed * delta * delta) * self.direction;
+
+        self.velocity *= 1.0 - (self.linear_damping * delta);
+        self.position += self.velocity;
+        self.direction = vec2(0.0, 0.0);
+
+        self.zoom_velocity += self.zoom_speed * delta * delta * self.zoom_dir;
+        self.zoom_velocity *= 1.0 - (self.zoom_damping * delta);
+        self.zoom += self.zoom_velocity;
+        self.zoom = self.zoom.clamp(0.1, 6.0);
+        self.zoom_dir = 0.0;
+
+        let mut camera = Camera2D::from_display_rect(Rect {
+            x: self.position.x,
+            y: self.position.y + SCREEN_HEIGHT as f32,
+            w: SCREEN_WIDTH as f32,
+            h: -SCREEN_HEIGHT as f32,
+        });
+        let display = get_display_rect();
+        camera.viewport = Some((
+            display.x as i32,
+            display.y as i32,
+            display.w as i32,
+            display.h as i32,
+        ));
+        camera.zoom *= self.zoom;
+        self._camera = camera;
+    }
+
+    fn reset_zoom(&mut self) {
+        self.zoom = 1.0;
+        self.zoom_velocity = 0.0;
+    }
+
+    fn screen_to_world(&self, pos: Vec2) -> Vec2 {
+        self._camera.screen_to_world(pos)
+    }
+
+    fn world_to_screen(&self, pos: Vec2) -> Vec2 {
+        self._camera.world_to_screen(pos)
+    }
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct DirtyRect {
     x: i32,
@@ -1135,7 +1222,7 @@ struct DirtyRect {
 }
 
 impl DirtyRect {
-    const RANGE: i32 = 3;
+    const RANGE: i32 = 2;
 
     fn mark_dirty(&mut self, pos: IVec2) {
         let range = DirtyRect::RANGE;
