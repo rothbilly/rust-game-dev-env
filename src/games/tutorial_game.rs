@@ -1,9 +1,9 @@
 
-use engine_macros::register_app;
+use engine_macros::{auto_deref, register_app};
 use std::fs;
 
 use macroquad::prelude::*;
-use crate::core::game::{GameLoop};
+use crate::core::game::{Game, GameLoop};
 use crate::core::app::AppRegistration; // To register it in the App registry.
 use crate::core::math::wrapf;
 
@@ -17,7 +17,9 @@ const SCORE_FILE_NAME: &str = "high_score.dat";
 
 #[register_app("Tutorial Game")]
 #[derive(Default)]
+#[auto_deref(base)]
 pub struct TutorialGame{
+    base: Game,
     dir: Vec2,
     squares: Vec<Shape>,
     bullets: Vec<Shape>,

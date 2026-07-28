@@ -1,6 +1,6 @@
 use crate::core::app::AppRegistration; // To register it in the App registry.
-use crate::core::game::GameLoop;
-use engine_macros::register_app;
+use crate::core::game::{Game, GameLoop};
+use engine_macros::{auto_deref, register_app};
 use macroquad::prelude::*;
 use macroquad::ui::{
     Drag, Ui, hash, root_ui,
@@ -31,7 +31,9 @@ const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 **/
 
 #[register_app("Sandbox")] // Custom Registration macro
+#[auto_deref(base)]
 pub struct Sandbox {
+    base: Game,
     game_state: GameState,
     brush_size: i32,
     max_brush_size: i32,

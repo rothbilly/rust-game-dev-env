@@ -3,13 +3,15 @@ use std::fs;
 
 use macroquad::{color, prelude::*};
 use engine_macros::*;
-use crate::core::game::{GameLoop, IPausable};
+use crate::core::game::{Game, GameLoop, IPausable};
 use crate::core::app::AppRegistration;
 use crate::core::rendering::vector_graphics::svg_to_srgb_texture;
 
 #[register_app("Sample Virtual App")]
 #[derive(Default)]
+#[auto_deref(base)]
 pub struct SampleVirtualApp{
+    base: Game,
     _title: String,
     _mode: VirtualAppMode,
     _rect: Rect,

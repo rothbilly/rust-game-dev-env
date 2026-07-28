@@ -1,5 +1,5 @@
-use crate::core::app::AppRegistration; // To register it in the App registry.
-use engine_macros::register_app;
+use crate::core::{app::AppRegistration, game::Game}; // To register it in the App registry.
+use engine_macros::{auto_deref, register_app};
 use crate::core::game::{GameLoop};
 use macroquad::prelude::*;
 
@@ -7,10 +7,12 @@ use macroquad::prelude::*;
 /// Use this game as a template for new games
 
 
-#[register_app("EmptyGame")] // Custom Registration macro
+#[register_app] // Custom Registration macro
+#[auto_deref(base)]
 #[derive(Default)]
-
-pub struct EmptyGame;
+pub struct EmptyGame{
+    base: Game
+}
 
 
 impl GameLoop for EmptyGame {

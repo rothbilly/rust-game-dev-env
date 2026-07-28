@@ -1,16 +1,18 @@
-use engine_macros::register_app;
+use engine_macros::{auto_deref, register_app};
 use macroquad::{input, prelude::*};
 use macroquad::color::colors;
 
 use egui_macroquad::*;
 
-use crate::core::game::{GameLoop};
+use crate::core::game::{Game, GameLoop};
 use crate::core::app::AppRegistration;
 use crate::components::gameobject::*;
 
-#[register_app("Macroware.Exe")]
+#[register_app("Macroware Exe")]
+#[auto_deref(base)]
 #[derive(Default)]
 pub struct MacrowareExe {
+    base: Game,
     change_background : bool,
     camera : Camera3D, // Camera could be in its own "substruct"
     camera_dir : Vec3,
