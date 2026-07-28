@@ -7,8 +7,8 @@
 
 pub mod prelude{
     pub use engine_macros::register_app;
+    pub use engine_macros::auto_deref;
     pub use macroquad;
-    pub use inventory;
     pub use macroquad::prelude::*;
 }
 

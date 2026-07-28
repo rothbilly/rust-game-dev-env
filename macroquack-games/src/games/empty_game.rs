@@ -1,16 +1,18 @@
 
 
 use macroquack::prelude::*;
-use macroquack::core::game::{GameLoop};
+use macroquack::core::game::{Game, GameLoop};
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
 
 /// Use this game as a template for new games
 
-
-#[register_app("EmptyGame")] // Custom Registration macro
+// Custom Registration macro
 #[derive(Default)]
-
-pub struct EmptyGame;
+#[register_app] 
+#[auto_deref(base_game)]
+pub struct EmptyGame{
+    base_game: Game
+}
 
 
 impl GameLoop for EmptyGame {

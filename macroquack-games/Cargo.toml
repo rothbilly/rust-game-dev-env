@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 macroquack = {path = "../macroquack"}
 automod = "1.0.17"
+inventory =  {workspace = true}
 
 
 [profile.dev.package.'*']
