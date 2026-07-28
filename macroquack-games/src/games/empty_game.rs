@@ -7,9 +7,9 @@ use macroquack::core::app::AppRegistration; // To register it in the App registr
 /// Use this game as a template for new games
 
 // Custom Registration macro
-#[derive(Default)]
 #[register_app] 
 #[auto_deref(base_game)]
+#[derive(Default)]
 pub struct EmptyGame{
     base_game: Game
 }

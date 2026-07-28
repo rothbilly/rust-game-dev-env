@@ -1,5 +1,5 @@
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
-use macroquack::core::game::GameLoop;
+use macroquack::core::game::{Game, GameLoop};
 use macroquack::prelude::*;
 
 use macroquad::prelude::*;
@@ -32,7 +32,9 @@ const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 **/
 
 #[register_app("Sandbox")] // Custom Registration macro
+#[auto_deref(base_game)]
 pub struct Sandbox {
+    base_game: Game,
     game_state: GameState,
     brush_size: i32,
     max_brush_size: i32,
@@ -59,6 +61,7 @@ enum GameState {
 impl Default for Sandbox {
     fn default() -> Self {
         Self {
+            base_game: Game::default(),
             game_state: GameState::Running,
             brush_size: 4,
             max_brush_size: 64,
@@ -80,7 +83,6 @@ impl Default for Sandbox {
                 c
             },
             render_data: RenderData::new(),
-            base: Default::default(),
         }
     }
 }

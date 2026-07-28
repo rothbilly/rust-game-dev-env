@@ -3,7 +3,7 @@ use macroquack::prelude::*;
 use std::fs;
 
 use macroquad::prelude::*;
-use macroquack::core::game::{GameLoop};
+use macroquack::core::game::{Game, GameLoop};
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
 use macroquack::core::math::wrapf;
 
@@ -16,8 +16,10 @@ const SCORE_FILE_NAME: &str = "high_score.dat";
 
 
 #[register_app("Tutorial Game")]
+#[auto_deref(base_game)]
 #[derive(Default)]
 pub struct TutorialGame{
+    base_game: Game,
     dir: Vec2,
     squares: Vec<Shape>,
     bullets: Vec<Shape>,

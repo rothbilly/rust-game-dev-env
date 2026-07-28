@@ -3,13 +3,15 @@ use std::fs;
 use macroquack::prelude::*;
 use macroquack::core::rendering::vector_graphics::svg_to_srgb_texture;
 use macroquad::{color, prelude::*};
-use macroquack::core::game::{GameLoop, IPausable};
+use macroquack::core::game::{Game, GameLoop, IPausable};
 use macroquack::core::app::AppRegistration;
 
 
 #[register_app("Sample Virtual App")]
+#[auto_deref(base_game)]
 #[derive(Default)]
 pub struct SampleVirtualApp{
+    base_game: Game,
     _title: String,
     _mode: VirtualAppMode,
     _rect: Rect,

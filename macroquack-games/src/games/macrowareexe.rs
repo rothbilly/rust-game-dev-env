@@ -3,13 +3,16 @@ use macroquad::{input, prelude::*};
 use macroquad::color::colors;
 
 
-use macroquack::core::game::{GameLoop};
+use macroquack::core::game::{Game, GameLoop};
 use macroquack::core::app::AppRegistration;
 use macroquack::components::gameobject::*;
 
-#[register_app("Macroware.Exe")]
+#[register_app] 
+#[auto_deref(base_game)]
 #[derive(Default)]
+
 pub struct MacrowareExe {
+    base_game: Game,
     change_background : bool,
     camera : Camera3D, // Camera could be in its own "substruct"
     camera_dir : Vec3,

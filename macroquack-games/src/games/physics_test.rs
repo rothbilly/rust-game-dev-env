@@ -1,12 +1,15 @@
 use macroquad::prelude::*;
 use macroquack::prelude::*;
-use macroquack::core::game::{GameLoop};
+use macroquack::core::game::{Game, GameLoop};
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
 
 
-#[register_app("PhysicsTest")] // Custom Registration macro
+#[register_app] 
+#[auto_deref(base_game)]
 #[derive(Default)]
-pub struct PhysicsTest;
+pub struct PhysicsTest{
+    base_game: Game
+}
 
 impl GameLoop for PhysicsTest {
     fn _ready(&mut self) {
