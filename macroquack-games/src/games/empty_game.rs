@@ -7,6 +7,7 @@ use macroquack::core::app::AppRegistration; // To register it in the App registr
 /// Use this game as a template for new games
 
 // Custom Registration macro
+
 #[register_app] 
 #[auto_deref(base_game)]
 #[derive(Default)]

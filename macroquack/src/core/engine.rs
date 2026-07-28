@@ -29,9 +29,8 @@ impl Default for Engine {
 impl Engine {
     pub fn new() -> Engine{
         Engine{
-
-            app_list: Rc::new(RwLock::new(AppList::default())),
             app_registry: Rc::new(RwLock::new(AppRegistry::new())),
+            app_list: Rc::new(RwLock::new(AppList::default())),
             global_inspectors: Rc::new(RwLock::new(GlobalEditor::default()))
         }
     }

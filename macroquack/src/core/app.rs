@@ -45,6 +45,8 @@ impl AppRegistry{
         r
     }
 
+    
+
     fn register<T>(&mut self, tag: &'static str)
     where T: GameLoop + Default + 'static {
         self.registry.insert(tag, || Rc::new(RefCell::new(T::default())));

@@ -88,17 +88,21 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
         else {
             item_identifier.to_string()
         };
+        
     
     //generate 
     let expanded = quote!{
         // Keep the original struct/function definition intact
         #og_input
-
+        
         // Submit to inventory
         inventory::submit! {
             AppRegistration {
                 name: #app_name,
-                constructor: || std::rc::Rc::new(std::cell::RefCell::new(#item_identifier::default())),
+                constructor: ||{
+                    println!("{} register: ",  stringify!(#app_name));
+                    std::rc::Rc::new(std::cell::RefCell::new(#item_identifier::default()))
+                } 
             }
         }
     };
