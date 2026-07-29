@@ -479,7 +479,7 @@ impl Sandbox {
         self.paint_brush.paint(ivec2(grid_x, grid_y), c);
     }
 
-    pub fn set_tile(chunks: &mut Vec<Rc<RefCell<Chunk>>>, pos: IVec2, tile: Tile) {
+    pub fn set_tile(chunks: &mut [Rc<RefCell<Chunk>>], pos: IVec2, tile: Tile) {
         let chunk_idx = chunk_idx_at_chunk_pos(chunk_pos_at_world(pos));
         let mut chunk = chunks[chunk_idx].borrow_mut();
         let tile_idx = chunk.pos_to_idx(world_to_chunk_local(pos));
@@ -1454,7 +1454,6 @@ impl RenderData {
                     "atlas_texture".to_owned(),
                     "background".to_owned(),
                 ],
-                ..Default::default()
             },
         )
         .expect("COULD NOT CREATE CHUNK MATERIAL");
