@@ -1,6 +1,7 @@
 use crate::core::app::AppRegistration; // To register it in the App registry.
 use crate::core::game::GameLoop;
 use engine_macros::register_app;
+use macroquad::miniquad::BlendState;
 use macroquad::prelude::*;
 use macroquad::ui::{
     Drag, Ui, hash, root_ui,
@@ -14,6 +15,7 @@ const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
 const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background1.png");
 const WORLD_CHUNKS: i32 = 8;
+const WORLD_CHUNKS_SQR: i32 = WORLD_CHUNKS * WORLD_CHUNKS;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
 const SCREEN_WIDTH: i32 = 256;
 const SCREEN_HEIGHT: i32 = 256;
@@ -24,7 +26,7 @@ const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
    TODO: re implement tile behaviours
    TODO: save & load tiles to/from disk (maybe bitmap? png? or just binary?)
    TODO: implement Command/Action Design pattern to enable Undo/Redo
-   TODO: maybe add brush patterns
+   TODO: add Trait BrushPattern and make RasterBrushPattern and VectorBrushPattern
    IMPORTANT: improve single thread performance before adding multithreading
    TODO: maybe add multithreading??
 **/
@@ -32,9 +34,9 @@ const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 #[register_app("Sandbox")] // Custom Registration macro
 pub struct Sandbox {
     game_state: GameState,
-    brush_size: i32,
-    max_brush_size: i32,
     frame_counter: u64,
+    last_mouse_pos: (f32, f32),
+    paint_brush: PaintBrush,
     inventory: UIData,
     camera: CameraController,
     chunks: Vec<Rc<RefCell<Chunk>>>,
@@ -52,8 +54,8 @@ impl Default for Sandbox {
     fn default() -> Self {
         Self {
             game_state: GameState::Running,
-            brush_size: 4,
-            max_brush_size: 64,
+            last_mouse_pos: (0.0, 0.0),
+            paint_brush: PaintBrush::default(),
             frame_counter: 0,
             inventory: UIData::new(),
             camera: CameraController::default(),
@@ -107,14 +109,6 @@ impl GameLoop for Sandbox {
             }
         }
 
-        for i in 0..self.chunks.len() {
-            println!(
-                "Chunk({:?}) neighbors: {:?}",
-                i,
-                self.chunks[i].borrow().neighbors.keys()
-            );
-        }
-
         let atlas_img = Image::from_file_with_format(ATLAS_BYTES, Some(ImageFormat::Png)).unwrap();
         self.inventory.tiles_atlas = Some(atlas_img.clone());
         self.inventory.init_textures();
@@ -129,7 +123,7 @@ impl GameLoop for Sandbox {
         mat.set_uniform("atlas_textures_size", ATLAS_TEXTURES_SIZE);
         mat.set_uniform("grid_size", Chunk::SIZE);
         mat.set_uniform("_debug", 1);
-        mat.set_uniform("texture_scale", 256.0_f32);
+        mat.set_uniform("texture_scale", 32.0_f32);
         mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
         mat.set_texture("background", self.render_data.background.clone());
     }
@@ -203,8 +197,8 @@ impl GameLoop for Sandbox {
         }
 
         if !held_keys.contains(&KeyCode::LeftControl) {
-            self.brush_size += (mouse_wheel.1.round() * 2.0) as i32;
-            self.brush_size = self.brush_size.clamp(1, self.max_brush_size);
+            self.paint_brush.size += (mouse_wheel.1.round()) as i32;
+            self.paint_brush.size = self.paint_brush.size.clamp(1, self.paint_brush.max_size);
         }
 
         let mouse_left = is_mouse_button_down(MouseButton::Left);
@@ -214,13 +208,14 @@ impl GameLoop for Sandbox {
         }
 
         if mouse_right {
-            self.paint_tiles(Tile::Empty);
-            return;
+            self.paint_brush.tile = Tile::Empty;
+            self.paint_tiles();
+        } else if mouse_left && let Some(tile_type) = self.inventory.get_selected_tile() {
+            self.paint_brush.tile = tile_type;
+            self.paint_tiles();
         }
 
-        if let Some(tile_type) = self.inventory.get_selected_tile() {
-            self.paint_tiles(tile_type);
-        }
+        self.last_mouse_pos = mouse_position();
     }
 
     fn _update(&mut self, _delta: f32) {
@@ -272,14 +267,39 @@ impl GameLoop for Sandbox {
     fn _render(&self) {
         set_camera(self.camera.get());
 
+        let cam_rect = self.camera.get_rect();
+        draw_texture_ex(
+            &self.render_data.background,
+            cam_rect.x,
+            cam_rect.y,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(Vec2 {
+                    x: cam_rect.w,
+                    y: cam_rect.h,
+                }),
+                ..Default::default()
+            },
+        );
+
         unsafe {
             let mut gl = get_internal_gl();
             let mut chunk_idx: usize;
             let mat = &self.render_data.chunk_material;
+            let camera_rect = self.camera.get_rect();
             gl_use_material(mat);
             for y in 0..WORLD_CHUNKS {
                 for x in 0..WORLD_CHUNKS {
                     chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x: x, y: y });
+
+                    if self.chunks[chunk_idx].borrow().is_empty()
+                        || !self.chunks[chunk_idx]
+                            .borrow()
+                            .get_world_rect()
+                            .overlaps(&camera_rect)
+                    {
+                        continue;
+                    }
 
                     let x = x * Chunk::SIZE;
                     let y = y * Chunk::SIZE;
@@ -305,7 +325,7 @@ impl GameLoop for Sandbox {
             }
         }
         gl_use_default_material();
-        let brush_size = self.brush_size as f32;
+        let brush_size = self.paint_brush.size as f32;
         let mut mouse = self.mouse_to_world();
         mouse.x -= brush_size / 2.0;
         mouse.y -= brush_size / 2.0;
@@ -402,6 +422,7 @@ impl Sandbox {
                         if !in_chunk_bounds(pos) {
                             continue;
                         }
+
                         if chunk.process_tile(pos) {
                             chunk.notify_neighbors(pos);
                         }
@@ -444,31 +465,23 @@ impl Sandbox {
         }
     }
 
-    fn paint_tiles(&mut self, tile_type: Tile) {
+    fn paint_tiles(&mut self) {
         let mouse = self.mouse_to_world();
         let mouse = vec2(mouse.x.floor(), mouse.y.floor());
 
         let grid_x = mouse.x as i32;
         let grid_y = mouse.y as i32;
 
-        let brush_size = self.brush_size;
-
-        for y in 0..brush_size {
-            for x in 0..brush_size {
-                let x = grid_x - (brush_size / 2) + x;
-                let y = grid_y - (brush_size / 2) + y;
-
-                if !in_world_bounds(ivec2(x, y)) {
-                    continue;
-                }
-                self.set_tile(ivec2(x, y), tile_type);
-            }
-        }
+        let chunks = &mut self.chunks;
+        let c = &mut |p, t| {
+            Sandbox::set_tile(chunks, p, t);
+        };
+        self.paint_brush.paint(ivec2(grid_x, grid_y), c);
     }
 
-    fn set_tile(&mut self, pos: IVec2, tile: Tile) {
+    pub fn set_tile(chunks: &mut Vec<Rc<RefCell<Chunk>>>, pos: IVec2, tile: Tile) {
         let chunk_idx = chunk_idx_at_chunk_pos(chunk_pos_at_world(pos));
-        let mut chunk = self.chunks[chunk_idx].borrow_mut();
+        let mut chunk = chunks[chunk_idx].borrow_mut();
         let tile_idx = chunk.pos_to_idx(world_to_chunk_local(pos));
         chunk.set_tile(tile_idx, tile);
         chunk.notify_neighbors(world_to_chunk_local(pos));
@@ -547,13 +560,15 @@ fn get_display_rect() -> Rect {
 }
 
 #[derive(Clone, Debug)]
-struct Chunk {
+pub struct Chunk {
     // position inside sandbox's chunks collection
     map_position: IVec2,
     dirty_area: DirtyRect,
     neighbors: HashMap<IVec2, Rc<RefCell<Chunk>>>,
     tiles: Vec<u8>,
 
+    // to check empty chunk
+    tile_counter: i64,
     // moves inside the chunk are queued immediately
     move_queue: Vec<(usize, usize)>,
     // moves received from a neighboring chunk are performed first
@@ -564,11 +579,12 @@ struct Chunk {
 }
 
 impl Chunk {
-    const SIZE: i32 = 32;
+    const SIZE: i32 = 64;
     const SIZE_SQR: i32 = Chunk::SIZE * Chunk::SIZE;
 
     fn new() -> Self {
         Chunk {
+            tile_counter: 0,
             map_position: IVec2 { x: 0, y: 0 },
             tiles: vec![Tile::Empty as u8; (Chunk::SIZE * Chunk::SIZE) as usize],
             move_queue: Vec::with_capacity((Chunk::SIZE * Chunk::SIZE) as usize),
@@ -764,7 +780,13 @@ impl Chunk {
     }
 
     fn set_tile(&mut self, idx: usize, tile: Tile) {
+        if (tile == Tile::Empty && self.tiles[idx] != Tile::Empty as u8)
+            || (tile != Tile::Empty && self.tiles[idx] == Tile::Empty as u8)
+        {
+            self.tile_counter += if tile != Tile::Empty { 1 } else { -1 };
+        }
         self.tiles[idx] = tile as u8;
+
         self.dirty_area.mark_dirty(ivec2(
             (idx as i32) % Chunk::SIZE,
             (idx as i32) / Chunk::SIZE,
@@ -846,90 +868,6 @@ impl Chunk {
         }
         true
     }
-    // T_T
-    fn calculate_neighbor_info(&self, pos: IVec2, dir: IVec2) -> (IVec2, usize) {
-        let n_key: IVec2;
-        let idx: usize;
-
-        // top left
-        if pos.x == 0 && pos.y == 0 {
-            if dir.x == -1 && dir.y == -1 {
-                n_key = dir;
-                idx = ((Chunk::SIZE_SQR) - 1) as usize;
-            } else if dir.y == -1 {
-                n_key = ivec2(0, -1);
-                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
-            } else {
-                n_key = ivec2(-1, 0);
-                idx = (Chunk::SIZE - 1) as usize;
-            }
-        }
-        // top right
-        else if pos.x == Chunk::SIZE - 1 && pos.y == 0 {
-            if dir.x == 1 && dir.y == -1 {
-                n_key = dir;
-                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
-            } else if dir.y == -1 {
-                n_key = ivec2(0, -1);
-                idx = ((Chunk::SIZE_SQR) - 1) as usize;
-            } else {
-                n_key = ivec2(1, 0);
-                idx = 0_usize;
-            }
-        }
-        // bottom left
-        else if pos.x == 0 && pos.y == Chunk::SIZE - 1 {
-            if dir.x == -1 && dir.y == 1 {
-                n_key = dir;
-                idx = (Chunk::SIZE - 1) as usize;
-            } else if dir.y == 1 {
-                n_key = ivec2(0, 1);
-                idx = 0_usize;
-            } else {
-                n_key = ivec2(-1, 0);
-                idx = (Chunk::SIZE_SQR - 1) as usize;
-            }
-        }
-        // bottom right
-        else if pos.x == (Chunk::SIZE - 1) && pos.y == (Chunk::SIZE - 1) {
-            if dir.x == 1 && dir.y == 1 {
-                n_key = dir;
-                idx = 0_usize;
-            } else if dir.y == 1 {
-                n_key = ivec2(0, 1);
-                idx = (Chunk::SIZE - 1) as usize;
-            } else {
-                n_key = ivec2(1, 0);
-                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
-            }
-        }
-        // middle left
-        else if pos.x == 0 {
-            n_key = ivec2(-1, 0);
-            idx = self.pos_to_idx(ivec2(Chunk::SIZE - 1, pos.y + dir.y));
-        }
-        // middle right
-        else if pos.x == Chunk::SIZE - 1 {
-            n_key = ivec2(1, 0);
-            idx = self.pos_to_idx(ivec2(0, pos.y + dir.y));
-        }
-        // middle top
-        else if pos.y == 0 {
-            n_key = ivec2(0, -1);
-            idx = self.pos_to_idx(ivec2(pos.x + dir.x, Chunk::SIZE - 1));
-        }
-        // middle bottom
-        else if pos.y == Chunk::SIZE - 1 {
-            n_key = ivec2(0, 1);
-            idx = self.pos_to_idx(ivec2(pos.x + dir.x, 0));
-        }
-        // MONKA
-        else {
-            panic!("Imposible at calculate_neighbor_info");
-        }
-
-        (n_key, idx)
-    }
 
     // the index is the type
     // probably bad idea in the long run, but works fine for now
@@ -980,6 +918,19 @@ impl Chunk {
         self.map_position * Chunk::SIZE + pos
     }
 
+    fn get_world_rect(&self) -> Rect {
+        Rect {
+            x: (self.map_position.x * Chunk::SIZE) as f32,
+            y: (self.map_position.y * Chunk::SIZE) as f32,
+            w: Chunk::SIZE as f32,
+            h: Chunk::SIZE as f32,
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.tile_counter == 0
+    }
+
     // this function gets called per tile
     // this feels wasteful but idk better
     fn get_neighbor_chunk_tile_at(&self, from: IVec2, dir: IVec2) -> u8 {
@@ -989,11 +940,128 @@ impl Chunk {
         }
         0
     }
+
+    // T_T
+    fn calculate_neighbor_info(&self, pos: IVec2, dir: IVec2) -> (IVec2, usize) {
+        let n_key: IVec2;
+        let idx: usize;
+
+        // top left
+        if pos.x == 0 && pos.y == 0 {
+            if dir.x == -1 && dir.y == -1 {
+                n_key = dir;
+                idx = ((Chunk::SIZE_SQR) - 1) as usize;
+            } else if dir.y == -1 && dir.x == 1 {
+                n_key = ivec2(0, -1);
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1) + 1) as usize;
+            } else if dir.x == -1 && dir.y == 1 {
+                n_key = ivec2(-1, 0);
+                idx = 2 * (Chunk::SIZE - 1) as usize;
+            } else if dir.y == -1 {
+                n_key = ivec2(0, -1);
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
+            } else if dir.x == -1 {
+                n_key = ivec2(-1, 0);
+                idx = (Chunk::SIZE - 1) as usize;
+            } else {
+                panic!("Imposible as calculate neighbor info top left");
+            }
+        }
+        // top right
+        else if pos.x == Chunk::SIZE - 1 && pos.y == 0 {
+            if dir.x == 1 && dir.y == -1 {
+                n_key = dir;
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
+            } else if dir.y == -1 && dir.x == -1 {
+                n_key = ivec2(0, -1);
+                idx = ((Chunk::SIZE * Chunk::SIZE) - 1) as usize;
+            } else if dir.y == -1 {
+                n_key = ivec2(0, -1);
+                idx = ((Chunk::SIZE_SQR) - 1) as usize;
+            } else if dir.y == 1 && dir.x == 1 {
+                n_key = ivec2(1, 0);
+                idx = Chunk::SIZE as usize;
+            } else if dir.x == 1 {
+                n_key = ivec2(1, 0);
+                idx = 0_usize;
+            } else {
+                panic!("Imposible as calculate neighbor info top right");
+            }
+        }
+        // bottom left
+        else if pos.x == 0 && pos.y == Chunk::SIZE - 1 {
+            if dir.x == -1 && dir.y == 1 {
+                n_key = dir;
+                idx = (Chunk::SIZE - 1) as usize;
+            } else if dir.y == 1 && dir.x == 1 {
+                n_key = ivec2(0, 1);
+                idx = 1_usize;
+            } else if dir.x == -1 && dir.y == -1 {
+                n_key = ivec2(-1, 0);
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1) - 1) as usize;
+            } else if dir.y == 1 {
+                n_key = ivec2(0, 1);
+                idx = 0_usize;
+            } else if dir.x == -1 {
+                n_key = ivec2(-1, 0);
+                idx = (Chunk::SIZE_SQR - 1) as usize;
+            } else {
+                panic!("Imposible as calculate neighbor info bottom left");
+            }
+        }
+        // bottom right
+        else if pos.x == (Chunk::SIZE - 1) && pos.y == (Chunk::SIZE - 1) {
+            if dir.x == 1 && dir.y == 1 {
+                n_key = dir;
+                idx = 0_usize;
+            } else if dir.x == 1 && dir.y == -1 {
+                n_key = ivec2(1, 0);
+                idx = (Chunk::SIZE * (Chunk::SIZE - 2)) as usize;
+            } else if dir.y == 1 && dir.x == -1 {
+                n_key = ivec2(0, 1);
+                idx = (Chunk::SIZE - 2) as usize;
+            } else if dir.y == 1 {
+                n_key = ivec2(0, 1);
+                idx = (Chunk::SIZE - 1) as usize;
+            } else if dir.x == 1 {
+                n_key = ivec2(1, 0);
+                idx = (Chunk::SIZE * (Chunk::SIZE - 1)) as usize;
+            } else {
+                panic!("Imposible as calculate neighbor info bottom right");
+            }
+        }
+        // middle left
+        else if pos.x == 0 {
+            n_key = ivec2(-1, 0);
+            idx = self.pos_to_idx(ivec2(Chunk::SIZE - 1, pos.y + dir.y));
+        }
+        // middle right
+        else if pos.x == Chunk::SIZE - 1 {
+            n_key = ivec2(1, 0);
+            idx = self.pos_to_idx(ivec2(0, pos.y + dir.y));
+        }
+        // middle top
+        else if pos.y == 0 {
+            n_key = ivec2(0, -1);
+            idx = self.pos_to_idx(ivec2(pos.x + dir.x, Chunk::SIZE - 1));
+        }
+        // middle bottom
+        else if pos.y == Chunk::SIZE - 1 {
+            n_key = ivec2(0, 1);
+            idx = self.pos_to_idx(ivec2(pos.x + dir.x, 0));
+        }
+        // MONKA
+        else {
+            panic!("Imposible at calculate_neighbor_info");
+        }
+
+        (n_key, idx)
+    }
 }
 
 #[repr(u8)]
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
-enum Tile {
+pub enum Tile {
     Empty,
     Sand,
     Water,
@@ -1102,7 +1170,7 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 
     uint tile = unpack_tile(uv);
     ivec2 atlas_coords = atlas_textures_size * ivec2(tile % ATLAS_SIZE, tile / ATLAS_SIZE);
-    ivec2 offset = ivec2((uv_screen * texture_scale));
+    ivec2 offset = ivec2((uv * texture_scale));
     offset.x = offset.x % atlas_textures_size;
     offset.y = offset.y % atlas_textures_size;
     out_color = texelFetch(atlas_texture, atlas_coords + offset, 0);
@@ -1113,23 +1181,109 @@ const TILES_FRAGMENT_SHADER: &str = r#"
         uv_bg.x = floor(uv_bg.x / grid_size);
         uv_bg.y = floor(uv_bg.y / grid_size);
         if ( int(uv_bg.x + uv_bg.y) % 2 == 0){
-            bg_color = vec4(0.7);
+            bg_color = vec4(vec3(0.7), 0.5);
         }else{
-            bg_color = vec4(vec3(0.2),1.0);
+            bg_color = vec4(vec3(0.2), 0.5);
         }
-    }
-    else{
-        vec2 uv_bg;
-        uv_bg = uv_screen;
-        uv_bg.y = 1.0 - uv_bg.y;
-        bg_color = texture2D(background, uv_bg);
+        out_color = mix(out_color, bg_color, bg_color.a - out_color.a);
     }
 
-    out_color = mix(out_color, bg_color, bg_color.a - out_color.a);
 
     fragColor = out_color;
   }
 "#;
+
+#[derive(Debug)]
+struct PaintBrush {
+    tile: Tile,
+    size: i32,
+    max_size: i32,
+    pattern: PaintBrushPattern,
+}
+
+impl Default for PaintBrush {
+    fn default() -> Self {
+        PaintBrush {
+            tile: Tile::Sand,
+            size: 16,
+            max_size: 64,
+            pattern: PaintBrushPattern::default(),
+        }
+    }
+}
+
+impl PaintBrush {
+    pub fn new(tile: Tile, size: i32, max_size: i32, pattern: PaintBrushPattern) -> Self {
+        Self {
+            tile,
+            size,
+            max_size,
+            pattern,
+        }
+    }
+
+    pub fn paint_line_segment(&self, p1: IVec2, p2: IVec2, paint_fn: &mut dyn FnMut(IVec2, Tile)) {
+        if p1 == p2 {
+            self.paint(p1, paint_fn);
+        }
+
+        let dx = (p2.x - p1.x).abs();
+        let sx = if p1.x < p2.x { 1 } else { -1 };
+        let dy = -((p2.y - p1.y).abs());
+        let sy = if p1.y < p2.y { 1 } else { -1 };
+        let mut err = dx + dy;
+
+        let mut p = p1;
+        loop {
+            self.paint(p1, paint_fn);
+            let err2 = 2 * err;
+            if err2 >= dy {
+                if p.x == p2.x {
+                    break;
+                }
+                err += dy;
+                p.x += sx;
+            }
+            if err2 <= dx {
+                if p.y == p2.y {
+                    break;
+                }
+                err += dx;
+                p.y += sy;
+            }
+        }
+    }
+
+    pub fn paint(&self, p: IVec2, paint_fn: &mut dyn FnMut(IVec2, Tile)) {
+        let pattern_size = self.pattern.size;
+        let size = self.size;
+        if self.size >= self.pattern.size {
+            for y in 0..(size + 1) {
+                for x in 0..(size + 1) {
+                    let x = x - size / 2;
+                    let y = y - size / 2;
+
+                    if !in_world_bounds(p + ivec2(x, y)) {
+                        continue;
+                    }
+
+                    //let sample_pos = ivec2(x / pattern_size, y / pattern_size);
+                    //let sample_idx = sample_pos.y * pattern_size + sample_pos.x;
+                    //if self.pattern.data[sample_idx as usize] == 0 {
+                    //    continue;
+                    //}
+                    paint_fn(p + ivec2(x, y), self.tile);
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct PaintBrushPattern {
+    size: i32,
+    data: Vec<u8>,
+}
 
 #[derive(Debug)]
 struct CameraController {
@@ -1154,8 +1308,8 @@ impl Default for CameraController {
             zoom: 1.0,
             zoom_dir: 0.0,
             zoom_velocity: 0.0,
-            zoom_speed: 1000.0,
-            zoom_damping: 15.0,
+            zoom_speed: 100.0,
+            zoom_damping: 10.0,
             _camera: Camera2D::default(),
             position: vec2(0.0, 0.0),
             direction: vec2(0.0, 0.0),
@@ -1182,12 +1336,7 @@ impl CameraController {
         self.zoom = self.zoom.clamp(0.1, 6.0);
         self.zoom_dir = 0.0;
 
-        let mut camera = Camera2D::from_display_rect(Rect {
-            x: self.position.x,
-            y: self.position.y + SCREEN_HEIGHT as f32,
-            w: SCREEN_WIDTH as f32,
-            h: -SCREEN_HEIGHT as f32,
-        });
+        let mut camera = Camera2D::from_display_rect(self.get_display_rect());
         let display = get_display_rect();
         camera.viewport = Some((
             display.x as i32,
@@ -1211,6 +1360,24 @@ impl CameraController {
     fn world_to_screen(&self, pos: Vec2) -> Vec2 {
         self._camera.world_to_screen(pos)
     }
+
+    fn get_display_rect(&self) -> Rect {
+        Rect {
+            x: self.position.x,
+            y: self.position.y + SCREEN_HEIGHT as f32,
+            w: SCREEN_WIDTH as f32,
+            h: -SCREEN_HEIGHT as f32,
+        }
+    }
+
+    fn get_rect(&self) -> Rect {
+        Rect {
+            x: self.position.x,
+            y: self.position.y,
+            w: SCREEN_WIDTH as f32,
+            h: SCREEN_HEIGHT as f32,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -1226,25 +1393,10 @@ impl DirtyRect {
 
     fn mark_dirty(&mut self, pos: IVec2) {
         let range = DirtyRect::RANGE;
-        if self.is_empty() {
-            self.x = pos.x - range;
-            self.x2 = pos.x + range + 1;
-            self.y = pos.y - range;
-            self.y2 = pos.y + range + 1;
-            return;
-        }
-
-        if pos.x < self.x + range {
-            self.x = pos.x - range;
-        } else if self.x2 - range <= pos.x {
-            self.x2 = pos.x + range + 1;
-        }
-
-        if pos.y < self.y + range {
-            self.y = pos.y - range;
-        } else if self.y2 - range <= pos.y {
-            self.y2 = pos.y + range + 1;
-        }
+        self.x = self.x.min(pos.x - range);
+        self.x2 = self.x2.max(pos.x + range + 1);
+        self.y = self.y.min(pos.y - range);
+        self.y2 = self.y2.max(pos.y + range + 1);
     }
 
     fn is_empty(&self) -> bool {
@@ -1283,6 +1435,14 @@ impl RenderData {
                 fragment: TILES_FRAGMENT_SHADER,
             },
             MaterialParams {
+                pipeline_params: PipelineParams {
+                    color_blend: Some(BlendState::new(
+                        miniquad::Equation::Add,
+                        miniquad::BlendFactor::Value(miniquad::BlendValue::SourceAlpha),
+                        miniquad::BlendFactor::OneMinusValue(miniquad::BlendValue::SourceAlpha),
+                    )),
+                    ..Default::default()
+                },
                 uniforms: vec![
                     UniformDesc::new("_debug", UniformType::Int1),
                     UniformDesc::new("atlas_textures_size", UniformType::Int1),
