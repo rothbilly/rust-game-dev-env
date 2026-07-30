@@ -14,8 +14,8 @@ use std::rc::Rc;
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
 const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background1.png");
-const WORLD_CHUNKS: i32 = 2;
-const WORLD_CHUNKS_SQR: i32 = WORLD_CHUNKS * WORLD_CHUNKS;
+const WORLD_CHUNKS: i32 = 4;
+//const WORLD_CHUNKS_SQR: i32 = WORLD_CHUNKS * WORLD_CHUNKS;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
 const SCREEN_WIDTH: i32 = 256;
 const SCREEN_HEIGHT: i32 = 256;
@@ -275,10 +275,11 @@ impl GameLoop for Sandbox {
                     self.game_state = GameState::Paused;
                     self.frame_stepping = false;
                 }
-                self.simulate_chunks(ivec2(0, 0));
-                self.simulate_chunks(ivec2(1, 0));
-                self.simulate_chunks(ivec2(0, 1));
+
                 self.simulate_chunks(ivec2(1, 1));
+                self.simulate_chunks(ivec2(0, 1));
+                self.simulate_chunks(ivec2(1, 0));
+                self.simulate_chunks(ivec2(0, 0));
             }
         }
         // draw ui
@@ -689,7 +690,7 @@ impl Chunk {
         }
 
         // dont care about original order
-        self.move_queue.sort_unstable();
+        self.move_queue.sort_unstable_by_key(|a| a.0);
         //remove filled dst
 
         let size = self.move_queue.len();
@@ -874,7 +875,7 @@ impl Chunk {
             if let Some(chunk) = self.neighbors.get(&n_key) {
                 to_tile = chunk.borrow().tiles[to_idx].into();
 
-                if to_tile != Tile::Empty {
+                if !tile.can_swap(&to_tile, dir) {
                     return false;
                 }
 
@@ -890,7 +891,7 @@ impl Chunk {
         let to_idx: usize = self.pos_to_idx(to);
         to_tile = self.tiles[to_idx].into();
 
-        if to_tile != Tile::Empty {
+        if !tile.can_swap(&to_tile, dir) {
             return false;
         }
 
@@ -999,8 +1000,6 @@ impl Chunk {
         self.tile_counter == 0
     }
 
-    // this function gets called per tile
-    // this feels wasteful but idk better
     fn get_neighbor_chunk_tile_at(&self, from: IVec2, dir: IVec2) -> u8 {
         let (n_key, idx) = self.calculate_neighbor_info(from, dir);
         if let Some(chunk) = self.neighbors.get(&n_key) {
@@ -1160,6 +1159,18 @@ impl Tile {
             Tile::Wood => 0.77,
 
             _ => 1.0,
+        }
+    }
+
+    fn can_swap(&self, other: &Tile, dir: IVec2) -> bool {
+        if dir.y == 1 && self.get_density() > other.get_density() {
+            true
+        } else if dir.y == -1 && self.get_density() < other.get_density() {
+            true
+        } else if *other == Tile::Empty {
+            true
+        } else {
+            false
         }
     }
 }
