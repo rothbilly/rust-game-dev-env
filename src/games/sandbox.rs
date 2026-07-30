@@ -197,7 +197,7 @@ impl GameLoop for Sandbox {
         }
 
         if !held_keys.contains(&KeyCode::LeftControl) {
-            self.paint_brush.size += (mouse_wheel.1.round()) as i32;
+            self.paint_brush.size += (mouse_wheel.1.round()) as i16;
             self.paint_brush.size = self.paint_brush.size.clamp(1, self.paint_brush.max_size);
         }
 
@@ -316,8 +316,9 @@ impl GameLoop for Sandbox {
             let camera_rect = self.camera.get_rect();
             gl_use_material(mat);
             for y in 0..WORLD_CHUNKS {
+                let cy = y * Chunk::SIZE;
                 for x in 0..WORLD_CHUNKS {
-                    chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x: x, y: y });
+                    chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x, y });
 
                     if self.chunks[chunk_idx].borrow().is_empty()
                         || !self.chunks[chunk_idx]
@@ -328,8 +329,7 @@ impl GameLoop for Sandbox {
                         continue;
                     }
 
-                    let x = x * Chunk::SIZE;
-                    let y = y * Chunk::SIZE;
+                    let cx = x * Chunk::SIZE;
 
                     let tiles = &self.chunks[chunk_idx].borrow().tiles;
 
@@ -341,8 +341,8 @@ impl GameLoop for Sandbox {
 
                     mat.set_texture("tiles", self.render_data.chunk_texture.clone());
                     draw_rectangle(
-                        x as f32,
-                        y as f32,
+                        cx as f32,
+                        cy as f32,
                         Chunk::SIZE as f32,
                         Chunk::SIZE as f32,
                         WHITE,
@@ -620,7 +620,7 @@ pub struct Chunk {
 }
 
 impl Chunk {
-    const SIZE: i32 = 64;
+    const SIZE: i32 = 128;
     const SIZE_SQR: i32 = Chunk::SIZE * Chunk::SIZE;
 
     fn new() -> Self {
@@ -1238,9 +1238,10 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 struct PaintBrush {
     tile: Tile,
     _drawing: bool,
-    size: i32,
-    max_size: i32,
-    pattern: PaintBrushPattern,
+    size: i16,
+    max_size: i16,
+    sampler: RasterPaintBrushPattern,
+    pattern: RasterPaintBrushPattern,
 }
 
 impl Default for PaintBrush {
@@ -1250,23 +1251,34 @@ impl Default for PaintBrush {
             _drawing: false,
             size: 16,
             max_size: 64,
-            pattern: PaintBrushPattern::default(),
+            sampler: RasterPaintBrushPattern::empty(),
+            pattern: RasterPaintBrushPattern::circle(),
         }
     }
 }
 
 impl PaintBrush {
-    pub fn new(tile: Tile, size: i32, max_size: i32, pattern: PaintBrushPattern) -> Self {
+    pub fn new(tile: Tile, size: i16, max_size: i16, pattern: RasterPaintBrushPattern) -> Self {
+        let mut sampler = RasterPaintBrushPattern::empty();
+
+        PaintBrush::resize_sampler(size, &mut sampler, &pattern);
+
         Self {
             tile,
             _drawing: false,
             size,
             max_size,
+            sampler: sampler,
             pattern,
         }
     }
 
-    pub fn paint_line_segment(&self, p1: IVec2, p2: IVec2, paint_fn: &mut dyn FnMut(IVec2, Tile)) {
+    pub fn paint_line_segment(
+        &mut self,
+        p1: IVec2,
+        p2: IVec2,
+        paint_fn: &mut dyn FnMut(IVec2, Tile),
+    ) {
         if p1 == p2 {
             self.paint(p1, paint_fn);
         }
@@ -1298,38 +1310,97 @@ impl PaintBrush {
         }
     }
 
-    pub fn paint(&self, p: IVec2, paint_fn: &mut dyn FnMut(IVec2, Tile)) {
-        let pattern_size = self.pattern.size;
+    pub fn paint(&mut self, p: IVec2, paint_fn: &mut dyn FnMut(IVec2, Tile)) {
         let size = self.size;
 
-        // TODO: implement downsampling and upsampling
+        if size != self.sampler.size {
+            PaintBrush::resize_sampler(size, &mut self.sampler, &self.pattern);
+        }
 
-        if self.size >= self.pattern.size {
-            for y in 0..(size + 1) {
-                for x in 0..(size + 1) {
-                    let x = x - size / 2;
-                    let y = y - size / 2;
+        for y in 0..size {
+            let py = y - size / 2;
+            for x in 0..size {
+                let px = x - size / 2;
+                let p = p + ivec2(px as i32, py as i32);
 
-                    if !in_world_bounds(p + ivec2(x, y)) {
-                        continue;
-                    }
-
-                    //let sample_pos = ivec2(x / pattern_size, y / pattern_size);
-                    //let sample_idx = sample_pos.y * pattern_size + sample_pos.x;
-                    //if self.pattern.data[sample_idx as usize] == 0 {
-                    //    continue;
-                    //}
-                    paint_fn(p + ivec2(x, y), self.tile);
+                if !in_world_bounds(p) {
+                    continue;
                 }
+
+                if self.sampler.data[(y * size + x) as usize] == 0 {
+                    continue;
+                }
+                paint_fn(p, self.tile);
+            }
+        }
+    }
+
+    pub fn resize_sampler(
+        size: i16,
+        sampler: &mut RasterPaintBrushPattern,
+        pattern: &RasterPaintBrushPattern,
+    ) {
+        sampler.size = size;
+        sampler.data.resize((size * size) as usize, 0);
+
+        for y in 0..size {
+            let sample_y: usize = ((y as f32 / size as f32) * pattern.size as f32).floor() as usize;
+            for x in 0..size {
+                let sample_x: usize =
+                    ((x as f32 / size as f32) * pattern.size as f32).floor() as usize;
+                sampler.data[(y * size + x) as usize] =
+                    pattern.data[sample_y * pattern.size as usize + sample_x];
             }
         }
     }
 }
 
-#[derive(Debug, Default)]
-struct PaintBrushPattern {
-    size: i32,
+#[derive(Debug)]
+struct RasterPaintBrushPattern {
+    size: i16,
     data: Vec<u8>,
+}
+
+impl RasterPaintBrushPattern {
+    pub fn empty() -> Self {
+        Self {
+            size: 0,
+            data: Vec::new(),
+        }
+    }
+
+    pub fn circle() -> Self {
+        let size: i16 = 65;
+        let mut data = vec![0; (size * size) as usize];
+
+        let r = size as f32 / 2.0;
+
+        for y in 0..size {
+            let py = y as f32 - (size as f32 / 2.0) + 0.5;
+            for x in 0..size {
+                let px = x as f32 - (size as f32 / 2.0) + 0.5;
+                if (vec2(px, py).length() - r) <= 0.0 {
+                    data[(y * size + x) as usize] = 1;
+                }
+            }
+        }
+
+        //for y in 0..v_size {
+        //    for x in 0..v_size {
+        //        print!("{:>2}", data[(y * v_size + x) as usize]);
+        //    }
+        //    print!("\n");
+        //}
+
+        Self { size: size, data }
+    }
+
+    pub fn square() -> Self {
+        Self {
+            size: 1,
+            data: vec![1; 1],
+        }
+    }
 }
 
 #[derive(Debug)]
