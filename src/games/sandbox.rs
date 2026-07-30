@@ -14,12 +14,18 @@ use std::rc::Rc;
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
 const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background1.png");
-const WORLD_CHUNKS: i32 = 8;
+const WORLD_CHUNKS: i32 = 2;
 const WORLD_CHUNKS_SQR: i32 = WORLD_CHUNKS * WORLD_CHUNKS;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
 const SCREEN_WIDTH: i32 = 256;
 const SCREEN_HEIGHT: i32 = 256;
 const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
+const WORLD_BOUNDS: Rect = Rect {
+    x: 0.0_f32,
+    y: 0.0_f32,
+    w: (Chunk::SIZE * WORLD_CHUNKS) as f32,
+    h: (Chunk::SIZE * WORLD_CHUNKS) as f32,
+};
 
 /*
    TODO: remove seams between chunks
@@ -123,7 +129,7 @@ impl GameLoop for Sandbox {
         mat.set_uniform("atlas_textures_size", ATLAS_TEXTURES_SIZE);
         mat.set_uniform("grid_size", Chunk::SIZE);
         mat.set_uniform("_debug", self.render_data._debug as i32);
-        mat.set_uniform("texture_scale", 32.0_f32);
+        mat.set_uniform("texture_scale", 128.0_f32);
         mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
         mat.set_texture("background", self.render_data.background.clone());
     }
@@ -197,7 +203,12 @@ impl GameLoop for Sandbox {
         }
 
         if !held_keys.contains(&KeyCode::LeftControl) {
-            self.paint_brush.size += (mouse_wheel.1.round()) as i16;
+            let amp = if held_keys.contains(&KeyCode::LeftShift) {
+                5.0
+            } else {
+                1.0
+            };
+            self.paint_brush.size += (mouse_wheel.1.round() * amp) as i16;
             self.paint_brush.size = self.paint_brush.size.clamp(1, self.paint_brush.max_size);
         }
 
@@ -294,7 +305,7 @@ impl GameLoop for Sandbox {
     fn _render(&self) {
         set_camera(self.camera.get());
 
-        let cam_rect = self.camera.get_rect();
+        let cam_rect = self.camera.get_world_rect();
         draw_texture_ex(
             &self.render_data.background,
             cam_rect.x,
@@ -313,7 +324,7 @@ impl GameLoop for Sandbox {
             let mut gl = get_internal_gl();
             let mut chunk_idx: usize;
             let mat = &self.render_data.chunk_material;
-            let camera_rect = self.camera.get_rect();
+            let camera_rect = self.camera.get_world_rect();
             gl_use_material(mat);
             for y in 0..WORLD_CHUNKS {
                 let cy = y * Chunk::SIZE;
@@ -575,7 +586,7 @@ fn roll(chance: f32) -> bool {
 
 #[inline]
 fn to_ivec2(pos: Vec2) -> IVec2 {
-    ivec2(pos.x as i32, pos.y as i32)
+    ivec2(pos.x.round() as i32, pos.y.round() as i32)
 }
 
 fn get_display_rect() -> Rect {
@@ -1249,7 +1260,7 @@ impl Default for PaintBrush {
         PaintBrush {
             tile: Tile::Sand,
             _drawing: false,
-            size: 16,
+            size: 1,
             max_size: 64,
             sampler: RasterPaintBrushPattern::empty(),
             pattern: RasterPaintBrushPattern::circle(),
@@ -1370,7 +1381,7 @@ impl RasterPaintBrushPattern {
     }
 
     pub fn circle() -> Self {
-        let size: i16 = 65;
+        let size: i16 = 64;
         let mut data = vec![0; (size * size) as usize];
 
         let r = size as f32 / 2.0;
@@ -1384,13 +1395,6 @@ impl RasterPaintBrushPattern {
                 }
             }
         }
-
-        //for y in 0..v_size {
-        //    for x in 0..v_size {
-        //        print!("{:>2}", data[(y * v_size + x) as usize]);
-        //    }
-        //    print!("\n");
-        //}
 
         Self { size: size, data }
     }
@@ -1443,9 +1447,22 @@ impl CameraController {
 
     fn update(&mut self, delta: f32) {
         self.velocity += (self.speed * delta * delta) * self.direction;
-
         self.velocity *= 1.0 - (self.linear_damping * delta);
-        self.position += self.velocity;
+        let next_position = self.position + self.velocity;
+
+        let cam_center = self.get_world_rect().center();
+        if WORLD_BOUNDS.contains(cam_center + self.velocity) {
+            self.position = next_position;
+        } else if WORLD_BOUNDS.contains(cam_center + vec2(self.velocity.x, 0.0)) {
+            self.position.x += self.velocity.x;
+            self.velocity.y = 0.0;
+        } else if WORLD_BOUNDS.contains(cam_center + vec2(0.0, self.velocity.y)) {
+            self.position.y += self.velocity.y;
+            self.velocity.x = 0.0;
+        } else {
+            self.velocity = vec2(0.0, 0.0);
+        }
+
         self.direction = vec2(0.0, 0.0);
 
         self.zoom_velocity += self.zoom_speed * delta * delta * self.zoom_dir;
@@ -1488,7 +1505,7 @@ impl CameraController {
         }
     }
 
-    fn get_rect(&self) -> Rect {
+    fn get_world_rect(&self) -> Rect {
         Rect {
             x: self.position.x,
             y: self.position.y,
