@@ -31,8 +31,7 @@ const WORLD_BOUNDS: Rect = Rect {
    TODO: remove seams between chunks
    TODO: re implement tile behaviours
    TODO: save & load tiles to/from disk (maybe bitmap? png? or just binary?)
-   TODO: implement Command/Action Design pattern to enable Undo/Redo
-   TODO: add Trait BrushPattern and make RasterBrushPattern and VectorBrushPattern
+   TODO: implement Command/Action Design pattern to enable Undo/Redo while in pause
    IMPORTANT: improve single thread performance before adding multithreading
    TODO: maybe add multithreading??
 **/
@@ -40,6 +39,7 @@ const WORLD_BOUNDS: Rect = Rect {
 #[register_app("Sandbox")] // Custom Registration macro
 pub struct Sandbox {
     game_state: GameState,
+    frame_stepping: bool,
     frame_counter: u64,
     last_mouse_pos: IVec2,
     paint_brush: PaintBrush,
@@ -60,6 +60,7 @@ impl Default for Sandbox {
     fn default() -> Self {
         Self {
             game_state: GameState::Running,
+            frame_stepping: false,
             last_mouse_pos: ivec2(0, 0),
             paint_brush: PaintBrush::default(),
             frame_counter: 0,
@@ -167,6 +168,11 @@ impl GameLoop for Sandbox {
                 KeyCode::LeftControl if is_mouse_button_down(MouseButton::Middle) => {
                     self.camera.reset_zoom();
                 }
+                KeyCode::N => {
+                    if self.game_state == GameState::Paused {
+                        self.frame_stepping = true;
+                    }
+                }
                 _ => {}
             }
         }
@@ -258,13 +264,23 @@ impl GameLoop for Sandbox {
 
     fn _update(&mut self, _delta: f32) {
         self.camera.update(_delta);
-        if self.game_state == GameState::Running {
-            self.simulate_chunks(ivec2(0, 0));
-            self.simulate_chunks(ivec2(1, 0));
-            self.simulate_chunks(ivec2(0, 1));
-            self.simulate_chunks(ivec2(1, 1));
+        match &self.game_state {
+            GameState::Paused => {
+                if self.frame_stepping {
+                    self.game_state = GameState::Running;
+                }
+            }
+            GameState::Running => {
+                if self.frame_stepping {
+                    self.game_state = GameState::Paused;
+                    self.frame_stepping = false;
+                }
+                self.simulate_chunks(ivec2(0, 0));
+                self.simulate_chunks(ivec2(1, 0));
+                self.simulate_chunks(ivec2(0, 1));
+                self.simulate_chunks(ivec2(1, 1));
+            }
         }
-
         // draw ui
         // hotbar
         let slot_size = 56.0;
