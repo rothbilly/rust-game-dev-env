@@ -35,7 +35,7 @@ const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 pub struct Sandbox {
     game_state: GameState,
     frame_counter: u64,
-    last_mouse_pos: (f32, f32),
+    last_mouse_pos: IVec2,
     paint_brush: PaintBrush,
     inventory: UIData,
     camera: CameraController,
@@ -54,7 +54,7 @@ impl Default for Sandbox {
     fn default() -> Self {
         Self {
             game_state: GameState::Running,
-            last_mouse_pos: (0.0, 0.0),
+            last_mouse_pos: ivec2(0, 0),
             paint_brush: PaintBrush::default(),
             frame_counter: 0,
             inventory: UIData::new(),
@@ -122,7 +122,7 @@ impl GameLoop for Sandbox {
         let mat = &self.render_data.chunk_material;
         mat.set_uniform("atlas_textures_size", ATLAS_TEXTURES_SIZE);
         mat.set_uniform("grid_size", Chunk::SIZE);
-        mat.set_uniform("_debug", 1);
+        mat.set_uniform("_debug", self.render_data._debug as i32);
         mat.set_uniform("texture_scale", 32.0_f32);
         mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
         mat.set_texture("background", self.render_data.background.clone());
@@ -201,21 +201,48 @@ impl GameLoop for Sandbox {
             self.paint_brush.size = self.paint_brush.size.clamp(1, self.paint_brush.max_size);
         }
 
-        let mouse_left = is_mouse_button_down(MouseButton::Left);
-        let mouse_right = is_mouse_button_down(MouseButton::Right);
-        if !mouse_left && !mouse_right {
-            return;
-        }
+        // TODO: refactor this
 
-        if mouse_right {
+        let held_mouse_left = is_mouse_button_down(MouseButton::Left);
+        let held_mouse_right = is_mouse_button_down(MouseButton::Right);
+        let down_mouse_left = is_mouse_button_pressed(MouseButton::Left);
+        let down_mouse_right = is_mouse_button_pressed(MouseButton::Right);
+
+        if held_mouse_left
+            && !down_mouse_left
+            && let Some(tile) = self.inventory.get_selected_tile()
+        {
+            self.paint_brush.tile = tile;
+            self.paint_tiles(true);
+            self.last_mouse_pos = to_ivec2(self.screen_to_world(mouse_position().into()));
+        } else if held_mouse_right && !down_mouse_right {
             self.paint_brush.tile = Tile::Empty;
-            self.paint_tiles();
-        } else if mouse_left && let Some(tile_type) = self.inventory.get_selected_tile() {
-            self.paint_brush.tile = tile_type;
-            self.paint_tiles();
+            self.paint_tiles(true);
+            self.last_mouse_pos = to_ivec2(self.screen_to_world(mouse_position().into()));
         }
 
-        self.last_mouse_pos = mouse_position();
+        let tile = if down_mouse_left && let Some(tile) = self.inventory.get_selected_tile() {
+            Some(tile)
+        } else if down_mouse_right {
+            Some(Tile::Empty)
+        } else {
+            None
+        };
+
+        if down_mouse_left || down_mouse_right {
+            self.last_mouse_pos = to_ivec2(self.screen_to_world(mouse_position().into()));
+            self.paint_brush._drawing = true;
+            if let Some(t) = tile {
+                self.paint_brush.tile = t;
+                self.paint_tiles(false);
+            }
+        }
+
+        if is_mouse_button_released(MouseButton::Left)
+            || is_mouse_button_released(MouseButton::Right)
+        {
+            self.paint_brush._drawing = false;
+        }
     }
 
     fn _update(&mut self, _delta: f32) {
@@ -325,8 +352,9 @@ impl GameLoop for Sandbox {
             }
         }
         gl_use_default_material();
+
         let brush_size = self.paint_brush.size as f32;
-        let mut mouse = self.mouse_to_world();
+        let mut mouse = self.screen_to_world(mouse_position().into());
         mouse.x -= brush_size / 2.0;
         mouse.y -= brush_size / 2.0;
 
@@ -465,18 +493,27 @@ impl Sandbox {
         }
     }
 
-    fn paint_tiles(&mut self) {
-        let mouse = self.mouse_to_world();
+    fn paint_tiles(&mut self, is_held: bool) {
+        let mouse = self.screen_to_world(mouse_position().into());
         let mouse = vec2(mouse.x.floor(), mouse.y.floor());
-
-        let grid_x = mouse.x as i32;
-        let grid_y = mouse.y as i32;
 
         let chunks = &mut self.chunks;
         let c = &mut |p, t| {
             Sandbox::set_tile(chunks, p, t);
         };
-        self.paint_brush.paint(ivec2(grid_x, grid_y), c);
+
+        if !is_held {
+            self.paint_brush
+                .paint(ivec2(mouse.x as i32, mouse.y as i32), c);
+            return;
+        }
+
+        self.paint_brush.paint_line_segment(
+            self.last_mouse_pos,
+            ivec2(mouse.x as i32, mouse.y as i32),
+            c,
+        );
+        //self.paint_brush.paint(ivec2(grid_x, grid_y), c);
     }
 
     pub fn set_tile(chunks: &mut [Rc<RefCell<Chunk>>], pos: IVec2, tile: Tile) {
@@ -488,9 +525,8 @@ impl Sandbox {
     }
 
     #[inline]
-    fn mouse_to_world(&self) -> Vec2 {
-        let mouse = mouse_position();
-        self.camera.screen_to_world(vec2(mouse.0, mouse.1))
+    fn screen_to_world(&self, pos: Vec2) -> Vec2 {
+        self.camera.screen_to_world(pos)
     }
 }
 
@@ -535,6 +571,11 @@ fn roll(chance: f32) -> bool {
         "Chance for a roll must be equals or less than 100.0 and more than 0.0"
     );
     rand::gen_range(0.0, 100.0) <= chance
+}
+
+#[inline]
+fn to_ivec2(pos: Vec2) -> IVec2 {
+    ivec2(pos.x as i32, pos.y as i32)
 }
 
 fn get_display_rect() -> Rect {
@@ -1196,6 +1237,7 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 #[derive(Debug)]
 struct PaintBrush {
     tile: Tile,
+    _drawing: bool,
     size: i32,
     max_size: i32,
     pattern: PaintBrushPattern,
@@ -1205,6 +1247,7 @@ impl Default for PaintBrush {
     fn default() -> Self {
         PaintBrush {
             tile: Tile::Sand,
+            _drawing: false,
             size: 16,
             max_size: 64,
             pattern: PaintBrushPattern::default(),
@@ -1216,6 +1259,7 @@ impl PaintBrush {
     pub fn new(tile: Tile, size: i32, max_size: i32, pattern: PaintBrushPattern) -> Self {
         Self {
             tile,
+            _drawing: false,
             size,
             max_size,
             pattern,
@@ -1235,7 +1279,7 @@ impl PaintBrush {
 
         let mut p = p1;
         loop {
-            self.paint(p1, paint_fn);
+            self.paint(p, paint_fn);
             let err2 = 2 * err;
             if err2 >= dy {
                 if p.x == p2.x {
@@ -1257,6 +1301,9 @@ impl PaintBrush {
     pub fn paint(&self, p: IVec2, paint_fn: &mut dyn FnMut(IVec2, Tile)) {
         let pattern_size = self.pattern.size;
         let size = self.size;
+
+        // TODO: implement downsampling and upsampling
+
         if self.size >= self.pattern.size {
             for y in 0..(size + 1) {
                 for x in 0..(size + 1) {
@@ -1468,7 +1515,7 @@ impl RenderData {
             chunk_texture: tex,
             tiles_atlas: Texture2D::empty(),
             background: Texture2D::empty(),
-            _debug: true,
+            _debug: false,
         }
     }
 }
