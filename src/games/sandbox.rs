@@ -15,7 +15,7 @@ use std::rc::Rc;
 
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
-const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background1.png");
+const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/textures/bg_solid_128.png");
 const WORLD_CHUNKS: i32 = 4;
 //const WORLD_CHUNKS_SQR: i32 = WORLD_CHUNKS * WORLD_CHUNKS;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
