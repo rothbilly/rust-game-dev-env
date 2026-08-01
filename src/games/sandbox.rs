@@ -117,6 +117,10 @@ impl GameLoop for Sandbox {
             }
         }
 
+        let world_center = (WORLD_CHUNKS / 2 * Chunk::SIZE) as f32;
+        let half_screen = (SCREEN_WIDTH / 2) as f32;
+        self.camera.position = vec2(world_center - half_screen, world_center - half_screen);
+
         let atlas_img = Image::from_file_with_format(ATLAS_BYTES, Some(ImageFormat::Png)).unwrap();
         self.inventory.tiles_atlas = Some(atlas_img.clone());
         self.inventory.init_textures();
