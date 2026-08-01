@@ -17,8 +17,8 @@ const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/bac
 const WORLD_CHUNKS: i32 = 4;
 //const WORLD_CHUNKS_SQR: i32 = WORLD_CHUNKS * WORLD_CHUNKS;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
-const SCREEN_WIDTH: i32 = 256;
-const SCREEN_HEIGHT: i32 = 256;
+const SCREEN_WIDTH: i32 = 512;
+const SCREEN_HEIGHT: i32 = 512;
 const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 const WORLD_BOUNDS: Rect = Rect {
     x: 0.0_f32,
@@ -28,7 +28,8 @@ const WORLD_BOUNDS: Rect = Rect {
 };
 
 /*
-   TODO: remove seams between chunks
+   TODO: remove chunk queues and implement particle system
+   TODO: remove seams between chunks // has to do with chunk process order
    TODO: re implement tile behaviours
    TODO: save & load tiles to/from disk (maybe bitmap? png? or just binary?)
    TODO: implement Command/Action Design pattern to enable Undo/Redo while in pause
@@ -168,10 +169,8 @@ impl GameLoop for Sandbox {
                 KeyCode::LeftControl if is_mouse_button_down(MouseButton::Middle) => {
                     self.camera.reset_zoom();
                 }
-                KeyCode::N => {
-                    if self.game_state == GameState::Paused {
-                        self.frame_stepping = true;
-                    }
+                KeyCode::N if self.game_state == GameState::Paused => {
+                    self.frame_stepping = true;
                 }
                 _ => {}
             }
@@ -276,10 +275,12 @@ impl GameLoop for Sandbox {
                     self.frame_stepping = false;
                 }
 
-                self.simulate_chunks(ivec2(1, 1));
-                self.simulate_chunks(ivec2(0, 1));
-                self.simulate_chunks(ivec2(1, 0));
-                self.simulate_chunks(ivec2(0, 0));
+                //self.simulate_chunks(ivec2(0, 0), 1);
+
+                self.simulate_chunks(ivec2(0, 0), 2);
+                self.simulate_chunks(ivec2(1, 1), 2);
+                self.simulate_chunks(ivec2(1, 0), 2);
+                self.simulate_chunks(ivec2(0, 1), 2);
             }
         }
         // draw ui
@@ -419,7 +420,10 @@ impl GameLoop for Sandbox {
             }
         }
 
+        let cam_rect = self.camera.get_world_rect();
+
         set_default_camera();
+        draw_rectangle_lines(cam_rect.x, cam_rect.y, cam_rect.w, cam_rect.y, 2.0, ORANGE);
         let mouse_pos = mouse_position();
         let mouse_world_pos = self.camera.screen_to_world(mouse_pos.into());
         draw_text(
@@ -455,17 +459,16 @@ impl GameLoop for Sandbox {
 }
 
 impl Sandbox {
-    fn simulate_chunks(&mut self, start: IVec2) {
-        let mut y = start.y;
+    fn simulate_chunks(&mut self, start: IVec2, step: i32) {
         let mut x = start.x;
-
+        let mut y = start.y;
         while y < WORLD_CHUNKS {
             while x < WORLD_CHUNKS {
                 let mut chunk = self.chunks[chunk_idx_at_chunk_pos(ivec2(x, y))].borrow_mut();
 
                 if chunk.dirty_area.is_empty() {
                     chunk.process_queues();
-                    x += 2;
+                    x += step;
                     continue;
                 }
 
@@ -485,9 +488,9 @@ impl Sandbox {
                     }
                 }
                 chunk.process_queues();
-                x += 2;
+                x += step;
             }
-            y += 2;
+            y += step;
             x = start.x;
         }
     }
@@ -648,7 +651,7 @@ pub struct Chunk {
 }
 
 impl Chunk {
-    const SIZE: i32 = 128;
+    const SIZE: i32 = 64;
     const SIZE_SQR: i32 = Chunk::SIZE * Chunk::SIZE;
 
     fn new() -> Self {
@@ -671,6 +674,10 @@ impl Chunk {
         }
     }
 
+    // Processing the queues takes about 10%-35% of the frame time, most of the time is spent sorting them
+    // Should be better if we removed them and use a simple system similar to noita's
+    // where we only update tiles that fall down from the bottom up, and tiles that go up get put
+    // into a particle system
     fn process_queues(&mut self) {
         self.receiving_moves.sort_unstable_by_key(|a| a.1);
         let size = self.receiving_moves.len();
@@ -691,7 +698,6 @@ impl Chunk {
 
         // dont care about original order
         self.move_queue.sort_unstable_by_key(|a| a.0);
-        //remove filled dst
 
         let size = self.move_queue.len();
         prev = 0;
@@ -820,32 +826,179 @@ impl Chunk {
         }
     }
 
-    #[inline]
+    // Counting the neighbors can take around 20% of the frame time, maybe try counting
+    // only when needed? or take a different approach?
     fn process_tile(&mut self, pos: IVec2) -> bool {
-        let neighbors = self.get_neighbors_per_type(pos);
         let tile: Tile = self.tiles[self.pos_to_idx(pos)].into();
-        match tile {
+
+        let will_move = (|| match tile {
             Tile::Sand => self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos),
             Tile::Water => {
+                let neighbors = self.get_neighbors_per_type(pos);
+
+                if neighbors[Tile::Fire as usize] >= 3 || neighbors[Tile::Lava as usize] > 0 {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Steam);
+                }
+
                 (roll(22.5) && self.try_move_down_sides(&tile, pos))
                     || self.try_move_down(&tile, pos)
                     || self.try_move_down_sides(&tile, pos)
                     || self.try_move_sides(&tile, pos)
             }
+            Tile::Fire => {
+                if roll(33.0) {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Empty);
+                    return true;
+                }
+
+                let positions = [
+                    ivec2(-1, -1),
+                    ivec2(-1, -1),
+                    ivec2(-1, -1),
+                    ivec2(0, -1),
+                    ivec2(0, -1),
+                    ivec2(0, -1),
+                    ivec2(1, -1),
+                    ivec2(1, -1),
+                    ivec2(1, -1),
+                    ivec2(-1, 0),
+                    ivec2(1, 0),
+                    ivec2(-1, 1),
+                    ivec2(0, 1),
+                    ivec2(1, 1),
+                ];
+                let rng = rand::gen_range(0_usize, positions.len());
+
+                self.try_move(&tile, pos, positions[rng])
+            }
             Tile::GunPowder => {
+                let neighbors = self.get_neighbors_per_type(pos);
+
+                if (neighbors[Tile::Fire as usize] >= 1 || neighbors[Tile::Lava as usize] >= 1)
+                    && roll(33.0)
+                {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                    return false;
+                }
+
                 self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos)
             }
             Tile::Lava => {
-                let will_try_move = roll(25.0);
-                if !will_try_move {
-                    self.dirty_area.mark_dirty(pos);
-                    return false;
-                }
-                will_try_move
+                roll(25.0)
                     && (self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos))
             }
+            Tile::Steam => {
+                let neighbors = self.get_neighbors_per_type(pos);
+
+                if neighbors[Tile::Steam as usize] >= 8 && roll(0.005) {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Water);
+                    return true;
+                }
+
+                (roll(33.0) && self.try_move_up_sides(&tile, pos))
+                    || self.try_move_up(&tile, pos)
+                    || self.try_move_up_sides(&tile, pos)
+                    || self.try_move_sides(&tile, pos)
+            }
+            Tile::Smoke => {
+                if roll(0.33) {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Empty);
+                    return true;
+                }
+
+                let neighbors = self.get_neighbors_per_type(pos);
+                if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
+                    && roll(87.0)
+                {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                    return true;
+                }
+
+                (roll(33.0) && self.try_move_up_sides(&tile, pos))
+                    || self.try_move_up(&tile, pos)
+                    || self.try_move_up_sides(&tile, pos)
+                    || self.try_move_sides(&tile, pos)
+            }
+            Tile::Wood => {
+                let neighbors = self.get_neighbors_per_type(pos);
+                if (neighbors[Tile::Fire as usize] >= 2 || neighbors[Tile::Lava as usize] >= 1)
+                    && roll(66.0)
+                {
+                    self.set_tile(self.pos_to_idx(pos), Tile::BurntWood);
+                }
+                false
+            }
+            Tile::BurntWood => {
+                let neighbors = self.get_neighbors_per_type(pos);
+                if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
+                    && roll(87.0)
+                {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Coal);
+                }
+                self.try_move_down(&tile, pos)
+                    || (roll(25.0) && self.try_move_down_sides(&tile, pos))
+            }
+            Tile::Coal => {
+                let neighbors = self.get_neighbors_per_type(pos);
+                if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
+                    && roll(76.0)
+                {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                }
+                self.try_move_down(&tile, pos)
+                    || (roll(25.0) && self.try_move_down_sides(&tile, pos))
+            }
+            Tile::Leaf => {
+                let neighbors = self.get_neighbors_per_type(pos);
+                if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
+                    && roll(78.0)
+                {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                    return true;
+                }
+
+                if (neighbors[Tile::Leaf as usize] + neighbors[Tile::Wood as usize] > 0)
+                    && roll(99.9)
+                {
+                    return false;
+                }
+
+                (roll(66.0) && self.try_move_sides(&tile, pos))
+                    || (roll(33.0) && self.try_move_down_sides(&tile, pos))
+                    || self.try_move_down(&tile, pos)
+                    || self.try_move_down_sides(&tile, pos)
+                    || self.try_move_sides(&tile, pos)
+            }
+            Tile::Snow => {
+                let neighbors = self.get_neighbors_per_type(pos);
+                if ((neighbors[Tile::Water as usize] >= 4) && roll(33.0))
+                    || (neighbors[Tile::Fire as usize] > 0 && roll(33.0))
+                    || (neighbors[Tile::Lava as usize] > 0 && roll(66.0))
+                {
+                    self.set_tile(self.pos_to_idx(pos), Tile::Water);
+                    return true;
+                }
+
+                roll(33.0)
+                    && ((roll(66.0) && self.try_move_down_sides(&tile, pos))
+                        || (roll(33.0) && self.try_move_sides(&tile, pos))
+                        || self.try_move_down(&tile, pos)
+                        || self.try_move_down_sides(&tile, pos)
+                        || self.try_move_sides(&tile, pos))
+            }
             _ => false,
+        })();
+
+        if !will_move
+            && matches!(
+                tile,
+                Tile::Fire | Tile::Lava | Tile::Steam | Tile::Smoke | Tile::Leaf | Tile::Snow
+            )
+        {
+            self.dirty_area.mark_dirty(pos);
         }
+
+        will_move
     }
 
     fn set_tile(&mut self, idx: usize, tile: Tile) {
@@ -962,8 +1115,11 @@ impl Chunk {
                 if !in_world_bounds(self.local_to_world_pos(n_pos)) {
                     continue;
                 }
-                tile = self.get_neighbor_chunk_tile_at(from, *pos);
-                neighbors[tile as usize] += 1;
+                let (n_key, idx) = self.calculate_neighbor_info(from, *pos);
+                if let Some(chunk) = self.neighbors.get(&n_key) {
+                    tile = chunk.borrow().tiles[idx];
+                    neighbors[tile as usize] += 1;
+                }
                 continue;
             }
             tile = self.tiles[self.pos_to_idx(n_pos)];
@@ -998,14 +1154,6 @@ impl Chunk {
 
     fn is_empty(&self) -> bool {
         self.tile_counter == 0
-    }
-
-    fn get_neighbor_chunk_tile_at(&self, from: IVec2, dir: IVec2) -> u8 {
-        let (n_key, idx) = self.calculate_neighbor_info(from, dir);
-        if let Some(chunk) = self.neighbors.get(&n_key) {
-            return chunk.borrow().tiles[idx];
-        }
-        0
     }
 
     // T_T
@@ -1162,15 +1310,17 @@ impl Tile {
         }
     }
 
+    fn is_liquid_or_gas(&self) -> bool {
+        matches!(self, Self::Water | Self::Fire | Self::Steam | Self::Smoke)
+    }
+
     fn can_swap(&self, other: &Tile, dir: IVec2) -> bool {
-        if dir.y == 1 && self.get_density() > other.get_density() {
-            true
-        } else if dir.y == -1 && self.get_density() < other.get_density() {
-            true
-        } else if *other == Tile::Empty {
-            true
+        if self.is_liquid_or_gas() || other.is_liquid_or_gas() {
+            (dir.y == 1 && self.get_density() > other.get_density())
+                || (dir.y == -1 && self.get_density() < other.get_density())
+                || *other == Tile::Empty
         } else {
-            false
+            *other == Tile::Empty
         }
     }
 }
@@ -1494,7 +1644,8 @@ impl CameraController {
 
         self.zoom_velocity += self.zoom_speed * delta * delta * self.zoom_dir;
         self.zoom_velocity *= 1.0 - (self.zoom_damping * delta);
-        self.zoom += self.zoom_velocity;
+        let zoom_amp = if self.zoom > 1.0 { 2.0 } else { 1.0 };
+        self.zoom += self.zoom_velocity * zoom_amp;
         self.zoom = self.zoom.clamp(0.1, 6.0);
         self.zoom_dir = 0.0;
 
