@@ -10,7 +10,7 @@ use macroquad::prelude::*;
 use crate::{core::signal::*, editor::{constants::*, inspector::{Inspector, InspectorWindow}, main_editor::*}};
 pub use engine_macros::IName;
 use crate::core::app::AppRegistry;
-
+use std::sync::RwLock;
 
 
 const UI_BLOCK_SIZE: f32 = 40.;
@@ -44,7 +44,7 @@ impl Default for AppLoaderMenu {
             window_name: "App Loader".to_string(),
             is_visible: true,
             panel_height: UI_BLOCK_SIZE,
-            app_registry : Rc::new(AppRegistry::new()),
+            app_registry : Rc::new(AppRegistry::default()),
             on_click_signal: SignalDispatcher::new(),
         }
     }

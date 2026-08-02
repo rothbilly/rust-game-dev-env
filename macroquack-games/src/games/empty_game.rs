@@ -1,5 +1,3 @@
-
-
 use macroquack::prelude::*;
 use macroquack::core::game::{Game, GameLoop};
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
@@ -24,7 +22,7 @@ impl GameLoop for EmptyGame {
     }
 
     fn _update(&mut self, _delta: f32) {
-
+        println!("hello");
     }
 
     fn _render(&self) {

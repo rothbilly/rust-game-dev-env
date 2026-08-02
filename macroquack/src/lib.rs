@@ -59,6 +59,7 @@ pub mod components {
     pub mod gameobject;
 }
 
+pub use inventory;
 // ==========================================
 //  Games mods - in the future in its own crate maybe
 // ==========================================

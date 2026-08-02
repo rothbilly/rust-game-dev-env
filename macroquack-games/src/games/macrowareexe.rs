@@ -54,7 +54,6 @@ impl GameLoop for MacrowareExe {
     }
 
     fn _update(&mut self, delta : f32) {
-
         let up = self.up;
         let down = self.down;
         let left = self.left;

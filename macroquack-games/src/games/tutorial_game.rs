@@ -119,7 +119,6 @@ impl GameLoop for TutorialGame {
 
     fn _update(&mut self, _delta: f32) {
         //println!("{:#?}", &self.game_state);
-
         match self.game_state {
             GameState::MainMenu => {}
             GameState::Playing => {

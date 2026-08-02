@@ -1,15 +1,10 @@
-
-use macroquack::core::app::AppRegistration;
 use macroquack::prelude::*;
-
 use macroquack::core::engine::{Engine, app_config};
 
+use macroquack_games::games;
 
 #[macroquad::main(app_config)]
 async fn main() {
-
-
-    
     let mut engine = Engine::new();
     engine.setup()
     .with_starting_app()

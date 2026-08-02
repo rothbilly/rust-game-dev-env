@@ -39,9 +39,9 @@ impl Default for Settings {
             window_w: 1280,
             egui_render_scale: 0.8,
             editor_renderer: DrawingBackend::Macroquad,
-            fullscreen: true,
+            fullscreen: false,
             swap_interval: 1,
-            starting_app: "SampleVirtualApp".to_string()
+            starting_app: "Tutorial Game".to_string()
         }
     }
 }

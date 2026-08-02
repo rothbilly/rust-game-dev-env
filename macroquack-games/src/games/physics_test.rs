@@ -20,7 +20,6 @@ impl GameLoop for PhysicsTest {
     }
 
     fn _update(&mut self, _delta: f32) {
-
     }
 
     fn _render(&self) {
