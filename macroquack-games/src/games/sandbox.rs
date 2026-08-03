@@ -364,6 +364,7 @@ impl GameLoop for Sandbox {
         );
 
         let mat = &self.render_data.chunk_material;
+        mat.set_uniform("_debug", self.render_data._debug as i32);
         unsafe {
             let mut gl = get_internal_gl();
             let mut chunk_idx: usize;
@@ -406,19 +407,22 @@ impl GameLoop for Sandbox {
             }
         }
 
-        mat.set_texture("tiles", self.paint_brush.sampler_tex.clone());
-        let brush_size = self.paint_brush.max_size as f32;
-        let mut mouse = self.screen_to_world(mouse_position().into());
-        mouse.x -= brush_size / 2.0;
-        mouse.y -= brush_size / 2.0;
+        if let Some(_) = self.inventory.get_selected_tile() {
+            mat.set_texture("tiles", self.paint_brush.sampler_tex.clone());
+            mat.set_uniform("_debug", 0_i32);
+            let brush_size = self.paint_brush.max_size as f32;
+            let mut mouse = self.screen_to_world(mouse_position().into());
+            mouse.x -= brush_size / 2.0;
+            mouse.y -= brush_size / 2.0;
 
-        draw_rectangle(
-            mouse.x.round(),
-            mouse.y.round(),
-            brush_size,
-            brush_size,
-            WHITE,
-        );
+            draw_rectangle(
+                mouse.x.round(),
+                mouse.y.round(),
+                brush_size,
+                brush_size,
+                WHITE,
+            );
+        }
 
         gl_use_default_material();
     }
@@ -488,37 +492,41 @@ impl Sandbox {
     fn simulate_chunks(&mut self, start: IVec2, step: i32) {
         let mut x = start.x;
         let mut y = start.y;
+
         while y < WORLD_CHUNKS_HEIGHT {
             while x < WORLD_CHUNKS_WIDTH {
-                let mut chunk = self.chunks[chunk_idx_at_chunk_pos(ivec2(x, y))].borrow_mut();
-
-                if chunk.dirty_area.is_empty() {
-                    chunk.process_queues();
-                    x += step;
-                    continue;
-                }
-
-                let area = chunk.dirty_area;
-                chunk.dirty_area.reset();
-
-                for y in area.y..area.y2 {
-                    for x in area.x..area.x2 {
-                        let pos = ivec2(x, y);
-                        if !in_chunk_bounds(pos) {
-                            continue;
-                        }
-
-                        if chunk.process_tile(pos) {
-                            chunk.notify_neighbors(pos);
-                        }
-                    }
-                }
-                chunk.process_queues();
+                self.simulate_chunk(x, y);
                 x += step;
             }
             y += step;
             x = start.x;
         }
+    }
+
+    fn simulate_chunk(&mut self, x: i32, y: i32) {
+        let mut chunk = self.chunks[chunk_idx_at_chunk_pos(ivec2(x, y))].borrow_mut();
+
+        if chunk.dirty_area.is_empty() {
+            chunk.process_queues();
+            return;
+        }
+
+        let area = chunk.dirty_area;
+        chunk.dirty_area.reset();
+
+        for y in area.y..area.y2 {
+            for x in area.x..area.x2 {
+                let pos = ivec2(x, y);
+                if !in_chunk_bounds(pos) {
+                    continue;
+                }
+
+                if chunk.process_tile(pos) {
+                    chunk.notify_neighbors(pos);
+                }
+            }
+        }
+        chunk.process_queues();
     }
 
     fn process_ui(&mut self) {
