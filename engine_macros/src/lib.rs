@@ -99,7 +99,7 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
             AppRegistration {
                 name: #app_name,
                 constructor: ||{
-                    println!("{} register: ",  stringify!(#app_name));
+                    // println!("{} register: ",  stringify!(#app_name));
                     std::rc::Rc::new(std::cell::RefCell::new(#item_identifier::default()))
                 } 
             }
