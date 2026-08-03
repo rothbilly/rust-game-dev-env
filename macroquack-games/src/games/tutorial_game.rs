@@ -16,11 +16,10 @@ const SCORE_FILE_NAME: &str = "high_score.dat";
 
 
 #[register_app("Tutorial Game")]
-#[auto_deref(base_game)]
 #[derive(Default)]
 #[auto_deref(base)]
 pub struct TutorialGame{
-    base_game: Game,
+    base: Game,
     dir: Vec2,
     squares: Vec<Shape>,
     bullets: Vec<Shape>,

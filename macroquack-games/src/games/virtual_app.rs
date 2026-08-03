@@ -10,7 +10,6 @@ use macroquack::core::app::AppRegistration;
 #[register_app("Sample Virtual App")]
 #[auto_deref(base_game)]
 #[derive(Default)]
-#[auto_deref(base)]
 pub struct SampleVirtualApp{
     base_game: Game,
     _title: String,

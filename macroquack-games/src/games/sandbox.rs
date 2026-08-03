@@ -1,6 +1,7 @@
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
 use macroquack::core::game::{Game, GameLoop};
 use macroquack::prelude::*;
+use macroquad::miniquad::BlendState;
 
 use macroquad::prelude::*;
 use macroquad::ui::{
