@@ -3,7 +3,6 @@ use macroquack::core::game::{Game, GameLoop};
 use macroquack::prelude::*;
 use macroquad::miniquad::BlendState;
 
-use macroquad::prelude::*;
 use macroquad::ui::{
     Drag, Ui, hash, root_ui,
     widgets::{self, Group},
@@ -15,7 +14,7 @@ use std::rc::Rc;
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/tile_atlas.png");
 const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/background1.png");
-const WORLD_CHUNKS: i32 = 8;
+const WORLD_CHUNKS: i32 = 6;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
 const SCREEN_WIDTH: i32 = 512;
 const SCREEN_HEIGHT: i32 = 512;
@@ -28,13 +27,12 @@ const WORLD_BOUNDS: Rect = Rect {
 };
 
 /*
-   TODO: remove chunk queues and implement particle system
-   TODO: remove seams between chunks // has to do with chunk process order
-   TODO: re implement tile behaviours
-   TODO: save & load tiles to/from disk (maybe bitmap? png? or just binary?)
-   TODO: implement Command/Action Design pattern to enable Undo/Redo while in pause
-   IMPORTANT: improve single thread performance before adding multithreading
-   TODO: maybe add multithreading??
+  TODO: remove chunk queues and implement particle system
+  TODO: remove seams between chunks // has to do with chunk process order
+  TODO: save & load tiles to/from disk (png)
+  TODO: implement Command/Action Design pattern to enable Undo/Redo while in pause
+  IMPORTANT: improve single thread performance before adding multithreading
+  TODO: maybe add multithreading??
 **/
 
 #[register_app("Sandbox")] // Custom Registration macro
@@ -119,7 +117,13 @@ impl GameLoop for Sandbox {
             }
         }
 
-        let world_center = (WORLD_CHUNKS / 2 * Chunk::SIZE) as f32;
+        let mut world_center = (WORLD_CHUNKS / 2 * Chunk::SIZE) as f32;
+        world_center += (if WORLD_CHUNKS % 2 == 0 {
+            0
+        } else {
+            Chunk::SIZE / 2
+        } as f32);
+
         let half_screen = (SCREEN_WIDTH / 2) as f32;
         self.camera.position = vec2(world_center - half_screen, world_center - half_screen);
 
@@ -205,13 +209,14 @@ impl GameLoop for Sandbox {
                 _ => {}
             }
         }
+
+        if let Some(t) = self.inventory.get_selected_tile() {
+            self.paint_brush.set_tile(t);
+        }
+
         self.camera.direction = cam_dir;
 
         self.process_ui();
-
-        if self.inventory.item_dragging {
-            return;
-        }
 
         if !held_keys.contains(&KeyCode::LeftControl) {
             let amp = if held_keys.contains(&KeyCode::LeftShift) {
@@ -220,25 +225,27 @@ impl GameLoop for Sandbox {
                 1.0
             };
             self.paint_brush.size += (mouse_wheel.1.round() * amp) as i16;
-            self.paint_brush.size = self.paint_brush.size.clamp(1, self.paint_brush.max_size);
+            self.paint_brush
+                .set_size(self.paint_brush.size.clamp(1, self.paint_brush.max_size));
         }
 
-        // TODO: refactor this
+        if self.inventory.item_dragging {
+            return;
+        }
 
-        let held_mouse_left = is_mouse_button_down(MouseButton::Left);
-        let held_mouse_right = is_mouse_button_down(MouseButton::Right);
         let down_mouse_left = is_mouse_button_pressed(MouseButton::Left);
         let down_mouse_right = is_mouse_button_pressed(MouseButton::Right);
+        let held_mouse_left = is_mouse_button_down(MouseButton::Left);
+        let held_mouse_right = is_mouse_button_down(MouseButton::Right);
 
         if held_mouse_left
             && !down_mouse_left
-            && let Some(tile) = self.inventory.get_selected_tile()
+            && let Some(_) = self.inventory.get_selected_tile()
         {
-            self.paint_brush.tile = tile;
             self.paint_tiles(true);
             self.last_mouse_pos = to_ivec2(self.screen_to_world(mouse_position().into()));
         } else if held_mouse_right && !down_mouse_right {
-            self.paint_brush.tile = Tile::Empty;
+            self.paint_brush.set_tile(Tile::Empty);
             self.paint_tiles(true);
             self.last_mouse_pos = to_ivec2(self.screen_to_world(mouse_position().into()));
         }
@@ -344,10 +351,10 @@ impl GameLoop for Sandbox {
             },
         );
 
+        let mat = &self.render_data.chunk_material;
         unsafe {
             let mut gl = get_internal_gl();
             let mut chunk_idx: usize;
-            let mat = &self.render_data.chunk_material;
             let camera_rect = self.camera.get_world_rect();
             gl_use_material(mat);
             for y in 0..WORLD_CHUNKS {
@@ -386,21 +393,22 @@ impl GameLoop for Sandbox {
                 }
             }
         }
-        gl_use_default_material();
 
-        let brush_size = self.paint_brush.size as f32;
+        mat.set_texture("tiles", self.paint_brush.sampler_tex.clone());
+        let brush_size = self.paint_brush.max_size as f32;
         let mut mouse = self.screen_to_world(mouse_position().into());
         mouse.x -= brush_size / 2.0;
         mouse.y -= brush_size / 2.0;
 
-        draw_rectangle_lines(
+        draw_rectangle(
             mouse.x.round(),
             mouse.y.round(),
             brush_size,
             brush_size,
-            2.0,
             WHITE,
         );
+
+        gl_use_default_material();
     }
 
     fn _debug_draw(&self) {
@@ -427,6 +435,7 @@ impl GameLoop for Sandbox {
         }
 
         let cam_rect = self.camera.get_world_rect();
+        draw_rectangle_lines(cam_rect.x, cam_rect.y, cam_rect.w, cam_rect.h, 1.0, ORANGE);
 
         set_default_camera();
         draw_rectangle_lines(cam_rect.x, cam_rect.y, cam_rect.w, cam_rect.y, 2.0, ORANGE);
@@ -1434,17 +1443,24 @@ struct PaintBrush {
     _drawing: bool,
     size: i16,
     max_size: i16,
+    sampler_img: Image,
+    sampler_tex: Texture2D,
     sampler: RasterPaintBrushPattern,
     pattern: RasterPaintBrushPattern,
 }
 
 impl Default for PaintBrush {
     fn default() -> Self {
+        let max_size: i16 = 64;
+        let tmp = vec![0; (max_size * max_size) as usize];
+
         PaintBrush {
             tile: Tile::Sand,
             _drawing: false,
             size: 1,
-            max_size: 64,
+            max_size,
+            sampler_img: Image::gen_image_color((max_size / 4) as u16, max_size as u16, BLACK),
+            sampler_tex: Texture2D::from_rgba8((max_size / 4) as u16, max_size as u16, &tmp),
             sampler: RasterPaintBrushPattern::empty(),
             pattern: RasterPaintBrushPattern::circle(),
         }
@@ -1452,18 +1468,15 @@ impl Default for PaintBrush {
 }
 
 impl PaintBrush {
-    pub fn new(tile: Tile, size: i16, max_size: i16, pattern: RasterPaintBrushPattern) -> Self {
-        let mut sampler = RasterPaintBrushPattern::empty();
+    pub fn set_size(&mut self, size: i16) {
+        self.size = size;
+        self.resize_sampler();
+    }
 
-        PaintBrush::resize_sampler(size, &mut sampler, &pattern);
-
-        Self {
-            tile,
-            _drawing: false,
-            size,
-            max_size,
-            sampler: sampler,
-            pattern,
+    pub fn set_tile(&mut self, tile: Tile) {
+        if self.tile != tile {
+            self.tile = tile;
+            self.refresh_sampler();
         }
     }
 
@@ -1508,7 +1521,7 @@ impl PaintBrush {
         let size = self.size;
 
         if size != self.sampler.size {
-            PaintBrush::resize_sampler(size, &mut self.sampler, &self.pattern);
+            self.resize_sampler();
         }
 
         for y in 0..size {
@@ -1529,23 +1542,56 @@ impl PaintBrush {
         }
     }
 
-    pub fn resize_sampler(
-        size: i16,
-        sampler: &mut RasterPaintBrushPattern,
-        pattern: &RasterPaintBrushPattern,
-    ) {
-        sampler.size = size;
-        sampler.data.resize((size * size) as usize, 0);
+    pub fn refresh_sampler(&mut self) {
+        if self.size != self.sampler.size {
+            self.resize_sampler();
+        }
 
-        for y in 0..size {
-            let sample_y: usize = ((y as f32 / size as f32) * pattern.size as f32).floor() as usize;
-            for x in 0..size {
-                let sample_x: usize =
-                    ((x as f32 / size as f32) * pattern.size as f32).floor() as usize;
-                sampler.data[(y * size + x) as usize] =
-                    pattern.data[sample_y * pattern.size as usize + sample_x];
+        for byte in &mut self.sampler_img.bytes {
+            if *byte != 0 {
+                *byte = self.tile as u8;
             }
         }
+    }
+
+    pub fn resize_sampler(&mut self) {
+        if self.size == 1 {
+            self.sampler = RasterPaintBrushPattern::square();
+            return;
+        }
+
+        let new_size = self.size;
+
+        // square img
+        let img_size = self.max_size as i32;
+        let img_center = img_size / 2;
+
+        for byte in &mut self.sampler_img.bytes {
+            *byte = 0;
+        }
+
+        self.sampler.size = new_size;
+        self.sampler.data.resize((new_size * new_size) as usize, 0);
+        for y in 0..new_size {
+            for x in 0..new_size {
+                let img_y = img_center - (y - ((new_size - 1) / 2)) as i32;
+                let sample_y: usize =
+                    ((y as f32 / new_size as f32) * self.pattern.size as f32).floor() as usize;
+                let sample_x: usize =
+                    ((x as f32 / new_size as f32) * self.pattern.size as f32).floor() as usize;
+
+                let img_x = img_center - (x - ((new_size - 1) / 2)) as i32;
+                if self.pattern.data[sample_y * self.pattern.size as usize + sample_x] > 0 {
+                    self.sampler.data[(y * new_size + x) as usize] = 1_u8;
+                    self.sampler_img.bytes[(img_y * img_size + img_x) as usize] = self.tile as u8;
+                } else {
+                    self.sampler.data[(y * new_size + x) as usize] = 0_u8;
+                    self.sampler_img.bytes[(img_y * img_size + img_x) as usize] = 0_u8;
+                };
+            }
+        }
+
+        self.sampler_tex.update(&self.sampler_img);
     }
 }
 
