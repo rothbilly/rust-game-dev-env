@@ -14,10 +14,16 @@ use std::rc::Rc;
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/tile_atlas.png");
 const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/background2.png");
-const WORLD_CHUNKS_WIDTH: i32 = 8;
-const WORLD_CHUNKS_HEIGHT: i32 = 6;
-const SCREEN_WIDTH: i32 = 800;
-const SCREEN_HEIGHT: i32 = 600;
+
+// Noita keeps around 12 512x512 sized areas active at the same time
+// This simulates a similar workload
+const WORLD_CHUNKS_WIDTH: i32 = 4 * 8;
+const WORLD_CHUNKS_HEIGHT: i32 = 3 * 8;
+
+// Noita's visible area
+const SCREEN_WIDTH: i32 = 480;
+const SCREEN_HEIGHT: i32 = 270;
+
 const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 
 const WORLD_BOUNDS: Rect = Rect {
@@ -1348,8 +1354,14 @@ impl Tile {
         matches!(self, Self::Water | Self::Fire | Self::Steam | Self::Smoke)
     }
 
+    fn is_solid(&self) -> bool {
+        matches!(self, Self::Wood | Self::Steel)
+    }
+
     fn can_swap(&self, other: &Tile, dir: IVec2) -> bool {
-        if self.is_liquid_or_gas() || other.is_liquid_or_gas() {
+        if (self.is_liquid_or_gas() || other.is_liquid_or_gas())
+            && !(self.is_solid() || other.is_solid())
+        {
             (dir.y == 1 && self.get_density() > other.get_density())
                 || (dir.y == -1 && self.get_density() < other.get_density())
                 || *other == Tile::Empty
