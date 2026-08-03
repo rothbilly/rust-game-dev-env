@@ -13,17 +13,18 @@ use std::rc::Rc;
 
 const ATLAS_TEXTURES_SIZE: i32 = 64;
 const ATLAS_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/tile_atlas.png");
-const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/background1.png");
-const WORLD_CHUNKS: i32 = 6;
-const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
-const SCREEN_WIDTH: i32 = 512;
-const SCREEN_HEIGHT: i32 = 512;
+const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/background2.png");
+const WORLD_CHUNKS_WIDTH: i32 = 8;
+const WORLD_CHUNKS_HEIGHT: i32 = 6;
+const SCREEN_WIDTH: i32 = 800;
+const SCREEN_HEIGHT: i32 = 600;
 const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
+
 const WORLD_BOUNDS: Rect = Rect {
     x: 0.0_f32,
     y: 0.0_f32,
-    w: (Chunk::SIZE * WORLD_CHUNKS) as f32,
-    h: (Chunk::SIZE * WORLD_CHUNKS) as f32,
+    w: (Chunk::SIZE * WORLD_CHUNKS_WIDTH) as f32,
+    h: (Chunk::SIZE * WORLD_CHUNKS_HEIGHT) as f32,
 };
 
 /*
@@ -70,7 +71,7 @@ impl Default for Sandbox {
             camera: CameraController::default(),
             chunks: {
                 let mut c: Vec<Rc<RefCell<Chunk>>> =
-                    Vec::with_capacity((WORLD_CHUNKS * WORLD_CHUNKS) as usize);
+                    Vec::with_capacity((WORLD_CHUNKS_WIDTH * WORLD_CHUNKS_HEIGHT) as usize);
                 for _ in 0..c.capacity() {
                     c.push(Rc::new(RefCell::new(Chunk::new().to_owned())));
                 }
@@ -95,16 +96,16 @@ impl GameLoop for Sandbox {
                 ivec2(1, 1),
             ];
 
-            for y in 0..WORLD_CHUNKS {
-                for x in 0..WORLD_CHUNKS {
+            for y in 0..WORLD_CHUNKS_HEIGHT {
+                for x in 0..WORLD_CHUNKS_WIDTH {
                     let mut neighbors = Vec::new();
                     let chunk_key = ivec2(x, y);
                     for pos in positions {
                         let n_key = chunk_key + pos;
                         if n_key.x >= 0
-                            && n_key.x < WORLD_CHUNKS
+                            && n_key.x < WORLD_CHUNKS_WIDTH
                             && n_key.y >= 0
-                            && n_key.y < WORLD_CHUNKS
+                            && n_key.y < WORLD_CHUNKS_HEIGHT
                         {
                             neighbors
                                 .push((pos, self.chunks[chunk_idx_at_chunk_pos(n_key)].clone()));
@@ -117,15 +118,26 @@ impl GameLoop for Sandbox {
             }
         }
 
-        let mut world_center = (WORLD_CHUNKS / 2 * Chunk::SIZE) as f32;
-        world_center += (if WORLD_CHUNKS % 2 == 0 {
+        let mut world_center_x = (WORLD_CHUNKS_WIDTH / 2 * Chunk::SIZE) as f32;
+        world_center_x += (if WORLD_CHUNKS_WIDTH % 2 == 0 {
             0
         } else {
             Chunk::SIZE / 2
         } as f32);
 
-        let half_screen = (SCREEN_WIDTH / 2) as f32;
-        self.camera.position = vec2(world_center - half_screen, world_center - half_screen);
+        let mut world_center_y = (WORLD_CHUNKS_HEIGHT / 2 * Chunk::SIZE) as f32;
+        world_center_y += (if WORLD_CHUNKS_HEIGHT % 2 == 0 {
+            0
+        } else {
+            Chunk::SIZE / 2
+        } as f32);
+
+        let half_screen_x = (SCREEN_WIDTH / 2) as f32;
+        let half_screen_y = (SCREEN_HEIGHT / 2) as f32;
+        self.camera.position = vec2(
+            world_center_x - half_screen_x,
+            world_center_y - half_screen_y,
+        );
 
         let atlas_img = Image::from_file_with_format(ATLAS_BYTES, Some(ImageFormat::Png)).unwrap();
         self.inventory.tiles_atlas = Some(atlas_img.clone());
@@ -357,9 +369,9 @@ impl GameLoop for Sandbox {
             let mut chunk_idx: usize;
             let camera_rect = self.camera.get_world_rect();
             gl_use_material(mat);
-            for y in 0..WORLD_CHUNKS {
+            for y in 0..WORLD_CHUNKS_HEIGHT {
                 let cy = y * Chunk::SIZE;
-                for x in 0..WORLD_CHUNKS {
+                for x in 0..WORLD_CHUNKS_WIDTH {
                     chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x, y });
 
                     if self.chunks[chunk_idx].borrow().is_empty()
@@ -413,8 +425,8 @@ impl GameLoop for Sandbox {
 
     fn _debug_draw(&self) {
         let mut chunk_idx: usize;
-        for y in 0..WORLD_CHUNKS {
-            for x in 0..WORLD_CHUNKS {
+        for y in 0..WORLD_CHUNKS_HEIGHT {
+            for x in 0..WORLD_CHUNKS_WIDTH {
                 chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x, y });
                 let chunk = &self.chunks[chunk_idx].borrow();
                 let area = chunk.dirty_area;
@@ -438,7 +450,6 @@ impl GameLoop for Sandbox {
         draw_rectangle_lines(cam_rect.x, cam_rect.y, cam_rect.w, cam_rect.h, 1.0, ORANGE);
 
         set_default_camera();
-        draw_rectangle_lines(cam_rect.x, cam_rect.y, cam_rect.w, cam_rect.y, 2.0, ORANGE);
         let mouse_pos = mouse_position();
         let mouse_world_pos = self.camera.screen_to_world(mouse_pos.into());
         draw_text(
@@ -477,8 +488,8 @@ impl Sandbox {
     fn simulate_chunks(&mut self, start: IVec2, step: i32) {
         let mut x = start.x;
         let mut y = start.y;
-        while y < WORLD_CHUNKS {
-            while x < WORLD_CHUNKS {
+        while y < WORLD_CHUNKS_HEIGHT {
+            while x < WORLD_CHUNKS_WIDTH {
                 let mut chunk = self.chunks[chunk_idx_at_chunk_pos(ivec2(x, y))].borrow_mut();
 
                 if chunk.dirty_area.is_empty() {
@@ -586,7 +597,7 @@ fn world_to_chunk_local(pos: IVec2) -> IVec2 {
 
 #[inline]
 fn chunk_idx_at_chunk_pos(pos: IVec2) -> usize {
-    (pos.y * WORLD_CHUNKS + pos.x) as usize
+    (pos.y * WORLD_CHUNKS_WIDTH + pos.x) as usize
 }
 
 #[inline]
@@ -596,13 +607,13 @@ fn chunk_pos_at_world(pos: IVec2) -> IVec2 {
 
 #[inline]
 fn chunk_idx_at_world(world_pos: Vec2) -> usize {
-    ((world_pos.y.floor() as i32 / Chunk::SIZE * WORLD_CHUNKS)
+    ((world_pos.y.floor() as i32 / Chunk::SIZE * WORLD_CHUNKS_WIDTH)
         + (world_pos.x.floor() as i32 / Chunk::SIZE)) as usize
 }
 
 #[inline]
 fn in_world_bounds(pos: IVec2) -> bool {
-    pos.x >= 0 && pos.x < WORLD_SIZE && pos.y >= 0 && pos.y < WORLD_SIZE
+    pos.x >= 0 && pos.x < WORLD_BOUNDS.w as i32 && pos.y >= 0 && pos.y < WORLD_BOUNDS.h as i32
 }
 
 #[inline]
@@ -1555,14 +1566,8 @@ impl PaintBrush {
     }
 
     pub fn resize_sampler(&mut self) {
-        if self.size == 1 {
-            self.sampler = RasterPaintBrushPattern::square();
-            return;
-        }
-
         let new_size = self.size;
 
-        // square img
         let img_size = self.max_size as i32;
         let img_center = img_size / 2;
 
@@ -1570,8 +1575,16 @@ impl PaintBrush {
             *byte = 0;
         }
 
+        //if new_size == 1 {
+        //    self.sampler = RasterPaintBrushPattern::square();
+        //    self.sampler_img.bytes[(img_center / 2 * img_size + img_center) as usize] =
+        //        self.tile as u8;
+        //    return;
+        //}
+
         self.sampler.size = new_size;
         self.sampler.data.resize((new_size * new_size) as usize, 0);
+
         for y in 0..new_size {
             for x in 0..new_size {
                 let img_y = img_center - (y - ((new_size - 1) / 2)) as i32;
@@ -1625,7 +1638,7 @@ impl RasterPaintBrushPattern {
             }
         }
 
-        Self { size: size, data }
+        Self { size, data }
     }
 
     pub fn square() -> Self {
