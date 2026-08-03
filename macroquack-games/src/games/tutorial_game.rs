@@ -1,25 +1,26 @@
 
-use engine_macros::{auto_deref, register_app};
+use macroquack::prelude::*;
 use std::fs;
 
 use macroquad::prelude::*;
-use crate::core::game::{Game, GameLoop};
-use crate::core::app::AppRegistration; // To register it in the App registry.
-use crate::core::math::wrapf;
+use macroquack::core::game::{Game, GameLoop};
+use macroquack::core::app::AppRegistration; // To register it in the App registry.
+use macroquack::core::math::wrapf;
 
 const MOVEMENT_SPEED: f32 = 200.0;
 const SCORE_PATH: &str = ".app/storage/tutorial_game/";
 const SCORE_FILE_NAME: &str = "high_score.dat";
 
- const FRAGMENT_SHADER: &str = include_str!(r"../../assets/shaders/starfield_shader.glsl");
- const VERTEX_SHADER: &str = include_str!(r"../../assets/shaders/quad_vertex.glsl");
+ const FRAGMENT_SHADER: &str = include_str!(r"../../../assets/shaders/starfield_shader.glsl");
+ const VERTEX_SHADER: &str = include_str!(r"../../../assets/shaders/quad_vertex.glsl");
 
 
 #[register_app("Tutorial Game")]
+#[auto_deref(base_game)]
 #[derive(Default)]
 #[auto_deref(base)]
 pub struct TutorialGame{
-    base: Game,
+    base_game: Game,
     dir: Vec2,
     squares: Vec<Shape>,
     bullets: Vec<Shape>,
@@ -119,7 +120,6 @@ impl GameLoop for TutorialGame {
 
     fn _update(&mut self, _delta: f32) {
         //println!("{:#?}", &self.game_state);
-
         match self.game_state {
             GameState::MainMenu => {}
             GameState::Playing => {

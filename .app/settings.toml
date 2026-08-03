@@ -5,4 +5,4 @@ egui_render_scale = 0.8
 editor_renderer = "Macroquad"
 fullscreen = false
 swap_interval = 1
-starting_app = ""
+starting_app = "Sample Virtual App"

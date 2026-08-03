@@ -1,18 +1,18 @@
-use engine_macros::{auto_deref, register_app};
+use macroquack::prelude::*;
 use macroquad::{input, prelude::*};
 use macroquad::color::colors;
 
-use egui_macroquad::*;
+    
+use macroquack::core::game::{Game, GameLoop};
+use macroquack::core::app::AppRegistration;
+use macroquack::components::gameobject::*;
 
-use crate::core::game::{Game, GameLoop};
-use crate::core::app::AppRegistration;
-use crate::components::gameobject::*;
-
-#[register_app("Macroware Exe")]
-#[auto_deref(base)]
+#[register_app] 
+#[auto_deref(base_game)]
 #[derive(Default)]
+
 pub struct MacrowareExe {
-    base: Game,
+    base_game: Game,
     change_background : bool,
     camera : Camera3D, // Camera could be in its own "substruct"
     camera_dir : Vec3,
@@ -54,7 +54,6 @@ impl GameLoop for MacrowareExe {
     }
 
     fn _update(&mut self, delta : f32) {
-
         let up = self.up;
         let down = self.down;
         let left = self.left;

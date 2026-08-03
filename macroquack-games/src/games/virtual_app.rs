@@ -1,17 +1,18 @@
 
 use std::fs;
-
+use macroquack::prelude::*;
+use macroquack::core::rendering::vector_graphics::svg_to_srgb_texture;
 use macroquad::{color, prelude::*};
-use engine_macros::*;
-use crate::core::game::{Game, GameLoop, IPausable};
-use crate::core::app::AppRegistration;
-use crate::core::rendering::vector_graphics::svg_to_srgb_texture;
+use macroquack::core::game::{Game, GameLoop, IPausable};
+use macroquack::core::app::AppRegistration;
+
 
 #[register_app("Sample Virtual App")]
+#[auto_deref(base_game)]
 #[derive(Default)]
 #[auto_deref(base)]
 pub struct SampleVirtualApp{
-    base: Game,
+    base_game: Game,
     _title: String,
     _mode: VirtualAppMode,
     _rect: Rect,

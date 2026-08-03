@@ -79,7 +79,6 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Extract the identifier of the item to use in the constructor
     let item_identifier =  &og_input.ident;
         //Item::Fn(item_fn) => &item_fn.sig.ident
-
     //get the name from the attribute or from the struct itself
     let app_name: String = if !attr.is_empty(){
         let attr_meta = parse_macro_input!(attr as syn::LitStr);

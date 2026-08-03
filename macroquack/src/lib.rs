@@ -4,6 +4,14 @@
 //  Engine mods
 // ==========================================
 
+
+pub mod prelude{
+    pub use engine_macros::register_app;
+    pub use engine_macros::auto_deref;
+    pub use macroquad;
+    pub use macroquad::prelude::*;
+}
+
 pub mod editor {
     pub mod main_editor;
     pub mod constants;
@@ -51,14 +59,9 @@ pub mod components {
     pub mod gameobject;
 }
 
+pub use inventory;
 // ==========================================
 //  Games mods - in the future in its own crate maybe
 // ==========================================
 
-pub mod games {
-    // pub mod breakout;
-    // pub mod macrowareexe;
-    // ...
-    automod::dir!(pub "src/games");
-    
-}
+

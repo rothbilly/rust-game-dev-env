@@ -1,6 +1,6 @@
 
 
-use std::{cell::RefCell, fmt::Debug, rc::Rc};
+use std::{cell::RefCell, fmt::Debug, rc::Rc, sync::RwLock};
 
 use macroquad::prelude::*;
 
@@ -20,21 +20,27 @@ pub struct AppRegistration {
     pub name : &'static str,
     pub constructor : fn() -> Rc<RefCell<dyn GameLoop>>,
 }
-
 inventory::collect!(AppRegistration);
 
+#[derive(Debug)]
 pub struct AppRegistry {
     pub registry : HashMap<& 'static str, AppConstructor>,
 }
 
 impl Default for AppRegistry {
+    // fn default() -> Self {
+    //     Self::new()
+    // }
     fn default() -> Self {
-        Self::new()
+        Self { 
+            registry : HashMap::new(),
+        }
     }
 }
 
 impl AppRegistry{
     pub fn new() -> Self{
+        println!("[Registry] - Constructing App Registry...");
         let mut r = Self { registry : HashMap::new() };
 
         for app in inventory::iter::<AppRegistration> {
@@ -43,6 +49,8 @@ impl AppRegistry{
         }
         r
     }
+
+    
 
     fn register<T>(&mut self, tag: &'static str)
     where T: GameLoop + Default + 'static {

@@ -1,15 +1,14 @@
-use engine_macros::{auto_deref, register_app};
 use macroquad::prelude::*;
-use crate::core::game::{Game, GameLoop};
-use crate::core::app::AppRegistration; // To register it in the App registry.
+use macroquack::prelude::*;
+use macroquack::core::game::{Game, GameLoop};
+use macroquack::core::app::AppRegistration; // To register it in the App registry.
 
 
-#[register_app("PhysicsTest")] // Custom Registration macro
-#[auto_deref(base)]
+#[register_app] 
+#[auto_deref(base_game)]
 #[derive(Default)]
-
 pub struct PhysicsTest{
-    base: Game
+    base_game: Game
 }
 
 impl GameLoop for PhysicsTest {
@@ -21,7 +20,6 @@ impl GameLoop for PhysicsTest {
     }
 
     fn _update(&mut self, _delta: f32) {
-
     }
 
     fn _render(&self) {

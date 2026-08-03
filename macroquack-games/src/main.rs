@@ -1,11 +1,10 @@
+use macroquack::prelude::*;
+use macroquack::core::engine::{Engine, app_config};
 
-use macroquad:: prelude::*;
-use rust_game_dev_env::core::engine::{Engine, app_config};
-
+use macroquack_games::games;
 
 #[macroquad::main(app_config)]
 async fn main() {
-
     let mut engine = Engine::new();
     engine.setup()
     .with_starting_app()

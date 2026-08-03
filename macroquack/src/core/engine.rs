@@ -1,16 +1,16 @@
 use std::{cell::RefCell, rc::Rc, sync::RwLock};
 
 use egui_macroquad::egui::{self};
-use macroquad::prelude::*;
+use macroquad::{miniquad::conf::AppleGfxApi, prelude::*};
 
-use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, settings_inspector::SettingsInspector}, games::virtual_app::SampleVirtualApp};
+use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, settings_inspector::SettingsInspector}};
 
 use crate::editor::inspector::DrawingBackend;
 use crate::editor::main_editor::GlobalEditor;
 
 
 type AppListRc = Rc<RwLock<AppList>>;
-type AppRegistryRc = Rc<RwLock<AppRegistry>>;
+type AppRegistryRc = Rc<AppRegistry>;
 type EditorsRc = Rc<RwLock<GlobalEditor>>;
 
 
@@ -28,10 +28,13 @@ impl Default for Engine {
 
 impl Engine {
     pub fn new() -> Engine{
-        Engine{
-
+        {
+            let settings = GLOB_SETTINGS.read().unwrap();
+            println!("[Engine] Loaded starting_app from settings: '{}'", settings.starting_app);
+        }
+        Self{
+            app_registry: Rc::new(AppRegistry::new()),
             app_list: Rc::new(RwLock::new(AppList::default())),
-            app_registry: Rc::new(RwLock::new(AppRegistry::new())),
             global_inspectors: Rc::new(RwLock::new(GlobalEditor::default()))
         }
     }
@@ -39,22 +42,21 @@ impl Engine {
     pub fn setup(&mut self) -> &mut Self{
 
     let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
+    app_loader.borrow_mut().app_registry = self.app_registry.clone();
 
     self.global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
     //self.global_inspectors.write().unwrap().new_inspector::<EventInspector>();
     self.global_inspectors.write().unwrap().new_inspector::<SettingsInspector>();
     self.global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
 
-    let app_registry = app_loader.borrow().app_registry.clone();
-
     
+    let closure_registry = self.app_registry.clone();
     let closure_app = self.app_list.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
     // TODO!: move this to the editor or the app, and use dependency injection in the future to cleanup the main.
     app_loader.borrow_mut().on_click_signal.connect(move |signal| {
         if let Signal::LoadApp(tag) = signal {
-            if let Some(new_app) = app_registry.get(tag){
+            if let Some(new_app) = closure_registry.get(tag){
                 let mut app_write = closure_app.write().unwrap();
-
                 app_write.load_and_replace_app_at_last(new_app);
                 //app_write.get_total_apps();
             }else{
@@ -100,13 +102,17 @@ impl Engine {
     }
 
     pub fn with_starting_app(&mut self) -> &mut Self{
-        let rc_binding = self.app_registry.clone();
-        let registry = rc_binding.read().unwrap(); 
+        // let rc_binding = self.app_registry.clone();
+        // let registry = rc_binding.read().unwrap();
+
         let settings = GLOB_SETTINGS.read().unwrap();
-        if let Some(new_app) = registry.get(&settings.starting_app){
-            self.app_list.clone().write().unwrap().append_new_sub_app(new_app);
+        if let Some(new_app) = self.app_registry.get(&settings.starting_app){
+            println!("[Engine] Successfully loaded starting app {}", settings.starting_app);
+            self.app_list.write().unwrap().append_new_sub_app(new_app);
         } else {
-            self.app_list.clone().write().unwrap().new_app_as::<SampleVirtualApp>();   
+            eprintln!("[Engine] Failed to load starting app '{}'! Registered apps in memory: {:?}",
+            settings.starting_app,
+            self.app_registry.registry.keys().collect::<Vec<_>>());
         }
         self
     }

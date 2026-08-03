@@ -1,9 +1,7 @@
-use crate::core::app::AppRegistration; // To register it in the App registry.
-use crate::core::game::{Game, GameLoop};
-use engine_macros::{auto_deref, register_app};
+use macroquack::core::app::AppRegistration; // To register it in the App registry.
+use macroquack::core::game::{Game, GameLoop};
+use macroquack::prelude::*;
 
-
-use macroquad::miniquad::BlendState;
 use macroquad::prelude::*;
 use macroquad::ui::{
     Drag, Ui, hash, root_ui,
@@ -14,10 +12,9 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 const ATLAS_TEXTURES_SIZE: i32 = 64;
-const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
-const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/textures/bg_solid_128.png");
-const WORLD_CHUNKS: i32 = 4;
-//const WORLD_CHUNKS_SQR: i32 = WORLD_CHUNKS * WORLD_CHUNKS;
+const ATLAS_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/tile_atlas.png");
+const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/background1.png");
+const WORLD_CHUNKS: i32 = 8;
 const WORLD_SIZE: i32 = Chunk::SIZE * WORLD_CHUNKS;
 const SCREEN_WIDTH: i32 = 512;
 const SCREEN_HEIGHT: i32 = 512;
@@ -40,9 +37,9 @@ const WORLD_BOUNDS: Rect = Rect {
 **/
 
 #[register_app("Sandbox")] // Custom Registration macro
-#[auto_deref(base)]
+#[auto_deref(base_game)]
 pub struct Sandbox {
-    base: Game,
+    base_game: Game,
     game_state: GameState,
     frame_stepping: bool,
     frame_counter: u64,
@@ -64,6 +61,7 @@ enum GameState {
 impl Default for Sandbox {
     fn default() -> Self {
         Self {
+            base_game: Game::default(),
             game_state: GameState::Running,
             frame_stepping: false,
             last_mouse_pos: ivec2(0, 0),
@@ -80,7 +78,6 @@ impl Default for Sandbox {
                 c
             },
             render_data: RenderData::new(),
-            base: Default::default(),
         }
     }
 }
