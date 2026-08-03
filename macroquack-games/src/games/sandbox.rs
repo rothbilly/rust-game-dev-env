@@ -17,8 +17,8 @@ const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/
 
 // Noita keeps around 12 512x512 sized areas active at the same time
 // This simulates a similar workload
-const WORLD_CHUNKS_WIDTH: i32 = 4 * 8;
-const WORLD_CHUNKS_HEIGHT: i32 = 3 * 8;
+const WORLD_CHUNKS_WIDTH: i32 = 4 * 8 * 2;
+const WORLD_CHUNKS_HEIGHT: i32 = 3 * 8 * 2;
 
 // Noita's visible area
 const SCREEN_WIDTH: i32 = 480;
@@ -371,6 +371,7 @@ impl GameLoop for Sandbox {
 
         let mat = &self.render_data.chunk_material;
         mat.set_uniform("_debug", self.render_data._debug as i32);
+        mat.set_uniform("grid_size", Chunk::SIZE);
         unsafe {
             let mut gl = get_internal_gl();
             let mut chunk_idx: usize;
@@ -416,6 +417,7 @@ impl GameLoop for Sandbox {
         if let Some(_) = self.inventory.get_selected_tile() {
             mat.set_texture("tiles", self.paint_brush.sampler_tex.clone());
             mat.set_uniform("_debug", 0_i32);
+            mat.set_uniform("grid_size", (self.paint_brush.sampler_img.width * 4) as i32);
             let brush_size = self.paint_brush.max_size as f32;
             let mut mouse = self.screen_to_world(mouse_position().into());
             mouse.x -= brush_size / 2.0;
@@ -691,7 +693,7 @@ pub struct Chunk {
 }
 
 impl Chunk {
-    const SIZE: i32 = 64;
+    const SIZE: i32 = 32;
     const SIZE_SQR: i32 = Chunk::SIZE * Chunk::SIZE;
 
     fn new() -> Self {
