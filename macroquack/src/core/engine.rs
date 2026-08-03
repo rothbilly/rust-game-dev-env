@@ -107,12 +107,13 @@ impl Engine {
 
         let settings = GLOB_SETTINGS.read().unwrap();
         if let Some(new_app) = self.app_registry.get(&settings.starting_app){
-            println!("[Engine] Successfully loaded starting app {}", settings.starting_app);
+            println!("[Engine] Successfully loaded starting app: {}", settings.starting_app);
             self.app_list.write().unwrap().append_new_sub_app(new_app);
         } else {
-            eprintln!("[Engine] Failed to load starting app '{}'! Registered apps in memory: {:?}",
-            settings.starting_app,
-            self.app_registry.registry.keys().collect::<Vec<_>>());
+            eprintln!(
+                "[Engine] Failed to load starting app '{}'! Registered apps in memory: {:?}",
+                settings.starting_app,
+                self.app_registry.registry.keys().collect::<Vec<_>>());
         }
         self
     }

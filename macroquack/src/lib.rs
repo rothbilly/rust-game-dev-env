@@ -18,6 +18,7 @@ pub mod editor {
     pub mod inspector;
     pub mod inspectors{
         // every inspector on its own mod.
+        pub mod event_inspector;
         pub mod info_inspector;
         pub mod app_loader;
         pub mod settings_inspector;
