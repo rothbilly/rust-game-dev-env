@@ -1,6 +1,7 @@
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::quote;
-use syn::{parse_macro_input, Item,ItemStruct, Ident, Fields};
+use syn::{Error, Fields, Ident, Item, ItemFn, ItemStruct, LitInt, Member, parse_macro_input, Result};
 
 
 // ==========================================
@@ -9,6 +10,7 @@ use syn::{parse_macro_input, Item,ItemStruct, Ident, Fields};
 
 
 #[proc_macro_attribute]
+
 pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let input_struct = parse_macro_input!(item as ItemStruct);
@@ -73,19 +75,11 @@ pub fn set_get(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Parse the item the macro is attached to (e.g., `struct TestGameStruct`)
-    let input_item = parse_macro_input!(item as Item);
-    let binding = input_item.clone();
+    let og_input = parse_macro_input!(item as ItemStruct);
     // Extract the identifier of the item to use in the constructor
-    let item_identifier = match &binding {
-        Item::Struct(item_struct) => &item_struct.ident,
-        Item::Fn(item_fn) => &item_fn.sig.ident,
-        _ => {
-            return syn::Error::new_spanned(&input_item,
-            "register_app attribute can only be applied to structs or functions"
-            ).to_compile_error().into();
-        }
-    };
-
+    let item_identifier =  &og_input.ident;
+        //Item::Fn(item_fn) => &item_fn.sig.ident
+    //get the name from the attribute or from the struct itself
     let app_name: String = if !attr.is_empty(){
         let attr_meta = parse_macro_input!(attr as syn::LitStr);
         attr_meta.value()
@@ -93,45 +87,21 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
         else {
             item_identifier.to_string()
         };
+        
     
-    let mutated_item = match input_item {
-        Item::Struct(mut item_struct) => {
-            if let syn::Fields::Unit = item_struct.fields {
-                item_struct.fields = syn::Fields::Named(syn::parse_quote!({}));
-            }
-
-            if let syn::Fields::Named(ref mut fields) = item_struct.fields {
-                fields.named.push(syn::parse_quote! {
-                    pub base: crate::core::game::Game
-                });
-            }
-            quote! { #item_struct }
-        },
-        other => quote! { #other }
-    };
-    
+    //generate 
     let expanded = quote!{
         // Keep the original struct/function definition intact
-        #mutated_item
-
-        impl std::ops::Deref for #item_identifier {
-            type Target = crate::core::game::Game;
-            fn deref(&self) -> &Self::Target {
-                &self.base
-            }
-        }
-
-        impl std::ops::DerefMut for #item_identifier {
-            fn deref_mut(&mut self) -> &mut Self::Target {
-                &mut self.base
-            }
-        }
-
+        #og_input
+        
         // Submit to inventory
         inventory::submit! {
             AppRegistration {
                 name: #app_name,
-                constructor: || std::rc::Rc::new(std::cell::RefCell::new(#item_identifier::default())),
+                constructor: ||{
+                    // println!("{} register: ",  stringify!(#app_name));
+                    std::rc::Rc::new(std::cell::RefCell::new(#item_identifier::default()))
+                } 
             }
         }
     };
@@ -140,6 +110,117 @@ pub fn register_app(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 }
 
+// ==========================================
+//  Attribute Macro for auto implement deref coercion
+// ==========================================
+
+
+#[proc_macro_attribute]
+pub fn auto_deref(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as ItemStruct);
+
+    match expand(attr.into(), input) {
+        Ok(tokens) => tokens.into(),
+        Err(err) => err.to_compile_error().into(),
+    }
+}
+
+fn expand(attr: proc_macro2::TokenStream, input: ItemStruct) -> Result<proc_macro2::TokenStream> {
+    let struct_name = &input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    // Figure out which field to target, and its type.
+    let (member, field_ty) = resolve_target_field(&attr, &input)?;
+
+    let expanded = quote! {
+        #input
+
+        impl #impl_generics ::std::ops::Deref for #struct_name #ty_generics #where_clause {
+            type Target = #field_ty;
+
+            fn deref(&self) -> &Self::Target {
+                &self.#member
+            }
+        }
+
+        impl #impl_generics ::std::ops::DerefMut for #struct_name #ty_generics #where_clause {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                &mut self.#member
+            }
+        }
+    };
+
+    Ok(expanded)
+}
+
+/// Determine the target field:
+/// - `#[deref(field_name)]` picks a named field.
+/// - `#[deref(0)]` picks a tuple-struct field by index.
+/// - `#[deref]` (no args) picks the field itself if there's exactly one.
+fn resolve_target_field(
+    attr: &proc_macro2::TokenStream,
+    input: &ItemStruct,
+) -> Result<(Member, syn::Type)> {
+    let span = Span::call_site();
+
+    if attr.is_empty() {
+        // No argument given: only valid if the struct has exactly one field.
+        return match &input.fields {
+            Fields::Named(fields) if fields.named.len() == 1 => {
+                let f = fields.named.first().unwrap();
+                let ident = f.ident.clone().unwrap();
+                Ok((Member::Named(ident), f.ty.clone()))
+            }
+            Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+                let f = fields.unnamed.first().unwrap();
+                Ok((Member::Unnamed(syn::Index::from(0)), f.ty.clone()))
+            }
+            _ => Err(Error::new(
+                span,
+                "#[deref] requires a field name/index when the struct has more than one field, \
+                 e.g. #[deref(inner)] or #[deref(0)]",
+            )),
+        };
+    }
+
+    // Try parsing the attribute argument as an identifier (named field) first.
+    if let Ok(ident) = syn::parse2::<Ident>(attr.clone()) {
+        return find_named_field(input, &ident).ok_or_else(|| {
+            Error::new_spanned(&ident, format!("no field named `{ident}` found on this struct"))
+        });
+    }
+
+    // Otherwise try as an integer literal (tuple struct index).
+    if let Ok(lit) = syn::parse2::<LitInt>(attr.clone()) {
+        let index: u32 = lit.base10_parse()?;
+        return find_indexed_field(input, index)
+            .ok_or_else(|| Error::new_spanned(&lit, format!("no field at index {index}")));
+    }
+
+    Err(Error::new_spanned(
+        attr,
+        "expected a field name or index, e.g. #[deref(inner)] or #[deref(0)]",
+    ))
+}
+
+fn find_named_field(input: &ItemStruct, ident: &Ident) -> Option<(Member, syn::Type)> {
+    if let Fields::Named(fields) = &input.fields {
+        for f in &fields.named {
+            if f.ident.as_ref() == Some(ident) {
+                return Some((Member::Named(ident.clone()), f.ty.clone()));
+            }
+        }
+    }
+    None
+}
+
+fn find_indexed_field(input: &ItemStruct, index: u32) -> Option<(Member, syn::Type)> {
+    if let Fields::Unnamed(fields) = &input.fields {
+        let f = fields.unnamed.iter().nth(index as usize)?;
+        return Some((Member::Unnamed(syn::Index::from(index as usize)), f.ty.clone()));
+    }
+    None
+}
 
 
 // ==========================================
@@ -153,6 +234,7 @@ use syn::{DeriveInput};
 #[proc_macro_derive(IName)]
 pub fn i_name_derive(input: TokenStream) -> TokenStream {
 
+    //parse the content of the struct to be derived
     let input = parse_macro_input!(input as DeriveInput);
 
     let struct_name = &input.ident;
@@ -201,3 +283,5 @@ pub fn ivisibility_derive(input: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
+
+

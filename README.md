@@ -58,18 +58,6 @@ Se busca un look retro pixelart con estilo similar a juegos de nitrome.
 # Features & Sistemas
 ### Arquitectura de aplicación 
 ![](main_canvas.canvas)
-### Dependencias
-
-Listar las dependencias en `Cargo.toml` y su uso.
-
-| Modulo                                                      | Descripcion              | Version |
-| ----------------------------------------------------------- | ------------------------ | ------- |
-| egui-macroquad                                              | Ui inmediata para editor | 0.17.3  |
-| serde                                                       | para serializacion       |         |
-| macroquad                                                   | el motor de entrada      | 0.4.1   |
-| [num_bigint](https://docs.rs/num-bigint/latest/num_bigint/) | big number core          | 0.4.6   |
-|                                                             |                          |         |
-
 # Engine
 
 macroquack, un motor sobre macroquad con un enfoque opinionado en juegos incrementales y facilidad de uso.
@@ -79,34 +67,15 @@ macroquack, un motor sobre macroquad con un enfoque opinionado en juegos increme
 ## Features a implementar
 
 
-| Sistema       | Objetivo                                                         | Status    | Encargado |
-| ------------- | ---------------------------------------------------------------- | --------- | --------- |
-| Main App      | Poder cambiar de escenas, serializar y cargar mapas serializados | Listo     | Nico      |
-| GameObjects   |                                                                  | Listo     | Jose      |
-| Arbol         |                                                                  | Diseno    | Jose      |
-| Asset Loader  |                                                                  | Idea      |           |
-| Event System  |                                                                  | Prototipo | Nico      |
-| Render window |                                                                  |           |           |
-# Mas sobre Rust
-
-| Title                    | Link                                                              |
-| ------------------------ | ----------------------------------------------------------------- |
-| Game dev Article         | https://loglog.games/blog/leaving-rust-gamedev/#positives-of-rust |
-| Articles about macroquad | https://www.slowrush.dev/news/pixel-perfect-rendering/            |
-| Macroquad book           | https://mq.agical.se/ch1-first-program.html                       |
-| Macroquad examples       | https://github.com/not-fl3/macroquad/tree/master/examples         |
-| Macroquad Api docs       | https://docs.rs/crate/macroquad/0.4.14                            |
-| Rut by example           | https://doc.rust-lang.org/rust-by-example/custom_types.html       |
-| Rust book                | https://doc.rust-lang.org/book/title-page.html                    |
-| Rust Nomicon             | https://doc.rust-lang.org/nomicon/other-reprs.html                |
-| Rust Guide Refernces     | https://rust-guide.com/en/documentation/collections/Slice         |
-## Juego o proyectos de ejemplo
-
-| Nombre             | Link                                                       |
-| ------------------ | ---------------------------------------------------------- |
-| Laser Mazer Rust   | https://github.com/tom-kaufman/laser-mazer                 |
-| Fish Fight         | https://github.com/fishfolk/jumpy                          |
-| Rust WASM template | https://github.com/rsaarelm/rust-game-template/tree/master |
+| Sistema              | Objetivo                                                         | Status    | Encargado |
+| -------------------- | ---------------------------------------------------------------- | --------- | --------- |
+| Main App             | Poder cambiar de escenas, serializar y cargar mapas serializados | Listo     | Nico      |
+| GameObjects          |                                                                  | Listo     | Jose      |
+| Arbol de gameobjects |                                                                  | Diseno    | Jose      |
+| Asset Loader         |                                                                  | Idea      |           |
+| Event System         |                                                                  | Prototipo | Nico      |
+| Render window        |                                                                  |           |           |
+| Command Patt         |                                                                  |           |           |
 
 ### Comandos importantes
 
@@ -132,5 +101,5 @@ cargo doc --no-deps --open
 ## Notas extras
 
 [Bitacora del Nico](Bitacora%20del%20Nico.md)
-
 [[Notas de Jose]]
+[[Material de aprendizaje]]

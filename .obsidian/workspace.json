@@ -1,78 +1,41 @@
 {
   "main": {
-    "id": "07cf070ee429b2b2",
+    "id": "80dfe109fc6aefb9",
     "type": "split",
     "children": [
       {
-        "id": "4f5b8e1a0caff897",
+        "id": "76c39f9a73a48153",
         "type": "tabs",
         "children": [
           {
-            "id": "1ded06ddf5ace32d",
+            "id": "1065c2d64288613c",
             "type": "leaf",
-            "pinned": true,
             "state": {
               "type": "markdown",
               "state": {
                 "file": "README.md",
                 "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
+                "source": false
               },
-              "pinned": true,
               "icon": "lucide-file",
               "title": "README"
             }
-          },
-          {
-            "id": "913b99e2ea99a358",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "obsidian_docs/Bitacora del Nico.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Bitacora del Nico"
-            }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
   },
   "left": {
-    "id": "d15f31f7f7c4fa53",
+    "id": "d5304f76ca6c3ecf",
     "type": "split",
     "children": [
       {
-        "id": "385b70c4f9c9441d",
+        "id": "0d9118d60001ecac",
         "type": "tabs",
         "children": [
           {
-            "id": "f0040021d1a67532",
+            "id": "361787dbc99c4ba7",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -85,7 +48,7 @@
             }
           },
           {
-            "id": "f0fdb668dfc88bbb",
+            "id": "0fb0644caf20e92b",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -102,7 +65,7 @@
             }
           },
           {
-            "id": "0b6903e6847b11e4",
+            "id": "2eab19f928e620e4",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -118,20 +81,20 @@
     "width": 300
   },
   "right": {
-    "id": "3f899e08afb48f62",
+    "id": "98a29c0901f6de23",
     "type": "split",
     "children": [
       {
-        "id": "2f98abb281832a1b",
+        "id": "e88024cad68c09de",
         "type": "tabs",
         "children": [
           {
-            "id": "373b9e157063cd16",
+            "id": "092587565d71cb55",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "obsidian_docs/Bitacora del Nico.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -141,25 +104,25 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de Bitacora del Nico"
+              "title": "Enlaces entrantes de README"
             }
           },
           {
-            "id": "92c217b86235d55a",
+            "id": "590734b555989485",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Proyecto Rust Macroquad.md",
+                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Enlaces salientes de Proyecto Rust Macroquad"
+              "title": "Enlaces salientes de README"
             }
           },
           {
-            "id": "103e99f9167d9c40",
+            "id": "076117ad2805bafb",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -174,7 +137,7 @@
             }
           },
           {
-            "id": "2f4d3ea40fc21002",
+            "id": "73f69b620db76efd",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -188,41 +151,26 @@
             }
           },
           {
-            "id": "d49ee37ae929eaa7",
+            "id": "87fce8733d2ed414",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "Proyecto Rust Macroquad.md",
+                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Esquema de Proyecto Rust Macroquad"
-            }
-          }
-        ]
-      },
-      {
-        "id": "8cc536b769ebf448",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "d6579da56929a02f",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Vista gráfica"
+              "title": "Esquema de README"
             }
           }
         ]
       }
     ],
     "direction": "horizontal",
-    "width": 326.5
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -235,35 +183,18 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "913b99e2ea99a358",
+  "active": "1065c2d64288613c",
   "lastOpenFiles": [
-    "target/debug/incremental/rust_game_dev_env-0nyicbmp53q9i/s-hkd8qma1ip-09ra0mq-working/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0nyicbmp53q9i/s-hkd8qma1ip-09ra0mq-working/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0nyicbmp53q9i/s-hkd8qma1ip-09ra0mq-working/metadata.rmeta",
-    "target/debug/incremental/rust_game_dev_env-0nyicbmp53q9i/s-hkd8qma1ip-09ra0mq-working/dep-graph.part.bin",
-    "target/debug/incremental/rust_game_dev_env-0nyicbmp53q9i/s-hkd8qma1ip-09ra0mq-working/dep-graph.bin",
-    "target/debug/incremental/rust_game_dev_env-0nyicbmp53q9i/s-hkd8qma1ip-09ra0mq-working",
-    "target/debug/incremental/rust_game_dev_env-0nyicbmp53q9i/s-hkd8qma1ip-09ra0mq.lock",
-    "target/debug/incremental/rust_game_dev_env-0x43x8hepdq0w/s-hkd8qm9m2s-06mtumr-working/work-products.bin",
-    "target/debug/incremental/rust_game_dev_env-0x43x8hepdq0w/s-hkd8qm9m2s-06mtumr-working/query-cache.bin",
-    "target/debug/incremental/rust_game_dev_env-0x43x8hepdq0w/s-hkd8qm9m2s-06mtumr-working/dep-graph.part.bin",
-    "target/debug/incremental/rust_game_dev_env-0x43x8hepdq0w/s-hkd8qm9m2s-06mtumr-working/dep-graph.bin",
-    "obsidian_docs/Notas de Jose.md",
-    "README.md",
-    "assets/sprites/laser-bolts.png",
-    "assets/sprites/ship.png",
-    "assets/sprites/explosion.png",
-    "assets/sprites/button_clicked_background.png",
-    "assets/sprites/enemy-small.png",
-    "assets/sprites/button_background.png",
-    "assets/sprites/enemy-medium.png",
-    "assets/sprites/enemy-big.png",
-    "Notas de Jose.md",
-    "target/doc/static.files/SourceSerif4-LICENSE-a2cfd9d5.md",
-    "target/doc/static.files/rust-logo-9a9549ea.svg",
-    "target/doc/static.files/favicon-32x32-eab170b8.png",
-    "obsidian_docs/Bitacora del Nico.md",
-    "obsidian_docs/Architecture.md",
-    "obsidian_docs/main_canvas.canvas"
+    "target/debug/incremental/macroquack_games-1dzvke7rpj60n/s-hksnjxnlj9-0yqbmm9-53454xo5u5nwvmfzylnjjcxmc/work-products.bin",
+    "target/debug/incremental/macroquack_games-1dzvke7rpj60n/s-hksnjxnlj9-0yqbmm9-53454xo5u5nwvmfzylnjjcxmc/query-cache.bin",
+    "target/debug/incremental/macroquack_games-1dzvke7rpj60n/s-hksnjxnlj9-0yqbmm9-53454xo5u5nwvmfzylnjjcxmc/dep-graph.bin",
+    "target/debug/incremental/macroquack_games-1dzvke7rpj60n/s-hksnjxnlj9-0yqbmm9-53454xo5u5nwvmfzylnjjcxmc",
+    "target/debug/incremental/macroquack_games-1dzvke7rpj60n/s-hksnjxnlj9-0yqbmm9.lock",
+    "target/debug/incremental/macroquack_games-16jscaw1ga0wu/s-hksnjxkwsd-1lcgcpc-4o1s9vtfugf36ed4mulj60y07/work-products.bin",
+    "target/debug/incremental/macroquack_games-16jscaw1ga0wu/s-hksnjxkwsd-1lcgcpc-4o1s9vtfugf36ed4mulj60y07/query-cache.bin",
+    "target/debug/incremental/macroquack_games-16jscaw1ga0wu/s-hksnjxkwsd-1lcgcpc-4o1s9vtfugf36ed4mulj60y07/dep-graph.bin",
+    "target/debug/incremental/macroquack_games-16jscaw1ga0wu/s-hksnjxkwsd-1lcgcpc-4o1s9vtfugf36ed4mulj60y07",
+    "target/debug/incremental/macroquack_games-2holaspn8c1z8/s-hksnjxkzep-1chypou-39bpf77c6z0ly1v9k2tikx11w/work-products.bin",
+    "target/debug/incremental/macroquack_games-2holaspn8c1z8/s-hksnjxkzep-1chypou-39bpf77c6z0ly1v9k2tikx11w/query-cache.bin"
   ]
 }

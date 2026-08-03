@@ -1,0 +1,28 @@
+[package]
+name = "macroquack-games"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+macroquack = {path = "../macroquack"}
+automod = "1.0.17"
+inventory =  {workspace = true}
+
+
+[profile.dev.package.'*']
+opt-level = 3
+
+
+[profile.dev]
+opt-level = 1            
+debug = "line-tables-only" 
+split-debuginfo = "unpacked" 
+codegen-units = 256      
+incremental = true       
+
+
+[profile.release]
+opt-level = 3    
+lto = true         
+codegen-units = 16  
+debug = false
