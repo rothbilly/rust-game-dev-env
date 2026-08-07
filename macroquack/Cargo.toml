@@ -31,14 +31,7 @@ engine_macros = {path = "../engine_macros"}
 
 
 [profile.dev.package.'*']
-opt-level = 3
-
-[profile.dev]
-opt-level = 1            
-debug = "line-tables-only" 
-split-debuginfo = "unpacked" 
-codegen-units = 256      
-incremental = true       
+opt-level = 3 
 
 
 [profile.release]
