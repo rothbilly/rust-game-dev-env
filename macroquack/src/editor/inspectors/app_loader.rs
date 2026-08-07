@@ -89,7 +89,7 @@ impl Inspector for AppLoaderMenu {
         .open( &mut self.is_visible)
         .show(_egui_ctx, |ui|{
             ui.label("Select a app:");
-            debug!("{:?}",&self.app_registry);
+            //debug!("{:?}",&self.app_registry);
             for (tag,_) in self.app_registry.registry.iter(){
                 if ui.button(*tag).clicked(){
                     self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
