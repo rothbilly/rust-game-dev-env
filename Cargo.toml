@@ -1,6 +1,6 @@
 
 [workspace]
-members = ["macroquack","engine_macros", "macroquack-games", "sandbox_game"]
+members = ["macroquack","engine_macros", "macroquack-games" ]
 
 resolver = "2"
 
