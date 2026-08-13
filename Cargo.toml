@@ -1,6 +1,7 @@
 
 [workspace]
-members = ["macroquack","engine_macros", "macroquack-games"]
+members = ["macroquack","engine_macros", "macroquack-games", "sandbox_game"]
+
 resolver = "2"
 
 [workspace.dependencies]

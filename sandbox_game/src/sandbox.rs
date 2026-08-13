@@ -12,8 +12,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 const ATLAS_TEXTURES_SIZE: i32 = 64;
-const ATLAS_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/tile_atlas.png");
-const BACKGROUND_BYTES: &[u8] = include_bytes!("../../../assets/sprites/sandbox/background2.png");
+const ATLAS_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/tile_atlas.png");
+const BACKGROUND_BYTES: &[u8] = include_bytes!("../../assets/sprites/sandbox/background2.png");
 
 // Noita keeps around 12 512x512 sized areas active at the same time
 // This simulates a similar workload
@@ -963,8 +963,8 @@ impl Chunk {
             }
             Tile::Wood => {
                 let neighbors = self.get_neighbors_per_type(pos);
-                if (neighbors[Tile::Fire as usize] >= 2 || neighbors[Tile::Lava as usize] >= 1)
-                    && roll(66.0)
+                if (neighbors[Tile::Fire as usize] >= 1 || neighbors[Tile::Lava as usize] >= 1)
+                    && roll(70.0)
                 {
                     self.set_tile(self.pos_to_idx(pos), Tile::BurntWood);
                 }
@@ -1873,17 +1873,17 @@ impl RenderData {
     }
 }
 
-pub struct Slot {
+pub struct Slot<T> {
     id: u64,
-    item: Option<Tile>,
+    item: Option<T>,
 }
 
-impl Slot {
-    fn new(id: u64) -> Slot {
+impl<T> Slot<T> {
+    fn new(id: u64) -> Slot<T> {
         Slot { id, item: None }
     }
 
-    fn new_with(id: u64, item: Tile) -> Slot {
+    fn new_with(id: u64, item: T) -> Slot<T> {
         Slot {
             id,
             item: Some(item),
@@ -1898,7 +1898,7 @@ enum FittingCommand {
 }
 
 struct UIData {
-    hot_bar: [(&'static str, Slot); 10],
+    hot_bar: [(&'static str, Slot<Tile>); 10],
     tile_palette: Vec<Tile>,
     palette_visible: bool,
     item_dragging: bool,

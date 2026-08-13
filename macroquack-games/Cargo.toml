@@ -5,8 +5,10 @@ edition = "2024"
 
 [dependencies]
 macroquack = {path = "../macroquack"}
+sandbox_game = {path = "../sandbox_game"}
 automod = "1.0.17"
 inventory =  {workspace = true}
+
 
 
 [profile.dev.package.'*']
