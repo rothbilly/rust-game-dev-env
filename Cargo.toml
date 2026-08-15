@@ -1,8 +1,11 @@
 
 [workspace]
 members = ["macroquack","engine_macros", "macroquack-games" ]
+default-members = ["macroquack","engine_macros", "macroquack-games" ]
 
 resolver = "2"
+
+
 
 [workspace.dependencies]
 macroquad = {version = "0.4.15", default-features = false}
