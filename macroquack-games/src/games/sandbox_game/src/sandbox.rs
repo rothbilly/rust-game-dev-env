@@ -12,9 +12,9 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 const ATLAS_TEXTURES_SIZE: i32 = 64;
-const ATLAS_BYTES: &[u8] = include_bytes!("../../../../../assets/sprites/sandbox/tile_atlas.png");
+const ATLAS_BYTES: &[u8] = include_bytes!("../assets/tile_atlas.png");
 const BACKGROUND_BYTES: &[u8] =
-    include_bytes!("../../../../../assets/sprites/sandbox/background2.png");
+    include_bytes!("../assets/background2.png");
 
 // Noita keeps around 12 512x512 sized areas active at the same time
 // This simulates a similar workload

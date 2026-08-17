@@ -18,7 +18,7 @@ pub struct SampleVirtualApp{
     is_active: bool,
 }
 
-const MASCOT_ICON_PATH: &str =  "assets/svgs/quack.svg";
+const MASCOT_ICON_PATH: &str =  "macroquack/assets/svgs/quack.svg";
 
 
 
