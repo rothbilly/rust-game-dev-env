@@ -1,7 +1,6 @@
 use macroquack::core::engine::{Engine, app_config};
 use macroquack::prelude::*;
 
-
 // import games and register it.
 use macroquack_games::games;
 use sandbox_game::sandbox;

@@ -1,11 +1,9 @@
-
-
 //! Macro helpers for decoupling a struct field into a shared, interior-mutable wrapper.
 
 #[macro_export]
 macro_rules! decouple_struct_field {
     (
-        $(#[$meta:meta])* 
+        $(#[$meta:meta])*
         $vis:vis struct $name:ident {
             $field:ident : $ty:ty
         }

@@ -1,24 +1,22 @@
-
 use macroquack::prelude::*;
 use std::fs;
 
-use macroquad::prelude::*;
-use macroquack::core::game::{Game, GameLoop};
 use macroquack::core::app::AppRegistration; // To register it in the App registry.
+use macroquack::core::game::{Game, GameLoop};
 use macroquack::core::math::wrapf;
+use macroquad::prelude::*;
 
 const MOVEMENT_SPEED: f32 = 200.0;
 const SCORE_PATH: &str = ".app/storage/tutorial_game/";
 const SCORE_FILE_NAME: &str = "high_score.dat";
 
- const FRAGMENT_SHADER: &str = include_str!(r"../assets/shaders/starfield_shader.glsl");
- const VERTEX_SHADER: &str = include_str!(r"../assets/shaders/quad_vertex.glsl");
-
+const FRAGMENT_SHADER: &str = include_str!(r"../assets/shaders/starfield_shader.glsl");
+const VERTEX_SHADER: &str = include_str!(r"../assets/shaders/quad_vertex.glsl");
 
 #[register_app("Tutorial Game")]
 #[derive(Default)]
 #[auto_deref(base)]
-pub struct TutorialGame{
+pub struct TutorialGame {
     base: Game,
     dir: Vec2,
     squares: Vec<Shape>,
@@ -29,26 +27,24 @@ pub struct TutorialGame{
     game_state: GameState,
     bg_material: Option<Material>,
     render_target: Option<RenderTarget>,
-    direction_modifier: f32
+    direction_modifier: f32,
 }
 
-
-impl TutorialGame{
-    pub fn reset(&mut self){
-    self.squares.clear();
-    self.bullets.clear();
-    self.circle.x = screen_width() * 0.5;
-    self.circle.y = screen_height() * 0.5;
-    self.score = 0;
-    self.game_state = GameState::Playing;
+impl TutorialGame {
+    pub fn reset(&mut self) {
+        self.squares.clear();
+        self.bullets.clear();
+        self.circle.x = screen_width() * 0.5;
+        self.circle.y = screen_height() * 0.5;
+        self.score = 0;
+        self.game_state = GameState::Playing;
     }
 }
-
 
 impl GameLoop for TutorialGame {
     fn _ready(&mut self) {
         rand::srand(miniquad::date::now() as u64);
-    
+
         self.circle.size = 16.0;
         self.circle.speed = MOVEMENT_SPEED;
 
@@ -57,36 +53,38 @@ impl GameLoop for TutorialGame {
         //     println!("2 seconds passed! Flash")
         // });
 
-        if self.bg_material.is_none(){
+        if self.bg_material.is_none() {
             self.render_target = Some(render_target(320, 150));
 
-            if let Some(rt)  = &self.render_target {
+            if let Some(rt) = &self.render_target {
                 rt.texture.set_filter(FilterMode::Nearest);
             }
             self.direction_modifier = 0.0;
-            self.bg_material = Some(load_material(ShaderSource::Glsl {
-                vertex: VERTEX_SHADER,
-                 fragment: FRAGMENT_SHADER 
-                },
-            MaterialParams {
-                uniforms: vec![
-                        UniformDesc::new("iResolution", UniformType::Float2),
-                        UniformDesc::new("direction_modifier", UniformType::Float1),             
-                ],
-                ..Default::default()
-            }).unwrap());
-
+            self.bg_material = Some(
+                load_material(
+                    ShaderSource::Glsl {
+                        vertex: VERTEX_SHADER,
+                        fragment: FRAGMENT_SHADER,
+                    },
+                    MaterialParams {
+                        uniforms: vec![
+                            UniformDesc::new("iResolution", UniformType::Float2),
+                            UniformDesc::new("direction_modifier", UniformType::Float1),
+                        ],
+                        ..Default::default()
+                    },
+                )
+                .unwrap(),
+            );
         };
 
         //println!("[Sample Game] - Read from in {}{}", SCORE_PATH, SCORE_FILE_NAME);
         self.high_score = fs::read_to_string(format!("{}{}", SCORE_PATH, SCORE_FILE_NAME))
-            .map_or(Ok(0),|i| {i.parse::<u32>()})
+            .map_or(Ok(0), |i| i.parse::<u32>())
             .unwrap_or(0);
-
     }
 
     fn _process_input(&mut self) {
-        
         match self.game_state {
             GameState::MainMenu => {
                 if is_key_pressed(KeyCode::Space) {
@@ -94,26 +92,25 @@ impl GameLoop for TutorialGame {
                 }
             }
             GameState::Playing => {
-                self.dir.x = is_key_down(KeyCode::D) as u8 as f32 -  is_key_down(KeyCode::A) as u8 as f32;
-                self.dir.y = is_key_down(KeyCode::S) as u8 as f32 -  is_key_down(KeyCode::W) as u8 as f32;
-        
-                
+                self.dir.x =
+                    is_key_down(KeyCode::D) as u8 as f32 - is_key_down(KeyCode::A) as u8 as f32;
+                self.dir.y =
+                    is_key_down(KeyCode::S) as u8 as f32 - is_key_down(KeyCode::W) as u8 as f32;
 
                 if is_key_pressed(KeyCode::Backspace) {
                     self.game_state = GameState::Paused;
                 }
-            },
+            }
             GameState::Paused => {
-
                 if is_key_pressed(KeyCode::Backspace) {
                     self.game_state = GameState::Playing;
                 }
-            },
+            }
             GameState::GameOver => {
-                if is_key_pressed(KeyCode::Space){ 
+                if is_key_pressed(KeyCode::Space) {
                     self.game_state = GameState::MainMenu;
                 }
-            },
+            }
         }
     }
 
@@ -122,25 +119,26 @@ impl GameLoop for TutorialGame {
         match self.game_state {
             GameState::MainMenu => {}
             GameState::Playing => {
-
                 self.direction_modifier += 0.05 * self.dir.x * _delta;
-                self.circle.set_pos( self.circle.get_pos() + self.dir * self.circle.speed * _delta);
+                self.circle
+                    .set_pos(self.circle.get_pos() + self.dir * self.circle.speed * _delta);
                 self.circle.x = wrapf(self.circle.x, 0.0, screen_width());
                 self.circle.y = wrapf(self.circle.y, 0.0, screen_height());
-                
+
                 //Spawn Squares
-                if rand::gen_range(0,99) >= 95{
+                if rand::gen_range(0, 99) >= 95 {
                     let size = rand::gen_range(16.0, 64.0);
-                    self.squares.push(Shape { size,
+                    self.squares.push(Shape {
+                        size,
                         speed: rand::gen_range(50.0, 150.0),
                         x: rand::gen_range(size / 2.0, screen_width() - size / 2.0),
                         y: -size,
-                        is_collided: false
+                        is_collided: false,
                     });
                 }
 
                 //Shoot
-                if is_key_pressed(KeyCode::Space){
+                if is_key_pressed(KeyCode::Space) {
                     self.bullets.push(Shape {
                         x: self.circle.x,
                         y: self.circle.y,
@@ -159,7 +157,11 @@ impl GameLoop for TutorialGame {
                 }
 
                 // Check Collisions
-                if  self.squares.iter().any(|square| self.circle.collides_with(square)){
+                if self
+                    .squares
+                    .iter()
+                    .any(|square| self.circle.collides_with(square))
+                {
                     self.game_state = GameState::GameOver;
                 }
 
@@ -176,23 +178,25 @@ impl GameLoop for TutorialGame {
                 }
 
                 // Retain or remove from the game
-                self.squares.retain(|square| square.y < screen_height() + square.size);
-                self.bullets.retain(|bullet| bullet.y > 0.0 - bullet.size / 2.0);
+                self.squares
+                    .retain(|square| square.y < screen_height() + square.size);
+                self.bullets
+                    .retain(|bullet| bullet.y > 0.0 - bullet.size / 2.0);
 
-                self.squares.retain(|square| {!square.is_collided});
-                self.bullets.retain(|bullet| {!bullet.is_collided});
-
-            },
-            GameState::Paused => {},
+                self.squares.retain(|square| !square.is_collided);
+                self.bullets.retain(|bullet| !bullet.is_collided);
+            }
+            GameState::Paused => {}
             GameState::GameOver => {
                 if self.score == self.high_score {
-
                     println!("[Sample Game] - Write on {}{}", SCORE_PATH, SCORE_FILE_NAME);
 
                     fs::create_dir_all(SCORE_PATH).ok();
                     fs::write(
                         format!("{}{}", SCORE_PATH, SCORE_FILE_NAME),
-                        self.high_score.to_string()).unwrap();
+                        self.high_score.to_string(),
+                    )
+                    .unwrap();
                     self.score = 0;
                 }
             }
@@ -207,7 +211,7 @@ impl GameLoop for TutorialGame {
             material.set_uniform("direction_modifier", self.direction_modifier);
 
             gl_use_material(material);
-            if let Some(rt) = &self.render_target{
+            if let Some(rt) = &self.render_target {
                 draw_texture_ex(
                     &rt.texture,
                     0.,
@@ -261,16 +265,15 @@ impl GameLoop for TutorialGame {
 
                 let high_score_text = format!("High score: {}", self.high_score);
                 let text_dimensions = measure_text(high_score_text.as_str(), None, 25, 1.0);
-                
+
                 draw_text(
                     high_score_text.as_str(),
                     screen_width() - text_dimensions.width - 10.0,
                     35.0,
                     25.0,
                     WHITE,
-                );  
-
-            },
+                );
+            }
             GameState::Paused => {
                 let text = "Paused";
                 let text_dimensions = measure_text(text, None, 50, 1.0);
@@ -281,16 +284,20 @@ impl GameLoop for TutorialGame {
                     50.0,
                     WHITE,
                 );
-            },
+            }
             GameState::GameOver => {
                 let game_over_text = "GAME OVER";
                 let text_dimensions = measure_text(game_over_text, None, 50, 1.0);
-                draw_text(game_over_text, screen_width() * 0.5 - text_dimensions.width * 0.5, screen_height() * 0.5, 50., WHITE);
-            },
+                draw_text(
+                    game_over_text,
+                    screen_width() * 0.5 - text_dimensions.width * 0.5,
+                    screen_height() * 0.5,
+                    50.,
+                    WHITE,
+                );
+            }
         }
-
     }
-
 
     fn _debug_draw(&self) {
         match self.game_state {
@@ -301,20 +308,17 @@ impl GameLoop for TutorialGame {
                     self.circle.x + self.dir.x * 20.,
                     self.circle.y + self.dir.y * 20.,
                     4.0,
-                    RED);
+                    RED,
+                );
             }
             _ => {}
         }
     }
 
-
     fn _cleanup(&mut self) {
         clear_background(WHITE);
     }
 }
-
-
-
 
 #[derive(Default)]
 struct Shape {
@@ -322,7 +326,7 @@ struct Shape {
     speed: f32,
     x: f32,
     y: f32,
-    is_collided:bool
+    is_collided: bool,
 }
 
 impl Shape {
@@ -339,22 +343,21 @@ impl Shape {
         }
     }
 
-    fn set_pos(&mut self, pos: Vec2){
+    fn set_pos(&mut self, pos: Vec2) {
         self.x = pos.x;
         self.y = pos.y;
     }
 
-    fn get_pos(&self) -> Vec2{
-        Vec2::new(self.x , self.y)
+    fn get_pos(&self) -> Vec2 {
+        Vec2::new(self.x, self.y)
     }
 }
 
-
 #[derive(Default, Debug)]
-enum GameState{
+enum GameState {
     #[default]
     MainMenu,
     Playing,
     Paused,
-    GameOver
+    GameOver,
 }

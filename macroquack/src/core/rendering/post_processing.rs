@@ -1,75 +1,67 @@
-
-
-
-use macroquad::prelude::*;
 use macroquad::math::Vec2;
-
+use macroquad::prelude::*;
 
 pub enum CameraMode {
     Camera2DMode,
-    Camera3DMode
+    Camera3DMode,
 }
 
-pub struct ScreenVisualEffect{
+pub struct ScreenVisualEffect {
     texture_size: Vec2,
     render_target: RenderTarget,
     filter_mode: FilterMode,
-    material: Material
+    material: Material,
 }
 
-
 impl ScreenVisualEffect {
-
     // Call this BEFORE the main loop
-    pub fn create_from_sample(_size: Vec2, filter_mode: FilterMode) -> ScreenVisualEffect{
-        
+    pub fn create_from_sample(_size: Vec2, filter_mode: FilterMode) -> ScreenVisualEffect {
         //Create a new render target from the size
         let render_target = render_target(_size.x as u32, _size.y as u32);
         render_target.texture.set_filter(filter_mode);
 
         let material = load_material(
-            ShaderSource::Glsl { 
+            ShaderSource::Glsl {
                 vertex: CRT_VERTEX_SHADER,
-                fragment: CRT_FRAGMENT_SHADER 
+                fragment: CRT_FRAGMENT_SHADER,
             },
-            Default::default()
-        ).unwrap();
+            Default::default(),
+        )
+        .unwrap();
 
-        ScreenVisualEffect { 
+        ScreenVisualEffect {
             texture_size: _size,
             render_target,
             filter_mode,
-            material
-            }
+            material,
+        }
     }
     // this need to be refactor, each game set its own camera as its need, maybe each game renders to a global target or pass the target to the game scene camera
     // Use this BEFORE render the scene during loop
-    pub fn setup_test_renderer_camera(&self,camera_mode: CameraMode){
-
+    pub fn setup_test_renderer_camera(&self, camera_mode: CameraMode) {
         match camera_mode {
-            CameraMode::Camera2DMode =>{
-                set_camera(&Camera2D{ 
+            CameraMode::Camera2DMode => {
+                set_camera(&Camera2D {
                     zoom: vec2(1. / screen_width() * 2., 1. / screen_height() * 2.),
                     target: vec2(screen_width() / 2., screen_height() / 2.),
                     render_target: Some(self.render_target.clone()),
                     ..Default::default()
                 });
             }
-             CameraMode::Camera3DMode => {
-                set_camera(&Camera3D{ 
+            CameraMode::Camera3DMode => {
+                set_camera(&Camera3D {
                     ..Default::default()
                 });
-             }
-        }        
+            }
+        }
     }
 
     // Use this AFTER render the scene during loop
-    pub fn render_vfx(&self){
-
+    pub fn render_vfx(&self) {
         set_default_camera();
         clear_background(WHITE);
         gl_use_material(&self.material);
-        
+
         draw_texture_ex(
             &self.render_target.texture,
             0.,
@@ -82,17 +74,11 @@ impl ScreenVisualEffect {
         );
         gl_use_default_material();
     }
-
-
 }
-
-
 
 // ==========================================
 //  Shaders provided for the example
 // ==========================================
-
-
 
 const CRT_FRAGMENT_SHADER: &str = r#"#version 100
 precision lowp float;

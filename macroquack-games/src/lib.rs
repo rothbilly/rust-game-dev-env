@@ -3,5 +3,4 @@ pub mod games {
     // pub mod macrowareexe;
     // ...
     automod::dir!("src/games");
-    
 }

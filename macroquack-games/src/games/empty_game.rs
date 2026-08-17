@@ -22,7 +22,6 @@ impl GameLoop for EmptyGame {
     }
 
     fn _update(&mut self, _delta: f32) {
-        println!("hello");
     }
 
     fn _render(&self) {

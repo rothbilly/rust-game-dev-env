@@ -3,21 +3,26 @@ use std::{cell::RefCell, rc::Rc, sync::RwLock};
 use egui_macroquad::egui::{self};
 use macroquad::{miniquad::conf::AppleGfxApi, prelude::*};
 
-use crate::{core::{app::{AppList, AppRegistry}, signal::Signal}, data::settings::{GLOB_SETTINGS, Settings}, editor::inspectors::{app_loader::AppLoaderMenu, settings_inspector::SettingsInspector}};
+use crate::{
+    core::{
+        app::{AppList, AppRegistry},
+        signal::Signal,
+    },
+    data::settings::{GLOB_SETTINGS, Settings},
+    editor::inspectors::{app_loader::AppLoaderMenu, settings_inspector::SettingsInspector},
+};
 
 use crate::editor::inspector::DrawingBackend;
 use crate::editor::main_editor::GlobalEditor;
-
 
 type AppListRc = Rc<RwLock<AppList>>;
 type AppRegistryRc = Rc<AppRegistry>;
 type EditorsRc = Rc<RwLock<GlobalEditor>>;
 
-
-pub struct Engine{
+pub struct Engine {
     app_list: AppListRc,
-    app_registry:AppRegistryRc,
-    global_inspectors: EditorsRc
+    app_registry: AppRegistryRc,
+    global_inspectors: EditorsRc,
 }
 
 impl Default for Engine {
@@ -27,59 +32,74 @@ impl Default for Engine {
 }
 
 impl Engine {
-    pub fn new() -> Engine{
+    pub fn new() -> Engine {
         {
             let settings = GLOB_SETTINGS.read().unwrap();
-            println!("[Engine] Loaded starting_app from settings: '{}'", settings.starting_app);
+            println!(
+                "[Engine] Loaded starting_app from settings: '{}'",
+                settings.starting_app
+            );
         }
-        Self{
+        Self {
             app_registry: Rc::new(AppRegistry::new()),
             app_list: Rc::new(RwLock::new(AppList::default())),
-            global_inspectors: Rc::new(RwLock::new(GlobalEditor::default()))
+            global_inspectors: Rc::new(RwLock::new(GlobalEditor::default())),
         }
     }
 
-    pub fn setup(&mut self) -> &mut Self{
+    pub fn setup(&mut self) -> &mut Self {
+        let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
+        app_loader.borrow_mut().app_registry = self.app_registry.clone();
 
-    let app_loader = Rc::new(RefCell::new(AppLoaderMenu::default()));
-    app_loader.borrow_mut().app_registry = self.app_registry.clone();
+        self.global_inspectors
+            .write()
+            .unwrap()
+            .add_inspector::<AppLoaderMenu>(&app_loader);
+        //self.global_inspectors.write().unwrap().new_inspector::<EventInspector>();
+        self.global_inspectors
+            .write()
+            .unwrap()
+            .new_inspector::<SettingsInspector>();
+        self.global_inspectors
+            .write()
+            .unwrap()
+            .toggle_ui_backend(DrawingBackend::Egui);
 
-    self.global_inspectors.write().unwrap().add_inspector::<AppLoaderMenu>(&app_loader);
-    //self.global_inspectors.write().unwrap().new_inspector::<EventInspector>();
-    self.global_inspectors.write().unwrap().new_inspector::<SettingsInspector>();
-    self.global_inspectors.write().unwrap().toggle_ui_backend(DrawingBackend::Egui);
+        let closure_registry = self.app_registry.clone();
+        let closure_app = self.app_list.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
+        // TODO!: move this to the editor or the app, and use dependency injection in the future to cleanup the main.
+        app_loader
+            .borrow_mut()
+            .on_click_signal
+            .connect(move |signal| {
+                if let Signal::LoadApp(tag) = signal {
+                    if let Some(new_app) = closure_registry.get(tag) {
+                        let mut app_write = closure_app.write().unwrap();
+                        app_write.load_and_replace_app_at_last(new_app);
+                        //app_write.get_total_apps();
+                    } else {
+                        println!("[Editor] Error: Tag {} not in registry.", tag);
+                    }
+                }
+            });
 
-    
-    let closure_registry = self.app_registry.clone();
-    let closure_app = self.app_list.clone(); // Rc count 2 -- app_clone is moved inside the closure because of `move`
-    // TODO!: move this to the editor or the app, and use dependency injection in the future to cleanup the main.
-    app_loader.borrow_mut().on_click_signal.connect(move |signal| {
-        if let Signal::LoadApp(tag) = signal {
-            if let Some(new_app) = closure_registry.get(tag){
-                let mut app_write = closure_app.write().unwrap();
-                app_write.load_and_replace_app_at_last(new_app);
-                //app_write.get_total_apps();
-            }else{
-                println!("[Editor] Error: Tag {} not in registry.", tag);
-            }
-        }
-    });
+        self.global_inspectors.read().unwrap()._editor_setup();
+        //let crt = ScreenVisualEffect::create_from_sample(Vec2{x: screen_width()/2.0, y: screen_height()/2.0}, FilterMode::Nearest);
 
-    self.global_inspectors.read().unwrap()._editor_setup();
-    //let crt = ScreenVisualEffect::create_from_sample(Vec2{x: screen_width()/2.0, y: screen_height()/2.0}, FilterMode::Nearest);
-
-    self
+        self
     }
 
-    pub fn engine_loop(&self){
+    pub fn engine_loop(&self) {
         let mut delta = get_frame_time();
         delta = delta.max(0.0).min(0.1);
 
-        if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt){
-            self.global_inspectors.write().unwrap().toggle_global_visibility();
+        if is_key_pressed(KeyCode::F3) || is_key_pressed(KeyCode::LeftAlt) {
+            self.global_inspectors
+                .write()
+                .unwrap()
+                .toggle_global_visibility();
             self.app_list.write().unwrap().toggle_debug_view();
         }
-
 
         // Game Layer
         self.app_list.read().unwrap()._runtime(delta);
@@ -94,46 +114,45 @@ impl Engine {
     }
 
     pub fn on_close_application(&self) {
-        let _ = GLOB_SETTINGS.read()
-            .unwrap()
-            .save();
+        let _ = GLOB_SETTINGS.read().unwrap().save();
 
-         std::process::exit(0);
+        std::process::exit(0);
     }
 
-    pub fn with_starting_app(&mut self) -> &mut Self{
+    pub fn with_starting_app(&mut self) -> &mut Self {
         // let rc_binding = self.app_registry.clone();
         // let registry = rc_binding.read().unwrap();
 
         let settings = GLOB_SETTINGS.read().unwrap();
-        if let Some(new_app) = self.app_registry.get(&settings.starting_app){
-            println!("[Engine] Successfully loaded starting app: {}", settings.starting_app);
+        if let Some(new_app) = self.app_registry.get(&settings.starting_app) {
+            println!(
+                "[Engine] Successfully loaded starting app: {}",
+                settings.starting_app
+            );
             self.app_list.write().unwrap().append_new_sub_app(new_app);
         } else {
             eprintln!(
                 "[Engine] Failed to load starting app '{}'! Registered apps in memory: {:?}",
                 settings.starting_app,
-                self.app_registry.registry.keys().collect::<Vec<_>>());
+                self.app_registry.registry.keys().collect::<Vec<_>>()
+            );
         }
         self
     }
 
-    pub fn with_no_editor(&mut self) -> &mut Self{
+    pub fn with_no_editor(&mut self) -> &mut Self {
         let rc = self.global_inspectors.clone();
         let mut gb = rc.write().unwrap();
         self
     }
-
-
-
 }
-
 
 // This struct is from Macroquad and it's used to set parameters of the window.
 pub fn app_config() -> Conf {
-    let mut settings_guard: std::sync::RwLockWriteGuard<'_, Settings> = GLOB_SETTINGS.write().unwrap();
+    let mut settings_guard: std::sync::RwLockWriteGuard<'_, Settings> =
+        GLOB_SETTINGS.write().unwrap();
     let settings = settings_guard.load_toml();
-    
+
     Conf {
         window_title: "MacroQuack".to_owned(),
         window_width: settings.window_w,

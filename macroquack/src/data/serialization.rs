@@ -8,7 +8,6 @@ pub enum SerializeMode {
     BIN,
 }
 
-
 // Serializable Interface
 pub trait ISerializableData: Serialize + Default {
     fn save_with_mode<P: AsRef<Path>>(
@@ -34,27 +33,26 @@ pub trait ISerializableData: Serialize + Default {
     }
 
     /// Save settings to a custom binary file path (accepts `String`, `&str`, or `&Path`).
-    fn save_as_bin<P: AsRef<Path>>(&self, _path: P)  -> Result<(), Box<dyn std::error::Error>>{
-        if let Some(parent) = _path.as_ref().parent(){
-            fs::create_dir_all(parent)?  
+    fn save_as_bin<P: AsRef<Path>>(&self, _path: P) -> Result<(), Box<dyn std::error::Error>> {
+        if let Some(parent) = _path.as_ref().parent() {
+            fs::create_dir_all(parent)?
         };
-        
+
         let bytes = bincode::serialize(self)?;
         fs::write(_path.as_ref(), bytes)?;
         Ok(())
     }
 
     /// Save settings to a custom TOML file path (accepts `String`, `&str`, or `&Path`).
-    fn save_as_toml<P: AsRef<Path>>(&self, _path: P)  -> Result<(), Box<dyn std::error::Error>>{
+    fn save_as_toml<P: AsRef<Path>>(&self, _path: P) -> Result<(), Box<dyn std::error::Error>> {
         if let Some(parent) = _path.as_ref().parent() {
             fs::create_dir_all(parent)?;
         };
-        
+
         let toml_str = toml::to_string_pretty(self)?;
         fs::write(_path.as_ref(), toml_str)?;
         Ok(())
     }
-
 
     // fn load_with_mode<T>(mode: SerializeMode, path: &Path) -> Result<T, Box<dyn std::error::Error>>
     // where
@@ -64,15 +62,18 @@ pub trait ISerializableData: Serialize + Default {
     // }
 
     /// Load settings from a custom binary file path (accepts `String`, `&str`, or `&Path`).
-    fn load_from_bin_path<T: ISerializableData>(_mode: SerializeMode, _path: &Path) -> Result<T, Box<dyn std::error::Error>> 
-    where 
-        T: for<'de> Deserialize<'de>
+    fn load_from_bin_path<T: ISerializableData>(
+        _mode: SerializeMode,
+        _path: &Path,
+    ) -> Result<T, Box<dyn std::error::Error>>
+    where
+        T: for<'de> Deserialize<'de>,
     {
         if let Ok(bytes) = fs::read(_path)
-            && let Ok(des) = bincode::deserialize::<T>(&bytes){
-                return Ok(des)
-            }
+            && let Ok(des) = bincode::deserialize::<T>(&bytes)
+        {
+            return Ok(des);
+        }
         Ok(T::default())
     }
-
 }

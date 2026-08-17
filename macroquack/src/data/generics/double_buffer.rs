@@ -1,13 +1,11 @@
-
-
-struct DoubleBuffer<T: Clone>{
+struct DoubleBuffer<T: Clone> {
     front: Vec<T>,
     back: Vec<T>,
 }
 
-
-impl<T> DoubleBuffer<T> 
-where T: Clone 
+impl<T> DoubleBuffer<T>
+where
+    T: Clone,
 {
     fn new(initial_state: Vec<T>) -> Self {
         Self {
@@ -31,30 +29,29 @@ where T: Clone
     }
 }
 
-
-
 // Sample Buffer
 
-struct GridBuffer{
+struct GridBuffer {
     width: usize,
     height: usize,
-    df: DoubleBuffer<u8>
+    df: DoubleBuffer<u8>,
 }
 
-impl GridBuffer{
-    pub fn new() -> GridBuffer{
-        GridBuffer{
+impl GridBuffer {
+    pub fn new() -> GridBuffer {
+        GridBuffer {
             width: 0,
             height: 0,
-            df: DoubleBuffer::new(Vec::<u8>::new())
+            df: DoubleBuffer::new(Vec::<u8>::new()),
         }
     }
 
-    pub fn new_from_size(width: usize, height: usize) -> GridBuffer{
-        GridBuffer { 
+    pub fn new_from_size(width: usize, height: usize) -> GridBuffer {
+        GridBuffer {
             width,
-            height, 
-            df:  DoubleBuffer::new(Vec::<u8>::with_capacity(width * height))}
+            height,
+            df: DoubleBuffer::new(Vec::<u8>::with_capacity(width * height)),
+        }
     }
 
     #[inline]
@@ -69,26 +66,21 @@ impl GridBuffer{
         column * self.width + row
     }
 
-    fn coordinates_from_index(&self, idx: usize) -> (usize, usize){
+    fn coordinates_from_index(&self, idx: usize) -> (usize, usize) {
         let x = idx % self.width;
-        let y = idx / self.width; 
-        (x,y)
+        let y = idx / self.width;
+        (x, y)
     }
 
     fn read_at_index(&self, x: usize, y: usize) -> u8 {
         let idx = self.index(x, y);
-        let read_bf =  self.df.read();
+        let read_bf = self.df.read();
         read_bf[idx]
     }
 
-
-    fn write_at_index(&mut self, x: usize, y: usize, value: u8){
+    fn write_at_index(&mut self, x: usize, y: usize, value: u8) {
         let idx = self.index(x, y);
-        let write_bff =  self.df.write_mut();
+        let write_bff = self.df.write_mut();
         write_bff[idx] = value;
     }
-
 }
-
-
-

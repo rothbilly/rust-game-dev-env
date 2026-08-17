@@ -1,111 +1,113 @@
-
-
 use std::rc::Rc;
 
+use crate::core::app::AppRegistry;
+use crate::{
+    core::signal::*,
+    editor::{
+        constants::*,
+        inspector::{Inspector, InspectorWindow},
+        main_editor::*,
+    },
+};
 use egui_macroquad::egui;
 use egui_macroquad::egui::Context;
-use engine_macros::IVisibility;
-use macroquad::{math::vec2, ui::{Layout, hash, root_ui, widgets::{Group, Window}}};
-use macroquad::prelude::*;
-use crate::{core::signal::*, editor::{constants::*, inspector::{Inspector, InspectorWindow}, main_editor::*}};
 pub use engine_macros::IName;
-use crate::core::app::AppRegistry;
+use engine_macros::IVisibility;
+use macroquad::prelude::*;
+use macroquad::{
+    math::vec2,
+    ui::{
+        Layout, hash, root_ui,
+        widgets::{Group, Window},
+    },
+};
 use std::sync::RwLock;
-
 
 const UI_BLOCK_SIZE: f32 = 40.;
 
-
 // <'a> defines RwLock that main struct cant outlives main_app, so if for some reason main_app is drooped, AppLoader Menu is also drooped.
 
-#[derive(IName)]
-#[derive(IVisibility)]
-pub struct AppLoaderMenu{
+#[derive(IName, IVisibility)]
+pub struct AppLoaderMenu {
     window_name: String,
     is_visible: bool,
     panel_height: f32,
-    pub app_registry : Rc<AppRegistry>,
+    pub app_registry: Rc<AppRegistry>,
     pub on_click_signal: SignalDispatcher,
 }
 
 impl AppLoaderMenu {
-    pub fn new(_is_visible: bool ) -> Self {
-        Self { 
+    pub fn new(_is_visible: bool) -> Self {
+        Self {
             is_visible: _is_visible,
-            ..Default::default()}
+            ..Default::default()
+        }
     }
-
 }
-
 
 impl Default for AppLoaderMenu {
     fn default() -> Self {
-        Self { 
+        Self {
             window_name: "App Loader".to_string(),
             is_visible: true,
             panel_height: UI_BLOCK_SIZE,
-            app_registry : Rc::new(AppRegistry::default()),
+            app_registry: Rc::new(AppRegistry::default()),
             on_click_signal: SignalDispatcher::new(),
         }
     }
 }
 
 impl Inspector for AppLoaderMenu {
-
-
-    fn _setup(&mut self){
+    fn _setup(&mut self) {
         self.panel_height = UI_BLOCK_SIZE * self.app_registry.registry.keys().len() as f32;
         // println!("[App Loader Setup] - panel size set to {}", &self.panel_height)
     }
 
-    fn _draw_gui(&mut self) -> bool{
-
-        
-    Window::new(hash!(),
+    fn _draw_gui(&mut self) -> bool {
+        Window::new(
+            hash!(),
             vec2(screen_width() - PANEL_WIDTH - GLOB_MARGIN, GLOB_MARGIN),
-            vec2(PANEL_WIDTH, self.panel_height +  PANEL_MARGIN * 2. ))
+            vec2(PANEL_WIDTH, self.panel_height + PANEL_MARGIN * 2.),
+        )
         .label(&self.window_name)
         .movable(true)
         .close_button(true)
         .titlebar(true)
-        .ui(&mut root_ui(), |ui|{
-            Group::new(hash!(), Vec2::new(PANEL_WIDTH - 2.*PANEL_MARGIN,self.panel_height))
-                .layout(Layout::Vertical)
-                .ui(ui,|ui|{
-                    ui.label(None, "App List");
+        .ui(&mut root_ui(), |ui| {
+            Group::new(
+                hash!(),
+                Vec2::new(PANEL_WIDTH - 2. * PANEL_MARGIN, self.panel_height),
+            )
+            .layout(Layout::Vertical)
+            .ui(ui, |ui| {
+                ui.label(None, "App List");
 
-                    for tag in self.app_registry.registry.keys(){
-                        if ui.button(None, *tag){
-                            self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
-                        }
+                for tag in self.app_registry.registry.keys() {
+                    if ui.button(None, *tag) {
+                        self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
                     }
-                });
-    })
+                }
+            });
+        })
     }
 
     fn _draw_egui(&mut self, _egui_ctx: &Context) {
         egui::Window::new(&self.window_name)
-        .title_bar(true)
-        .open( &mut self.is_visible)
-        .show(_egui_ctx, |ui|{
-            ui.label("Select a app:");
-            //debug!("{:?}",&self.app_registry);
-            for (tag,_) in self.app_registry.registry.iter(){
-                if ui.button(*tag).clicked(){
-                    self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
+            .title_bar(true)
+            .open(&mut self.is_visible)
+            .show(_egui_ctx, |ui| {
+                ui.label("Select a app:");
+                //debug!("{:?}",&self.app_registry);
+                for (tag, _) in self.app_registry.registry.iter() {
+                    if ui.button(*tag).clicked() {
+                        self.on_click_signal.emit(&Signal::LoadApp(tag.to_string()));
+                    }
                 }
-            }
-        });
-    
+            });
     }
-
-
 }
 
-
 impl InspectorWindow for AppLoaderMenu {}
-
-
 
 // impl Hash for AppLoaderMenu{
 //     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -113,4 +115,3 @@ impl InspectorWindow for AppLoaderMenu {}
 //         self.get_struct_name().hash(state);
 //     }
 // }
-

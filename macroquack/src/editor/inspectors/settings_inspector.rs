@@ -102,9 +102,10 @@ impl Inspector for SettingsInspector {
 
                 if self.is_value_changed_flag
                     && ui.button("Save Settings").clicked()
-                        && let Ok(_) = settings_lock.save() {
-                            self.is_value_changed_flag = false
-                        }
+                    && let Ok(_) = settings_lock.save()
+                {
+                    self.is_value_changed_flag = false
+                }
             });
     }
 }
