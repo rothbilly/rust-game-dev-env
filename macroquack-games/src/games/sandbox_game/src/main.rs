@@ -1,8 +1,6 @@
 use macroquack::core::engine::{Engine, app_config};
 use macroquack::prelude::*;
 
-use sandbox_game::sandbox;
-
 #[macroquad::main(app_config)]
 async fn main() {
     let mut engine = Engine::new();

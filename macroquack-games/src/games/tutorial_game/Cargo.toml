@@ -1,0 +1,13 @@
+[package]
+name = "tutorial_game"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+macroquack = {path = "../../../../macroquack"}
+automod = "1.0.17"
+inventory =  {workspace = true}
+
+[profile.dev.package.'*']
+opt-level = 3
+
