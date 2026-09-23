@@ -9,6 +9,7 @@ macroquack = {path = "../macroquack"}
 automod = "1.0.17"
 inventory =  {workspace = true}
 
+
 sandbox_game = {path = "../sandbox_game"}
 tutorial_game = {path = "../tutorial_game"}
 

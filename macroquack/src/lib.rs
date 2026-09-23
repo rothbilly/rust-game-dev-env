@@ -5,9 +5,11 @@
 // ==========================================
 
 pub mod prelude {
+    //expose macroquad and macros
     pub use engine_macros::auto_deref;
     pub use engine_macros::register_app;
     pub use macroquad;
+    pub use miniquad;
     pub use macroquad::prelude::*;
 }
 
