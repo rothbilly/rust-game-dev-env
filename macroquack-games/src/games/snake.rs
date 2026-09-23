@@ -61,14 +61,58 @@ impl GameLoop for SnakeGame {
     }
 
     fn _update(&mut self, _delta: f32) {
-        if self.is_game_over{
+        if !self.is_game_over {
+                if get_time() - self.last_update > self.speed as f64 {
+                    self.last_update = get_time();
+                    self.snake.body.push_front(self.snake.head);
+                    self.snake.head = (self.snake.head.0 + self.snake.dir.0, self.snake.head.1 + self.snake.dir.1);
+                    if self.snake.head == self.fruit {
+                        self.fruit = (rand::gen_range(0, SQUARES as i16), rand::gen_range(0, SQUARES as i16));
+                        self.score += 100;
+                        self.speed *= 0.9;
+                    } else {
+                        self.snake.body.pop_back();
+                    }
+                    if self.snake.head.0 < 0
+                        || self.snake.head.1 < 0
+                        || self.snake.head.0 >= SQUARES as i16
+                        || self.snake.head.1 >= SQUARES as i16
+                    {
+                        self.is_game_over = true;
+                    }
 
-        } else{
-
-        }
+                    for (x, y) in &self.snake.body {
+                        if *x == self.snake.head.0 && *y == self.snake.head.1 {
+                            self.is_game_over = true;
+                        }
+                    }
+                    self.is_navigation_lock = false;
+                } 
+        } 
     }
 
     fn _render(&self) {
+        if !self.is_game_over {
+            clear_background(LIGHTGRAY);
+
+            let game_size = screen_width().min(screen_height());
+            let offset_x = (screen_width() - game_size) / 2. + 10.;
+            let offset_y = (screen_height() - game_size) / 2. + 10.;
+            let sq_size = (screen_height() - offset_y * 2.) / SQUARES as f32;
+
+            draw_rectangle(offset_x, offset_y, game_size - 20., game_size - 20., WHITE);
+
+            for i in 1..SQUARES {
+                draw_line(
+                    offset_x,
+                    offset_y + sq_size * i as f32,
+                    screen_width() - offset_x,
+                    offset_y + sq_size * i as f32,
+                    2.,
+                    LIGHTGRAY,
+                );
+            }
+        }
     }
 }
 
