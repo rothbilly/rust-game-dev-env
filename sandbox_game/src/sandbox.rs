@@ -9,7 +9,7 @@ use macroquad::ui::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{camera_controller::*, chunk::*, game_ui::*, paint_brush::*, tile::*};
+use crate::{camera_controller::*, chunk::*, game_ui::*, paint_brush::*, particles::*, tile::*};
 
 pub const ATLAS_TEXTURES_SIZE: i32 = 64;
 pub const ATLAS_BYTES: &[u8] = include_bytes!("../assets/tile_atlas.png");
@@ -17,12 +17,18 @@ pub const BACKGROUND_BYTES: &[u8] = include_bytes!("../assets/background2.png");
 
 // Noita keeps around 12 512x512 sized areas active at the same time
 // This simulates a similar workload
-pub const WORLD_CHUNKS_WIDTH: i32 = 4 * 8 * 2;
-pub const WORLD_CHUNKS_HEIGHT: i32 = 3 * 8 * 2;
+//pub const WORLD_CHUNKS_WIDTH: i32 = 4 * 8 * 2;
+//pub const WORLD_CHUNKS_HEIGHT: i32 = 3 * 8 * 2;
+
+pub const WORLD_CHUNKS_WIDTH: i32 = 8;
+pub const WORLD_CHUNKS_HEIGHT: i32 = 8;
 
 // Noita's visible area
-pub const SCREEN_WIDTH: i32 = 480;
-pub const SCREEN_HEIGHT: i32 = 270;
+
+//pub const SCREEN_WIDTH: i32 = 480;
+//pub const SCREEN_HEIGHT: i32 = 270;
+pub const SCREEN_WIDTH: i32 = 256;
+pub const SCREEN_HEIGHT: i32 = 256;
 
 pub const ASPECT_RATIO: f32 = SCREEN_WIDTH as f32 / SCREEN_HEIGHT as f32;
 
@@ -34,11 +40,26 @@ pub const WORLD_BOUNDS: Rect = Rect {
 };
 
 /*
+
+
   TODO: remove chunk queues and implement particle system
-  TODO: remove seams between chunks // has to do with chunk process order
+
+  TODO: rework gui
+
   TODO: save & load tiles to/from disk (png)
+        TODO: add ui buttons to load and save files
+
+  TODO: remove seams between chunks // has to do with chunk process order
+        TODO: add multithreading
+
+  TODO: add kenney patterns as brushes
+        TODO: create new ui menu to select brushes
+
+  TODO: implement Configurable keybinds
   TODO: implement Command/Action Design pattern to enable Undo/Redo while in pause
-  TODO: maybe add multithreading??
+
+  TODO: add more tile types
+
 **/
 
 #[register_app("Sandbox")] // Custom Registration macro
@@ -54,6 +75,7 @@ pub struct Sandbox {
     camera: CameraController,
     chunks: Vec<Rc<RefCell<Chunk>>>,
     render_data: RenderData,
+    water_particles: ParticleSystem,
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
@@ -83,6 +105,17 @@ impl Default for Sandbox {
                 c
             },
             render_data: RenderData::new(),
+            water_particles: ParticleSystem::new(
+                ParticleCreateInfo {
+                    particle_id: Tile::Water,
+                    mass: 1.0,
+                    vel: vec2(0.0, 0.0),
+                    acc: vec2(0.0, 0.0),
+                    lifetime: (10000.0),
+                },
+                30000,
+                || -> Vec2 { vec2(0.0, 9.81) },
+            ),
         }
     }
 }
@@ -113,10 +146,10 @@ impl GameLoop for Sandbox {
                             && n_key.y < WORLD_CHUNKS_HEIGHT
                         {
                             neighbors
-                                .push((pos, self.chunks[chunk_idx_at_chunk_pos(n_key)].clone()));
+                                .push((pos, self.chunks[chunk_idx_at_chunk_key(n_key)].clone()));
                         }
                     }
-                    let chunk_idx = chunk_idx_at_chunk_pos(chunk_key);
+                    let chunk_idx = chunk_idx_at_chunk_key(chunk_key);
                     self.chunks[chunk_idx].borrow_mut().map_position = chunk_key;
                     self.chunks[chunk_idx].borrow_mut().init_maps(neighbors);
                 }
@@ -154,10 +187,10 @@ impl GameLoop for Sandbox {
         self.render_data.background =
             Texture2D::from_file_with_format(BACKGROUND_BYTES, Some(ImageFormat::Png));
 
-        let mat = &self.render_data.chunk_material;
+        let mat = &self.render_data.camera_material;
         mat.set_uniform("atlas_textures_size", ATLAS_TEXTURES_SIZE);
-        mat.set_uniform("grid_size", Chunk::SIZE);
-        mat.set_uniform("_debug", self.render_data._debug as i32);
+        mat.set_uniform("grid_width", SCREEN_WIDTH);
+        mat.set_uniform("debug_grid_size", Chunk::SIZE);
         mat.set_uniform("texture_scale", 128.0_f32);
         mat.set_texture("atlas_texture", self.render_data.tiles_atlas.clone());
         mat.set_texture("background", self.render_data.background.clone());
@@ -188,10 +221,11 @@ impl GameLoop for Sandbox {
                 }
 
                 KeyCode::LeftAlt => {
-                    self.render_data._debug = !self.render_data._debug;
-                    self.render_data
-                        .chunk_material
-                        .set_uniform("_debug", self.render_data._debug as i32);
+                    if self.render_data.debug_grid_size == 0 {
+                        self.render_data.debug_grid_size = Chunk::SIZE;
+                    } else {
+                        self.render_data.debug_grid_size = 0;
+                    }
                 }
                 KeyCode::LeftControl if is_mouse_button_down(MouseButton::Middle) => {
                     self.camera.reset_zoom();
@@ -221,17 +255,16 @@ impl GameLoop for Sandbox {
                     cam_dir.x = 1.0;
                 }
                 KeyCode::LeftControl => {
-                    self.camera.zoom_dir = mouse_wheel.1;
+                    self.camera.zoom_lerp += mouse_wheel.1 * 0.05;
                 }
                 _ => {}
             }
         }
+        self.camera.direction = cam_dir;
 
         if let Some(t) = self.inventory.get_selected_tile() {
             self.paint_brush.set_tile(t);
         }
-
-        self.camera.direction = cam_dir;
 
         self.process_ui();
 
@@ -241,9 +274,8 @@ impl GameLoop for Sandbox {
             } else {
                 1.0
             };
-            self.paint_brush.size += (mouse_wheel.1.round() * amp) as i16;
             self.paint_brush
-                .set_size(self.paint_brush.size.clamp(1, self.paint_brush.max_size));
+                .set_size(self.paint_brush.size + (mouse_wheel.1.round() * amp) as i16);
         }
 
         if self.inventory.item_dragging {
@@ -293,6 +325,8 @@ impl GameLoop for Sandbox {
 
     fn _update(&mut self, _delta: f32) {
         self.camera.update(_delta);
+
+        // update simulation
         match &self.game_state {
             GameState::Paused => {
                 if self.frame_stepping {
@@ -313,6 +347,9 @@ impl GameLoop for Sandbox {
                 self.simulate_chunks(ivec2(0, 1), 2);
             }
         }
+
+        self.update_screen_tex();
+
         // draw ui
         // hotbar
         let slot_size = 56.0;
@@ -368,60 +405,41 @@ impl GameLoop for Sandbox {
             },
         );
 
-        let mat = &self.render_data.chunk_material;
-        mat.set_uniform("_debug", self.render_data._debug as i32);
-        mat.set_uniform("grid_size", Chunk::SIZE);
+        let mat = &self.render_data.camera_material;
+        mat.set_texture("tiles", self.render_data.camera_texture.clone());
+        mat.set_uniform("debug_grid_size", self.render_data.debug_grid_size);
+        mat.set_uniform("grid_width", SCREEN_WIDTH);
+
+        gl_use_material(mat);
+
+        draw_texture_ex(
+            &self.render_data.camera_texture.clone(),
+            cam_rect.x,
+            cam_rect.y,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(cam_rect.w, cam_rect.h)),
+                ..Default::default()
+            },
+        );
+
         unsafe {
-            let mut gl = get_internal_gl();
-            let mut chunk_idx: usize;
-            let camera_rect = self.camera.get_world_rect();
-            gl_use_material(mat);
-            for y in 0..WORLD_CHUNKS_HEIGHT {
-                let cy = y * Chunk::SIZE;
-                for x in 0..WORLD_CHUNKS_WIDTH {
-                    chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x, y });
-
-                    if self.chunks[chunk_idx].borrow().is_empty()
-                        || !self.chunks[chunk_idx]
-                            .borrow()
-                            .get_world_rect()
-                            .overlaps(&camera_rect)
-                    {
-                        continue;
-                    }
-
-                    let cx = x * Chunk::SIZE;
-
-                    let tiles = &self.chunks[chunk_idx].borrow().tiles;
-
-                    self.render_data.chunk_texture.update_from_bytes(
-                        (Chunk::SIZE / 4) as u32,
-                        Chunk::SIZE as u32,
-                        tiles,
-                    );
-
-                    mat.set_texture("tiles", self.render_data.chunk_texture.clone());
-                    draw_rectangle(
-                        cx as f32,
-                        cy as f32,
-                        Chunk::SIZE as f32,
-                        Chunk::SIZE as f32,
-                        WHITE,
-                    );
-                    gl.flush();
-                }
-            }
+            get_internal_gl().flush();
         }
-
+        // draw brush
         if let Some(_) = self.inventory.get_selected_tile() {
             mat.set_texture("tiles", self.paint_brush.sampler_tex.clone());
-            mat.set_uniform("_debug", 0_i32);
-            mat.set_uniform("grid_size", (self.paint_brush.sampler_img.width * 4) as i32);
+            mat.set_uniform("debug_grid_size", 0_i32);
+            mat.set_uniform(
+                "grid_width",
+                (self.paint_brush.sampler_img.width * 4) as i32,
+            );
             let brush_size = self.paint_brush.max_size as f32;
             let mut mouse = self.screen_to_world(mouse_position().into());
             mouse.x -= brush_size / 2.0;
             mouse.y -= brush_size / 2.0;
 
+            gl_use_material(mat);
             draw_rectangle(
                 mouse.x.round(),
                 mouse.y.round(),
@@ -438,7 +456,7 @@ impl GameLoop for Sandbox {
         let mut chunk_idx: usize;
         for y in 0..WORLD_CHUNKS_HEIGHT {
             for x in 0..WORLD_CHUNKS_WIDTH {
-                chunk_idx = chunk_idx_at_chunk_pos(IVec2 { x, y });
+                chunk_idx = chunk_idx_at_chunk_key(IVec2 { x, y });
                 let chunk = &self.chunks[chunk_idx].borrow();
                 let area = chunk.dirty_area;
                 let world_pos = ((x * Chunk::SIZE), (y * Chunk::SIZE));
@@ -492,6 +510,13 @@ impl GameLoop for Sandbox {
             24.0,
             WHITE,
         );
+        draw_text(
+            format!("Camera zoom lerp: {:.2}", self.camera.zoom_lerp),
+            64.0,
+            144.0,
+            24.0,
+            WHITE,
+        );
     }
 }
 
@@ -511,7 +536,7 @@ impl Sandbox {
     }
 
     fn simulate_chunk(&mut self, x: i32, y: i32) {
-        let mut chunk = self.chunks[chunk_idx_at_chunk_pos(ivec2(x, y))].borrow_mut();
+        let mut chunk = self.chunks[chunk_idx_at_chunk_key(ivec2(x, y))].borrow_mut();
 
         if chunk.dirty_area.is_empty() {
             chunk.process_queues();
@@ -589,9 +614,9 @@ impl Sandbox {
     }
 
     pub fn set_tile(chunks: &mut [Rc<RefCell<Chunk>>], pos: IVec2, tile: Tile) {
-        let chunk_idx = chunk_idx_at_chunk_pos(chunk_pos_at_world(pos));
+        let chunk_idx = chunk_idx_at_chunk_key(chunk_key_at_world_pos(pos));
         let mut chunk = chunks[chunk_idx].borrow_mut();
-        let tile_idx = chunk.pos_to_idx(world_to_chunk_local(pos));
+        let tile_idx = Chunk::pos_to_idx(world_to_chunk_local(pos));
         chunk.set_tile(tile_idx, tile);
         chunk.notify_neighbors(world_to_chunk_local(pos));
     }
@@ -599,6 +624,40 @@ impl Sandbox {
     #[inline]
     fn screen_to_world(&self, pos: Vec2) -> Vec2 {
         self.camera.screen_to_world(pos)
+    }
+
+    fn update_screen_tex(&mut self) {
+        let camera_rect = self.camera.get_world_rect();
+        let start = ivec2(camera_rect.left() as i32, camera_rect.top() as i32);
+        let tiles = &mut self.render_data.camera_tiles;
+        // world position
+        let mut tile_pos = start;
+
+        for y in 0..SCREEN_HEIGHT {
+            tile_pos.y = start.y + y;
+
+            for x in 0..SCREEN_WIDTH {
+                tile_pos.x = start.x + x;
+                if !in_world_bounds(tile_pos) {
+                    //set tile to empty
+                    tiles[(y * SCREEN_WIDTH + x) as usize] = Tile::Empty as u8;
+                    continue;
+                }
+                let chunk_key = chunk_key_at_world_pos(tile_pos);
+                let chunk_tiles = &self.chunks[chunk_idx_at_chunk_key(chunk_key)]
+                    .borrow()
+                    .tiles;
+                //copy tile
+                tiles[(y * SCREEN_WIDTH + x) as usize] =
+                    chunk_tiles[Chunk::pos_to_idx(world_to_chunk_local(tile_pos))]
+            }
+        }
+
+        self.render_data.camera_texture.update_from_bytes(
+            (SCREEN_WIDTH / 4) as u32,
+            SCREEN_HEIGHT as u32,
+            &tiles,
+        );
     }
 }
 
@@ -611,12 +670,12 @@ pub fn world_to_chunk_local(pos: IVec2) -> IVec2 {
 }
 
 #[inline]
-pub fn chunk_idx_at_chunk_pos(pos: IVec2) -> usize {
+pub fn chunk_idx_at_chunk_key(pos: IVec2) -> usize {
     (pos.y * WORLD_CHUNKS_WIDTH + pos.x) as usize
 }
 
 #[inline]
-pub fn chunk_pos_at_world(pos: IVec2) -> IVec2 {
+pub fn chunk_key_at_world_pos(pos: IVec2) -> IVec2 {
     ivec2(pos.x / Chunk::SIZE, pos.y / Chunk::SIZE)
 }
 
@@ -696,9 +755,9 @@ const TILES_FRAGMENT_SHADER: &str = r#"
   in vec2 uv;
   in vec2 uv_screen;
 
-  uniform int _debug;
+  uniform int debug_grid_size;
   uniform int atlas_textures_size;
-  uniform int grid_size;
+  uniform int grid_width;
   uniform float texture_scale;
   uniform sampler2D atlas_texture;
   uniform sampler2D tiles;
@@ -711,8 +770,8 @@ const TILES_FRAGMENT_SHADER: &str = r#"
   }
 
   uint unpack_tile(vec2 uv){
-    ivec2 grid_pos = ivec2(grid_size * uv);
-    uint grid_idx = uint(grid_pos.y * grid_size + grid_pos.x);
+    ivec2 grid_pos = ivec2(grid_width * uv);
+    uint grid_idx = uint(grid_pos.y * grid_width + grid_pos.x);
     grid_pos.x /= 4;
     vec4 data = texelFetch(tiles, grid_pos, 0);
     return uint(floor(data[grid_idx%4u] * 255.0));
@@ -720,7 +779,6 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 
   void main(){
     vec4 out_color;
-
     uint tile = unpack_tile(uv);
     ivec2 atlas_coords = atlas_textures_size * ivec2(tile % ATLAS_SIZE, tile / ATLAS_SIZE);
     ivec2 offset = ivec2((uv * texture_scale));
@@ -728,11 +786,11 @@ const TILES_FRAGMENT_SHADER: &str = r#"
     offset.y = offset.y % atlas_textures_size;
     out_color = texelFetch(atlas_texture, atlas_coords + offset, 0);
     vec4 bg_color;
-    if (_debug > 0){
+    if (debug_grid_size > 0){
         vec2 uv_bg;
-        uv_bg = vec2(uv * grid_size * 2.0);
-        uv_bg.x = floor(uv_bg.x / grid_size);
-        uv_bg.y = floor(uv_bg.y / grid_size);
+        uv_bg = vec2(uv * debug_grid_size * 2.0);
+        uv_bg.x = floor(uv_bg.x / debug_grid_size);
+        uv_bg.y = floor(uv_bg.y / debug_grid_size);
         if ( int(uv_bg.x + uv_bg.y) % 2 == 0){
             bg_color = vec4(vec3(0.7), 0.5);
         }else{
@@ -747,11 +805,14 @@ const TILES_FRAGMENT_SHADER: &str = r#"
 "#;
 
 pub struct RenderData {
-    chunk_material: Material,
-    chunk_texture: Texture2D,
+    //chunk_material: Material,
+    //chunk_texture: Texture2D,
+    camera_material: Material,
+    camera_texture: Texture2D,
+    camera_tiles: Vec<u8>,
     tiles_atlas: Texture2D,
     background: Texture2D,
-    _debug: bool,
+    debug_grid_size: i32,
 }
 
 impl RenderData {
@@ -771,10 +832,10 @@ impl RenderData {
                     ..Default::default()
                 },
                 uniforms: vec![
-                    UniformDesc::new("_debug", UniformType::Int1),
-                    UniformDesc::new("atlas_textures_size", UniformType::Int1),
-                    UniformDesc::new("grid_size", UniformType::Int1),
                     UniformDesc::new("texture_scale", UniformType::Float1),
+                    UniformDesc::new("atlas_textures_size", UniformType::Int1),
+                    UniformDesc::new("debug_grid_size", UniformType::Int1),
+                    UniformDesc::new("grid_width", UniformType::Int1),
                 ],
                 textures: vec![
                     "tiles".to_owned(),
@@ -783,19 +844,18 @@ impl RenderData {
                 ],
             },
         )
-        .expect("COULD NOT CREATE CHUNK MATERIAL");
-        let tex = Texture2D::from_rgba8(
-            Chunk::SIZE as u16 / 4,
-            Chunk::SIZE as u16,
-            &vec![0; (Chunk::SIZE * Chunk::SIZE) as usize],
-        );
+        .expect("COULD NOT CREATE CAMERA MATERIAL");
+
+        let tiles = vec![0; (SCREEN_WIDTH * SCREEN_HEIGHT) as usize];
+        let tex = Texture2D::from_rgba8(SCREEN_WIDTH as u16 / 4, SCREEN_HEIGHT as u16, &tiles);
 
         Self {
-            chunk_material: mat,
-            chunk_texture: tex,
+            camera_material: mat,
+            camera_texture: tex,
+            camera_tiles: tiles,
             tiles_atlas: Texture2D::empty(),
             background: Texture2D::empty(),
-            _debug: false,
+            debug_grid_size: 0_i32,
         }
     }
 }

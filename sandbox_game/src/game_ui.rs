@@ -135,6 +135,7 @@ impl GameUI {
             }
         }
     }
+
     pub fn tile_palette(&mut self, ui: &mut Ui) {
         let item_dragging = &mut self.item_dragging;
         let slot_size = 54.0;
@@ -175,6 +176,7 @@ impl GameUI {
             }
         }
     }
+
     pub fn set_item(&mut self, id: u64, item: Option<Tile>) {
         for i in 0..self.hot_bar.len() {
             if self.hot_bar[i].1.id == id {

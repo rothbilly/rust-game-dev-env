@@ -32,7 +32,7 @@ impl Chunk {
         Chunk {
             tile_counter: 0,
             map_position: IVec2 { x: 0, y: 0 },
-            tiles: vec![Tile::Empty as u8; (Chunk::SIZE * Chunk::SIZE) as usize],
+            tiles: vec![Tile::Sand as u8; (Chunk::SIZE * Chunk::SIZE) as usize],
             move_queue: Vec::with_capacity((Chunk::SIZE * Chunk::SIZE) as usize),
             dirty_area: DirtyRect::default(),
             neighbors: HashMap::with_capacity(8),
@@ -203,7 +203,7 @@ impl Chunk {
     // Counting the neighbors can take around 20% of the frame time, maybe try counting
     // only when needed? or take a different approach?
     pub fn process_tile(&mut self, pos: IVec2) -> bool {
-        let tile: Tile = self.tiles[self.pos_to_idx(pos)].into();
+        let tile: Tile = self.tiles[Chunk::pos_to_idx(pos)].into();
 
         let will_move = (|| match tile {
             Tile::Sand => self.try_move_down(&tile, pos) || self.try_move_down_sides(&tile, pos),
@@ -211,7 +211,7 @@ impl Chunk {
                 let neighbors = self.get_neighbors_per_type(pos);
 
                 if neighbors[Tile::Fire as usize] >= 3 || neighbors[Tile::Lava as usize] > 0 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Steam);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Steam);
                 }
 
                 (roll(22.5) && self.try_move_down_sides(&tile, pos))
@@ -221,7 +221,7 @@ impl Chunk {
             }
             Tile::Fire => {
                 if roll(33.0) {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Empty);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Empty);
                     return true;
                 }
 
@@ -251,7 +251,7 @@ impl Chunk {
                 if (neighbors[Tile::Fire as usize] >= 1 || neighbors[Tile::Lava as usize] >= 1)
                     && roll(33.0)
                 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Fire);
                     return false;
                 }
 
@@ -265,7 +265,7 @@ impl Chunk {
                 let neighbors = self.get_neighbors_per_type(pos);
 
                 if neighbors[Tile::Steam as usize] >= 8 && roll(0.005) {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Water);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Water);
                     return true;
                 }
 
@@ -276,7 +276,7 @@ impl Chunk {
             }
             Tile::Smoke => {
                 if roll(0.33) {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Empty);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Empty);
                     return true;
                 }
 
@@ -284,7 +284,7 @@ impl Chunk {
                 if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
                     && roll(87.0)
                 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Fire);
                     return true;
                 }
 
@@ -298,7 +298,7 @@ impl Chunk {
                 if (neighbors[Tile::Fire as usize] >= 1 || neighbors[Tile::Lava as usize] >= 1)
                     && roll(70.0)
                 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::BurntWood);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::BurntWood);
                 }
                 false
             }
@@ -307,7 +307,7 @@ impl Chunk {
                 if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
                     && roll(87.0)
                 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Coal);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Coal);
                 }
                 self.try_move_down(&tile, pos)
                     || (roll(25.0) && self.try_move_down_sides(&tile, pos))
@@ -317,7 +317,7 @@ impl Chunk {
                 if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
                     && roll(76.0)
                 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Fire);
                 }
                 self.try_move_down(&tile, pos)
                     || (roll(25.0) && self.try_move_down_sides(&tile, pos))
@@ -327,7 +327,7 @@ impl Chunk {
                 if (neighbors[Tile::Fire as usize] > 0 || neighbors[Tile::Lava as usize] > 0)
                     && roll(78.0)
                 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Fire);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Fire);
                     return true;
                 }
 
@@ -349,7 +349,7 @@ impl Chunk {
                     || (neighbors[Tile::Fire as usize] > 0 && roll(33.0))
                     || (neighbors[Tile::Lava as usize] > 0 && roll(66.0))
                 {
-                    self.set_tile(self.pos_to_idx(pos), Tile::Water);
+                    self.set_tile(Chunk::pos_to_idx(pos), Tile::Water);
                     return true;
                 }
 
@@ -390,7 +390,7 @@ impl Chunk {
     }
 
     fn try_move(&mut self, tile: &Tile, pos: IVec2, dir: IVec2) -> bool {
-        let from_idx = self.pos_to_idx(pos);
+        let from_idx = Chunk::pos_to_idx(pos);
         let to = pos + dir;
         let to_tile: Tile;
         if !in_chunk_bounds(to) {
@@ -415,7 +415,7 @@ impl Chunk {
             return false;
         }
 
-        let to_idx: usize = self.pos_to_idx(to);
+        let to_idx: usize = Chunk::pos_to_idx(to);
         to_tile = self.tiles[to_idx].into();
 
         if !tile.can_swap(&to_tile, dir) {
@@ -496,7 +496,7 @@ impl Chunk {
                 }
                 continue;
             }
-            tile = self.tiles[self.pos_to_idx(n_pos)];
+            tile = self.tiles[Chunk::pos_to_idx(n_pos)];
             neighbors[tile as usize] += 1;
         }
 
@@ -504,7 +504,7 @@ impl Chunk {
     }
 
     #[inline]
-    pub fn pos_to_idx(&self, pos: IVec2) -> usize {
+    pub fn pos_to_idx(pos: IVec2) -> usize {
         (pos.y * Chunk::SIZE + pos.x) as usize
     }
 
@@ -622,22 +622,22 @@ impl Chunk {
         // middle left
         else if pos.x == 0 {
             n_key = ivec2(-1, 0);
-            idx = self.pos_to_idx(ivec2(Chunk::SIZE - 1, pos.y + dir.y));
+            idx = Chunk::pos_to_idx(ivec2(Chunk::SIZE - 1, pos.y + dir.y));
         }
         // middle right
         else if pos.x == Chunk::SIZE - 1 {
             n_key = ivec2(1, 0);
-            idx = self.pos_to_idx(ivec2(0, pos.y + dir.y));
+            idx = Chunk::pos_to_idx(ivec2(0, pos.y + dir.y));
         }
         // middle top
         else if pos.y == 0 {
             n_key = ivec2(0, -1);
-            idx = self.pos_to_idx(ivec2(pos.x + dir.x, Chunk::SIZE - 1));
+            idx = Chunk::pos_to_idx(ivec2(pos.x + dir.x, Chunk::SIZE - 1));
         }
         // middle bottom
         else if pos.y == Chunk::SIZE - 1 {
             n_key = ivec2(0, 1);
-            idx = self.pos_to_idx(ivec2(pos.x + dir.x, 0));
+            idx = Chunk::pos_to_idx(ivec2(pos.x + dir.x, 0));
         }
         // MONKA
         else {

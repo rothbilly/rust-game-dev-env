@@ -7,6 +7,7 @@ pub struct PaintBrush {
     pub _drawing: bool,
     pub tile: Tile,
     pub size: i16,
+    pub min_size: i16,
     pub max_size: i16,
     pub sampler_img: Image,
     pub sampler_tex: Texture2D,
@@ -23,6 +24,7 @@ impl Default for PaintBrush {
             tile: Tile::Sand,
             _drawing: false,
             size: 1,
+            min_size: 2,
             max_size,
             sampler_img: Image::gen_image_color((max_size / 4) as u16, max_size as u16, BLACK),
             sampler_tex: Texture2D::from_rgba8((max_size / 4) as u16, max_size as u16, &tmp),
@@ -34,7 +36,7 @@ impl Default for PaintBrush {
 
 impl PaintBrush {
     pub fn set_size(&mut self, size: i16) {
-        self.size = size;
+        self.size = size.clamp(self.min_size, self.max_size);
         self.resize_sampler();
     }
 
@@ -82,6 +84,7 @@ impl PaintBrush {
         }
     }
 
+    // TODO: replace line segment interpolation with segment sdf
     pub fn paint(&mut self, p: IVec2, paint_fn: &mut dyn FnMut(IVec2, Tile)) {
         let size = self.size;
 
@@ -89,6 +92,7 @@ impl PaintBrush {
             self.resize_sampler();
         }
 
+        // line segment interpolation
         for y in 0..size {
             let py = y - size / 2;
             for x in 0..size {

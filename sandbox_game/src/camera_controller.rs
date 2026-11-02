@@ -6,10 +6,9 @@ pub struct CameraController {
     pub speed: f32,
     pub linear_damping: f32,
     pub zoom: f32,
-    pub zoom_dir: f32,
-    pub zoom_velocity: f32,
-    pub zoom_speed: f32,
-    pub zoom_damping: f32,
+    pub zoom_lerp: f32,
+    pub min_zoom: f32,
+    pub max_zoom: f32,
     _camera: Camera2D,
     pub position: Vec2,
     pub velocity: Vec2,
@@ -22,10 +21,9 @@ impl Default for CameraController {
             speed: 1000.0,
             linear_damping: 5.0,
             zoom: 1.0,
-            zoom_dir: 0.0,
-            zoom_velocity: 0.0,
-            zoom_speed: 100.0,
-            zoom_damping: 10.0,
+            zoom_lerp: 0.5,
+            min_zoom: 0.5,
+            max_zoom: 4.0,
             _camera: Camera2D::default(),
             position: vec2(0.0, 0.0),
             direction: vec2(0.0, 0.0),
@@ -60,12 +58,8 @@ impl CameraController {
 
         self.direction = vec2(0.0, 0.0);
 
-        self.zoom_velocity += self.zoom_speed * delta * delta * self.zoom_dir;
-        self.zoom_velocity *= 1.0 - (self.zoom_damping * delta);
-        let zoom_amp = if self.zoom > 1.0 { 2.0 } else { 1.0 };
-        self.zoom += self.zoom_velocity * zoom_amp;
-        self.zoom = self.zoom.clamp(0.1, 6.0);
-        self.zoom_dir = 0.0;
+        self.zoom_lerp = self.zoom_lerp.clamp(0.0, 1.0);
+        self.zoom = self.min_zoom.lerp(self.max_zoom, self.zoom_lerp);
 
         let mut camera = Camera2D::from_display_rect(self.get_display_rect());
         let display = get_display_rect();
@@ -81,7 +75,7 @@ impl CameraController {
 
     pub fn reset_zoom(&mut self) {
         self.zoom = 1.0;
-        self.zoom_velocity = 0.0;
+        self.zoom_lerp = 0.5;
     }
 
     pub fn screen_to_world(&self, pos: Vec2) -> Vec2 {
